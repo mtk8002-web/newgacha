@@ -1665,6 +1665,12 @@ function getRankAchievers(rankIndex, users, ranks) {
 function fmt(n) {
   return Number(n || 0).toLocaleString('ja-JP');
 }
+// 表示用：99,999 を超えたら "99,999+" に省略（実データは変えない）
+const SPOON_DISPLAY_CAP = 99999;
+function fmtCap(n) {
+  const v = Number(n || 0);
+  return v > SPOON_DISPLAY_CAP ? '99,999+' : v.toLocaleString('ja-JP');
+}
 
 function escapeHtml(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
@@ -1823,11 +1829,11 @@ function renderGachaDashboardHTML(data, me) {
       <div class="gacha-stat-grid">
         <div class="gacha-stat highlight">
           <div class="label">使える Spoon</div>
-          <div class="value">${fmt(avail)}<span class="unit">SPOON</span></div>
+          <div class="value">${fmtCap(avail)}<span class="unit">SPOON</span></div>
         </div>
         <div class="gacha-stat">
           <div class="label">累計 Spoon</div>
-          <div class="value">${fmt(me.totalSpoon || 0)}<span class="unit">SPOON</span></div>
+          <div class="value">${fmtCap(me.totalSpoon || 0)}<span class="unit">SPOON</span></div>
         </div>
         <div class="gacha-stat">
           <div class="label">引いた回数</div>
@@ -2002,7 +2008,7 @@ function renderTimeline(data) {
         <div class="timeline-msg">
           <span class="label-donate">+SPOON</span>
           <span class="name">${escapeHtml(e.user.name)}</span> さんへ
-          <span class="amount">+${fmt(e.amount)}</span> Spoon
+          <span class="amount">+${fmtCap(e.amount)}</span> Spoon
           ${e.note ? `<span class="note">（${escapeHtml(e.note)}）</span>` : ''}
         </div>
       `;
@@ -2151,11 +2157,11 @@ function renderRanking(data) {
         <div class="rank-info">
           <div class="rank-name">${escapeHtml(u.name)}</div>
           <div class="rank-gacha">
-            🍬 残 <span class="gacha-count">${fmt(avail)}</span> Spoon
+            🍬 残 <span class="gacha-count">${fmtCap(avail)}</span> Spoon
           </div>
         </div>
-        <div class="rank-gap">${gap > 0 ? `あと <span class="gap-num">${fmt(gap + 1)}</span> Spoonで ${overallIdx}位` : '——'}</div>
-        <div class="rank-spoon">${fmt(u.totalSpoon || 0)}<span class="unit">SPOON</span></div>
+        <div class="rank-gap">${gap > 0 ? `あと <span class="gap-num">${fmtCap(gap + 1)}</span> Spoonで ${overallIdx}位` : '——'}</div>
+        <div class="rank-spoon">${fmtCap(u.totalSpoon || 0)}<span class="unit">SPOON</span></div>
       `;
       list.appendChild(row);
     }
@@ -2181,9 +2187,9 @@ function buildPodium(top3) {
       <div class="podium-position-en">No. ${String(item.pos).padStart(2,'0')}</div>
       <div class="podium-icon">${renderUserIcon(u)}</div>
       <div class="podium-name">${escapeHtml(u.name)}</div>
-      <div class="podium-spoon">${fmt(u.totalSpoon || 0)}<span class="unit">SPOON</span></div>
+      <div class="podium-spoon">${fmtCap(u.totalSpoon || 0)}<span class="unit">SPOON</span></div>
       <div class="podium-gacha">
-        🍬 残 <strong>${fmt(avail)}</strong> Spoon
+        🍬 残 <strong>${fmtCap(avail)}</strong> Spoon
       </div>
       <div class="podium-base">
         <span class="small">PODIUM</span>${item.pos}
