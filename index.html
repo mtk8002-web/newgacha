@@ -189,7 +189,11 @@ nav.top-nav a:hover { color: var(--pink); background: var(--pink-bg); }
   display: flex; flex-direction: column; align-items: center;
   gap: 1.6rem; text-align: center;
   max-width: 1100px; margin: 0 auto; padding: 0 2rem; width: 100%;
+  /* サーバから設定取得が終わるまでハードコード文言を見せない */
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
 }
+.hero-inner.loaded { opacity: 1; }
 
 .hero-label {
   font-family: var(--font-en); font-size: 0.65rem; font-weight: 700;
@@ -2052,6 +2056,9 @@ setupGachaModal();
 // 初回はリモートからデータ取得後に描画
 fetchRemoteData().then(() => {
   renderAll();
+  // ヒーローをフェードイン（初期表示の文言ちらつきを防ぐ）
+  const heroInner = document.querySelector('.hero-inner');
+  if (heroInner) heroInner.classList.add('loaded');
   setupSync();
 });
 </script>
