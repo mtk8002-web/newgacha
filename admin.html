@@ -538,6 +538,85 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
   .prize-edit-row .prize-edit-extra { grid-column: 1 / -1; }
 }
 
+/* ============ 残スプーン表示 / レアリティチップ ============ */
+.cell-remain {
+  font-family: var(--font-en); font-size: 0.92rem; font-weight: 800;
+  color: var(--pink); letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.cell-remain .unit {
+  font-size: 0.55rem; color: var(--pink);
+  margin-left: 0.2rem; letter-spacing: 0.2em;
+}
+.cell-rarity-summary {
+  display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+}
+.rarity-chip {
+  font-family: var(--font-en); font-size: 0.6rem; font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 0.18rem 0.5rem;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+  background: rgba(255,255,255,0.03);
+  white-space: nowrap;
+}
+.rarity-chip.rarity-N   { color: #b8b8b8; }
+.rarity-chip.rarity-R   { color: #6fb6ff; }
+.rarity-chip.rarity-SR  { color: #c89dff; }
+.rarity-chip.rarity-SSR { color: #ffd166; }
+.rarity-chip.rarity-UR  { color: #ff7a99; }
+.cell-pull-total {
+  font-size: 0.7rem; color: rgba(255,255,255,0.45);
+  letter-spacing: 0.04em; margin-left: 0.3rem;
+}
+
+/* ============ ガチャタイプ別エディタ ============ */
+.gacha-type-card {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-left: 4px solid var(--pink);
+  border-radius: 6px;
+  padding: 1.2rem 1.2rem 1.4rem;
+  margin-bottom: 1rem;
+}
+.gacha-type-head {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1.2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed rgba(255,255,255,0.08);
+}
+.gacha-type-head .candy-icon-cell {
+  width: 72px;
+}
+.gacha-type-fields {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 0.7rem;
+  align-items: end;
+}
+.gacha-type-field { display: flex; flex-direction: column; }
+.gacha-type-field .label-text { margin-bottom: 0.3rem; }
+.gacha-type-actions {
+  grid-column: 1 / -1;
+  display: flex; justify-content: flex-end; margin-top: 0.5rem;
+}
+.gacha-type-prizes-title {
+  font-family: var(--font-en); font-size: 0.6rem; font-weight: 700;
+  letter-spacing: 0.25em; color: rgba(255,255,255,0.5);
+  text-transform: uppercase; margin-bottom: 0.6rem;
+}
+.prize-extra-pct {
+  font-family: var(--font-en); font-size: 0.65rem;
+  color: rgba(255,255,255,0.45); letter-spacing: 0.05em;
+}
+@media (max-width: 700px) {
+  .gacha-type-head { grid-template-columns: 1fr; }
+  .gacha-type-fields { grid-template-columns: 1fr 1fr; }
+}
+
 /* ============ モーダル ============ */
 .modal-backdrop {
   position: fixed; inset: 0; z-index: 200;
@@ -624,6 +703,12 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
   color: var(--gold);
 }
 .history-note { color: rgba(255,255,255,0.55); font-size: 0.78rem; }
+.history-section-title {
+  font-family: var(--font-en); font-size: 0.6rem; font-weight: 700;
+  letter-spacing: 0.25em; color: rgba(255,255,255,0.45);
+  text-transform: uppercase; margin-bottom: 0.4rem;
+}
+.history-gacha .history-note { color: rgba(255,255,255,0.85); }
 
 /* ============ トースト ============ */
 .toast {
@@ -803,8 +888,10 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
         <thead>
           <tr>
             <th style="width:50px"></th>
-            <th>名前 / ランク</th>
-            <th style="width:130px">Spoon</th>
+            <th>名前</th>
+            <th style="width:130px">累計 Spoon</th>
+            <th style="width:120px">残 Spoon</th>
+            <th>ガチャ獲得</th>
             <th class="col-date" style="width:110px">登録日</th>
             <th style="width:1px"></th>
           </tr>
@@ -905,37 +992,22 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
         </div>
       </div>
 
-      <!-- ガチャ閾値 -->
+      <!-- ガチャタイプ別 設定 -->
       <div class="setting-section">
-        <div class="setting-section-en">Gacha Threshold</div>
-        <div class="setting-section-title">ガチャ獲得の閾値</div>
-        <div class="field-row">
-          <label class="label-text">何 Spoon ごとに 1 回？</label>
-          <input type="number" class="input" id="setGachaThreshold" min="100" step="100" placeholder="5000">
+        <div class="setting-section-en">Gacha Types</div>
+        <div class="setting-section-title">ガチャ種類別 設定</div>
+        <div class="form-hint" style="margin-bottom:1rem">
+          ※ Spoon コストごとに別ガチャを設定できます（例：100 / 1000 / 2000）。<br>
+          ※ Weight は出現の重み（合計に対する割合で確率算出）。レアリティは N / R / SR / SSR / UR のいずれか。<br>
+          ※ ユーザーは保有 Spoon の範囲で好きなガチャを引けます。
         </div>
-        <div class="form-hint" style="margin-top:0.4rem">
-          ※ 累計 Spoon が この値ごとに ガチャ権利1回 が付与されます。例：5,000 → 累計15,000で 3回獲得。
-        </div>
-        <div style="text-align:right;margin-top:1rem">
-          <button class="btn btn-primary btn-sm" id="saveThresholdBtn"><span>保存</span></button>
-        </div>
-      </div>
-
-      <!-- ガチャ景品設定 -->
-      <div class="setting-section">
-        <div class="setting-section-en">Prizes</div>
-        <div class="setting-section-title">ガチャ景品設定</div>
-        <div id="prizeEditList"></div>
+        <div id="gachaTypesEditor"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1rem;flex-wrap:wrap;gap:0.6rem">
-          <button class="btn btn-ghost btn-sm" id="addPrizeBtn"><span>＋ 景品を追加</span></button>
+          <button class="btn btn-ghost btn-sm" id="addGachaTypeBtn"><span>＋ ガチャタイプを追加</span></button>
           <div style="display:flex;gap:0.5rem">
-            <button class="btn btn-primary btn-sm" id="savePrizesBtn"><span>保存</span></button>
-            <button class="btn btn-ghost btn-sm" id="resetPrizesBtn"><span>初期値に戻す</span></button>
+            <button class="btn btn-primary btn-sm" id="saveGachaTypesBtn"><span>すべて保存</span></button>
+            <button class="btn btn-ghost btn-sm" id="resetGachaTypesBtn"><span>初期値に戻す</span></button>
           </div>
-        </div>
-        <div class="form-hint" style="margin-top:0.6rem">
-          ※ Weight は出現の重み（合計に対する割合で確率算出）。レアリティは N / R / SR / SSR のいずれか。<br>
-          ※ アイコンは絵文字 or 画像どちらでも OK。
         </div>
       </div>
 
@@ -1087,15 +1159,38 @@ const POLL_INTERVAL_MS = 15000;  // 15秒ごとにサーバから取得（無料
 // プリセット絵文字（30種）
 const EMOJI_PRESET = ['😀','😎','🥳','🤠','👑','🎩','🦊','🐱','🐶','🐰','🦁','🐼','🐨','🦄','🐉','🌸','🌟','⭐','🔥','⚡','🎵','🎤','🎸','🎮','🎲','🍣','🍵','🗾','🌙','☕'];
 
-const RARITY_OPTIONS = ['N', 'R', 'SR', 'SSR'];
+const RARITY_OPTIONS = ['N', 'R', 'SR', 'SSR', 'UR'];
 
-const DEFAULT_PRIZES = [
-  { id: 'p-n-1',   name: 'サンクスメッセージ',     rarity: 'N',   icon: '💌', iconType: 'emoji', weight: 50, description: '配信中に名前を呼んで感謝メッセージ' },
-  { id: 'p-n-2',   name: 'スタンプ画像',           rarity: 'N',   icon: '🎴', iconType: 'emoji', weight: 35, description: 'ロゴ入りスタンプ風画像1枚' },
-  { id: 'p-r-1',   name: 'SDちびイラスト',         rarity: 'R',   icon: '🖼️', iconType: 'emoji', weight: 20, description: 'デフォルメSDイラスト1枚' },
-  { id: 'p-sr-1',  name: 'バストアップカラー',     rarity: 'SR',  icon: '🎨', iconType: 'emoji', weight: 8,  description: 'バストアップのカラーイラスト1枚' },
-  { id: 'p-sr-2',  name: '全身カラー＋背景つき',   rarity: 'SR',  icon: '🖌️', iconType: 'emoji', weight: 4,  description: '全身カラーイラスト＋背景つき' },
-  { id: 'p-ssr-1', name: '描き下ろし限定＋サイン', rarity: 'SSR', icon: '👑', iconType: 'emoji', weight: 1,  description: '描き下ろし限定イラスト＋直筆サイン' },
+const DEFAULT_GACHA_TYPES = [
+  {
+    id: 'yellow', name: 'イエローキャンディ', cost: 100, accent: '#f3c654',
+    candyIcon: '🍬', candyIconType: 'emoji',
+    prizes: [
+      { id: 'y-n-1',  name: 'サンクスメッセージ', rarity: 'N',  icon: '💌', iconType: 'emoji', weight: 60, description: '配信中に感謝メッセージ' },
+      { id: 'y-r-1',  name: 'スタンプ画像',       rarity: 'R',  icon: '🎴', iconType: 'emoji', weight: 30, description: 'ロゴ入りスタンプ画像' },
+      { id: 'y-sr-1', name: 'ハート×10',          rarity: 'SR', icon: '💖', iconType: 'emoji', weight: 10, description: '愛風船バスター×10個' },
+    ],
+  },
+  {
+    id: 'pink', name: 'ピンクキャンディ', cost: 1000, accent: '#e8638a',
+    candyIcon: '🍭', candyIconType: 'emoji',
+    prizes: [
+      { id: 'p-r-1',   name: 'ハート×1',       rarity: 'R',   icon: '💖', iconType: 'emoji', weight: 50, description: '愛風船バスター×1個' },
+      { id: 'p-sr-1',  name: 'SDちびイラスト', rarity: 'SR',  icon: '🖼️', iconType: 'emoji', weight: 35, description: 'デフォルメSDイラスト' },
+      { id: 'p-ssr-1', name: 'バストアップ',   rarity: 'SSR', icon: '🎨', iconType: 'emoji', weight: 14, description: 'バストアップカラー' },
+      { id: 'p-ur-1',  name: '2000Spoon相当',  rarity: 'UR',  icon: '🪙', iconType: 'emoji', weight: 1,  description: '2000 Spoon相当のボーナス' },
+    ],
+  },
+  {
+    id: 'blue', name: 'ブルーキャンディ', cost: 2000, accent: '#5fa8c8',
+    candyIcon: '🧁', candyIconType: 'emoji',
+    prizes: [
+      { id: 'b-sr-1',  name: 'ハート×5',        rarity: 'SR',  icon: '💖', iconType: 'emoji', weight: 50, description: '愛風船バスター×5個' },
+      { id: 'b-ssr-1', name: '全身カラー＋背景', rarity: 'SSR', icon: '🖌️', iconType: 'emoji', weight: 30, description: '全身カラー＋背景つき' },
+      { id: 'b-ssr-2', name: '描き下ろし限定',  rarity: 'SSR', icon: '👑', iconType: 'emoji', weight: 19, description: '描き下ろし限定イラスト' },
+      { id: 'b-ur-1',  name: '10000Spoon相当',  rarity: 'UR',  icon: '🪙', iconType: 'emoji', weight: 1,  description: '10000 Spoon相当のボーナス' },
+    ],
+  },
 ];
 
 function getDefaultData() {
@@ -1107,12 +1202,10 @@ function getDefaultData() {
       eventName: '春の出世大競争',
       eventStartDate: now.toISOString(),
       eventEndDate: end.toISOString(),
-      gachaThreshold: 5000,                       // X Spoon 加算ごとに1ガチャ権利
-      gachaPrizes: DEFAULT_PRIZES.slice(),
       headerImage: '',
+      gachaTypes: JSON.parse(JSON.stringify(DEFAULT_GACHA_TYPES)),  // ディープコピー
     },
-    adminPasswordHash: '',
-    version: 2,
+    version: 3,
   };
 }
 
@@ -1125,15 +1218,22 @@ let data = getDefaultData();
 function normalizeData(parsed) {
   const def = getDefaultData();
   parsed.settings = Object.assign({}, def.settings, parsed.settings || {});
-  if (!Array.isArray(parsed.settings.gachaPrizes) || parsed.settings.gachaPrizes.length === 0) {
-    parsed.settings.gachaPrizes = DEFAULT_PRIZES.slice();
+  // 旧スキーマ（gachaPrizes/gachaThreshold）は無視し、gachaTypes だけ使う
+  if (!Array.isArray(parsed.settings.gachaTypes) || parsed.settings.gachaTypes.length === 0) {
+    parsed.settings.gachaTypes = JSON.parse(JSON.stringify(DEFAULT_GACHA_TYPES));
   }
-  if (typeof parsed.settings.gachaThreshold !== 'number' || parsed.settings.gachaThreshold <= 0) {
-    parsed.settings.gachaThreshold = 5000;
-  }
+  // 各タイプの欠落フィールド補完
+  parsed.settings.gachaTypes.forEach(t => {
+    if (!Array.isArray(t.prizes)) t.prizes = [];
+    if (typeof t.cost !== 'number' || t.cost <= 0) t.cost = 100;
+    if (!t.candyIcon) t.candyIcon = '🍬';
+    if (!t.candyIconType) t.candyIconType = 'emoji';
+    if (!t.accent) t.accent = '#e8638a';
+  });
   if (!Array.isArray(parsed.users)) parsed.users = [];
   for (const u of parsed.users) {
-    if (typeof u.gachaConsumed !== 'number') u.gachaConsumed = 0;
+    // 旧フィールド gachaConsumed は無視。新フィールド spentSpoon を使う
+    if (typeof u.spentSpoon !== 'number') u.spentSpoon = 0;
     if (!Array.isArray(u.gachaHistory)) u.gachaHistory = [];
   }
   return parsed;
@@ -1151,12 +1251,23 @@ async function loadData() {
   return data;
 }
 
-// ガチャ権利残数
-function gachaRights(user, threshold) {
-  if (!threshold || threshold <= 0) return { earned: 0, consumed: 0, remaining: 0 };
-  const earned = Math.floor((user.totalSpoon || 0) / threshold);
-  const consumed = user.gachaConsumed || 0;
-  return { earned, consumed, remaining: Math.max(0, earned - consumed) };
+// 残スプーン（ガチャ消費後に残っている分）
+function availableSpoon(user) {
+  return Math.max(0, (user.totalSpoon || 0) - (user.spentSpoon || 0));
+}
+// 各ガチャを引ける回数
+function pullsAvailable(user, type) {
+  if (!type || !type.cost || type.cost <= 0) return 0;
+  return Math.floor(availableSpoon(user) / type.cost);
+}
+// ガチャ履歴をレアリティ別に集計
+function summarizeGachaHistory(user) {
+  const counts = { N: 0, R: 0, SR: 0, SSR: 0, UR: 0 };
+  (user.gachaHistory || []).forEach(h => {
+    const r = h.rarity || 'N';
+    if (counts[r] != null) counts[r]++;
+  });
+  return counts;
 }
 
 // 保存は /api/data に POST（管理者トークン必須）
@@ -1399,20 +1510,31 @@ function renderUserList() {
   });
 
   if (users.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-row">ユーザーが登録されていません</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-row">ユーザーが登録されていません</td></tr>`;
     return;
   }
 
   for (const u of users) {
-    const rights = gachaRights(u, data.settings.gachaThreshold);
+    const remain = availableSpoon(u);
+    const counts = summarizeGachaHistory(u);
+    const totalPulls = (u.gachaHistory || []).length;
+    const rarityChips = ['UR','SSR','SR','R','N']
+      .filter(r => counts[r] > 0)
+      .map(r => `<span class="rarity-chip rarity-${r}">${r}×${counts[r]}</span>`)
+      .join('');
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><div class="cell-icon">${renderUserIcon(u)}</div></td>
       <td>
         <div class="cell-name">${escapeHtml(u.name)}</div>
-        <div class="cell-rank-jp">🎰 ${rights.earned}回獲得 / 残り <strong style="color:var(--pink)">${rights.remaining}</strong></div>
       </td>
       <td><span class="cell-spoon">${fmt(u.totalSpoon || 0)}<span class="unit">SPOON</span></span></td>
+      <td><span class="cell-remain">${fmt(remain)}<span class="unit">残</span></span></td>
+      <td>
+        ${totalPulls > 0
+          ? `<div class="cell-rarity-summary">${rarityChips}<span class="cell-pull-total">計 ${totalPulls} 回</span></div>`
+          : `<span style="font-size:0.75rem;color:rgba(255,255,255,0.35)">未抽選</span>`}
+      </td>
       <td class="col-date" style="font-size:0.75rem;color:rgba(255,255,255,0.5);font-family:var(--font-en)">${dateStr(u.createdAt || Date.now())}</td>
       <td>
         <div class="cell-actions">
@@ -1497,7 +1619,7 @@ function setupAddUser() {
       iconType: newIcon.type,
       totalSpoon: initialSpoon,
       history: initialSpoon > 0 ? [{ amount: initialSpoon, timestamp: Date.now(), note: '初期設定' }] : [],
-      gachaConsumed: 0,
+      spentSpoon: 0,
       gachaHistory: [],
       createdAt: Date.now(),
     };
@@ -1606,22 +1728,14 @@ function setupDonateModal() {
 function addDonation(userId, amount, note) {
   const u = data.users.find(x => x.id === userId);
   if (!u) return;
-  const threshold = data.settings.gachaThreshold;
-  const beforeEarned = Math.floor((u.totalSpoon || 0) / threshold);
   u.totalSpoon = (u.totalSpoon || 0) + amount;
   u.history = u.history || [];
   u.history.push({ amount, timestamp: Date.now(), note: note || undefined });
-  const afterEarned = Math.floor(u.totalSpoon / threshold);
   saveData();
   lastDonateUserId = userId;
   hideModal('donateModal');
   renderUserList();
-  if (afterEarned > beforeEarned) {
-    const newRights = afterEarned - beforeEarned;
-    showToast(`${u.name} さんに +${fmt(amount)} Spoon → 🎰 ガチャ権利 +${newRights}！`);
-  } else {
-    showToast(`${u.name} さんに +${fmt(amount)} Spoon`);
-  }
+  showToast(`${u.name} さんに +${fmt(amount)} Spoon`);
 }
 
 function undoLastDonation(userId) {
@@ -1759,19 +1873,42 @@ function setupConfirmModal() {
 function openHistoryModal(userId) {
   const u = data.users.find(x => x.id === userId);
   if (!u) return;
+  const remain = availableSpoon(u);
   document.getElementById('historyUserInfo').innerHTML = `
     <div class="cell-icon">${renderUserIcon(u)}</div>
     <div>
       <div class="user-pre-info-name">${escapeHtml(u.name)}</div>
-      <div class="user-pre-info-spoon">累計 ${fmt(u.totalSpoon || 0)} Spoon</div>
+      <div class="user-pre-info-spoon">累計 ${fmt(u.totalSpoon || 0)} Spoon ／ 残 ${fmt(remain)}</div>
     </div>
   `;
   const list = document.getElementById('historyList');
-  const hist = (u.history || []).slice().reverse();
-  if (hist.length === 0) {
-    list.innerHTML = `<div class="empty-row" style="padding:2rem 0;text-align:center;color:rgba(255,255,255,0.4)">履歴がありません</div>`;
+  const donations = (u.history || []).slice().reverse();
+  const gachas = (u.gachaHistory || []).slice().reverse();
+
+  let html = '';
+  // ガチャ履歴（先に表示）
+  html += `<div class="history-section-title">ガチャ獲得履歴（${gachas.length}件）</div>`;
+  if (gachas.length === 0) {
+    html += `<div class="empty-row" style="padding:1rem 0;text-align:center;color:rgba(255,255,255,0.4);font-size:0.78rem">未抽選</div>`;
   } else {
-    list.innerHTML = hist.map(h => `
+    html += gachas.map(g => `
+      <div class="history-item history-gacha">
+        <div class="history-time">${timeStr(g.timestamp)}</div>
+        <div class="history-note">
+          <span class="rarity-chip rarity-${g.rarity || 'N'}">${g.rarity || 'N'}</span>
+          <span style="margin-left:0.4rem">${renderRewardIcon(g.prizeIcon)} ${escapeHtml(g.prizeName || '')}</span>
+          <span style="display:block;font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:0.1rem">${escapeHtml(g.gachaTypeName || '')}</span>
+        </div>
+        <div class="history-amount" style="color:var(--pink)">-${fmt(g.cost || 0)}</div>
+      </div>
+    `).join('');
+  }
+  // 加算履歴
+  html += `<div class="history-section-title" style="margin-top:1rem">Spoon 加算履歴（${donations.length}件）</div>`;
+  if (donations.length === 0) {
+    html += `<div class="empty-row" style="padding:1rem 0;text-align:center;color:rgba(255,255,255,0.4);font-size:0.78rem">加算履歴なし</div>`;
+  } else {
+    html += donations.map(h => `
       <div class="history-item">
         <div class="history-time">${timeStr(h.timestamp)}</div>
         <div class="history-note">${escapeHtml(h.note || '—')}</div>
@@ -1779,6 +1916,7 @@ function openHistoryModal(userId) {
       </div>
     `).join('');
   }
+  list.innerHTML = html;
   showModal('historyModal');
 }
 
@@ -1800,67 +1938,70 @@ function setupSettings() {
     showToast('イベント情報を保存しました');
   });
 
-  // ガチャ閾値保存
-  document.getElementById('saveThresholdBtn').addEventListener('click', () => {
-    const v = parseInt(document.getElementById('setGachaThreshold').value || '0', 10);
-    if (!v || v < 100) { showToast('100 以上の数値を入れてください'); return; }
-    data.settings.gachaThreshold = v;
-    saveData();
-    renderUserList();
-    showToast(`ガチャ閾値を ${fmt(v)} Spoon に設定しました`);
-  });
-
-  // ガチャ景品保存
-  document.getElementById('savePrizesBtn').addEventListener('click', () => {
-    const rows = document.querySelectorAll('#prizeEditList .prize-edit-row');
-    const newPrizes = [];
+  // ガチャタイプ：すべて保存
+  document.getElementById('saveGachaTypesBtn').addEventListener('click', () => {
+    const cards = document.querySelectorAll('#gachaTypesEditor .gacha-type-card');
+    const newTypes = [];
     let ok = true;
-    rows.forEach(row => {
-      const name = row.querySelector('[data-f="name"]').value.trim();
-      const rarity = row.querySelector('[data-f="rarity"]').value;
-      const weight = Math.max(0, parseInt(row.querySelector('[data-f="weight"]').value || '0', 10) || 0);
-      const description = row.querySelector('[data-f="description"]').value.trim();
-      const cell = row.querySelector('.rank-icon-cell');
-      const iconValue = (cell && cell.dataset.iconValue) || '🎁';
-      const id = row.dataset.prizeId || ('p-' + Math.random().toString(36).slice(2, 8));
-      if (!name) { ok = false; }
-      newPrizes.push({
-        id,
-        name,
-        rarity,
-        icon: iconValue,
-        iconType: (typeof iconValue === 'string' && iconValue.startsWith('data:image')) ? 'image' : 'emoji',
-        weight,
-        description,
+    let errMsg = '';
+    cards.forEach(card => {
+      const id = card.dataset.typeId || ('t-' + Math.random().toString(36).slice(2, 8));
+      const name = card.querySelector('[data-tf="name"]').value.trim();
+      const cost = Math.max(1, parseInt(card.querySelector('[data-tf="cost"]').value || '0', 10) || 0);
+      const accent = card.querySelector('[data-tf="accent"]').value || '#e8638a';
+      const candyCell = card.querySelector('.candy-icon-cell');
+      const candyIcon = (candyCell && candyCell.dataset.iconValue) || '🍬';
+      const candyIconType = (typeof candyIcon === 'string' && candyIcon.startsWith('data:image')) ? 'image' : 'emoji';
+      if (!name) { ok = false; errMsg = 'ガチャ名を入力してください'; }
+      const prizeRows = card.querySelectorAll('.prize-edit-row');
+      const prizes = [];
+      prizeRows.forEach(row => {
+        const pname = row.querySelector('[data-f="name"]').value.trim();
+        const rarity = row.querySelector('[data-f="rarity"]').value;
+        const weight = Math.max(0, parseInt(row.querySelector('[data-f="weight"]').value || '0', 10) || 0);
+        const description = row.querySelector('[data-f="description"]').value.trim();
+        const cell = row.querySelector('.rank-icon-cell');
+        const iconValue = (cell && cell.dataset.iconValue) || '🎁';
+        const pid = row.dataset.prizeId || ('p-' + Math.random().toString(36).slice(2, 8));
+        if (!pname) { ok = false; errMsg = '景品名を全て入力してください'; }
+        prizes.push({
+          id: pid, name: pname, rarity,
+          icon: iconValue,
+          iconType: (typeof iconValue === 'string' && iconValue.startsWith('data:image')) ? 'image' : 'emoji',
+          weight, description,
+        });
       });
+      if (prizes.length === 0) { ok = false; errMsg = `「${name}」に景品が1つもありません`; }
+      const totalWeight = prizes.reduce((s, p) => s + p.weight, 0);
+      if (totalWeight <= 0) { ok = false; errMsg = `「${name}」の Weight 合計が0です`; }
+      newTypes.push({ id, name, cost, accent, candyIcon, candyIconType, prizes });
     });
-    if (!ok) { showToast('景品名を全て入力してください'); return; }
-    if (newPrizes.length === 0) { showToast('最低1つの景品を残してください'); return; }
-    const totalWeight = newPrizes.reduce((s, p) => s + p.weight, 0);
-    if (totalWeight <= 0) { showToast('Weight の合計が0です。少なくとも1つは1以上にしてください'); return; }
-    data.settings.gachaPrizes = newPrizes;
+    if (!ok) { showToast(errMsg || '入力に不備があります'); return; }
+    if (newTypes.length === 0) { showToast('最低1つのガチャタイプが必要です'); return; }
+    data.settings.gachaTypes = newTypes;
     saveData();
-    showToast('ガチャ景品を保存しました');
+    showToast('ガチャタイプ設定を保存しました');
   });
 
-  document.getElementById('resetPrizesBtn').addEventListener('click', () => {
-    if (!confirm('景品を初期セットに戻します。よろしいですか？')) return;
-    data.settings.gachaPrizes = DEFAULT_PRIZES.slice();
+  document.getElementById('resetGachaTypesBtn').addEventListener('click', () => {
+    if (!confirm('ガチャタイプを初期セットに戻します。よろしいですか？')) return;
+    data.settings.gachaTypes = JSON.parse(JSON.stringify(DEFAULT_GACHA_TYPES));
     saveData();
     renderSettings();
-    showToast('景品を初期値に戻しました');
+    showToast('ガチャタイプを初期値に戻しました');
   });
 
-  // 景品追加
-  document.getElementById('addPrizeBtn').addEventListener('click', () => {
-    data.settings.gachaPrizes.push({
-      id: 'p-' + Math.random().toString(36).slice(2, 8),
-      name: '新しい景品',
-      rarity: 'N',
-      icon: '🎁',
-      iconType: 'emoji',
-      weight: 10,
-      description: '',
+  document.getElementById('addGachaTypeBtn').addEventListener('click', () => {
+    data.settings.gachaTypes.push({
+      id: 't-' + Math.random().toString(36).slice(2, 8),
+      name: '新しいガチャ',
+      cost: 500,
+      accent: '#9b8ad6',
+      candyIcon: '🍬',
+      candyIconType: 'emoji',
+      prizes: [
+        { id: 'p-' + Math.random().toString(36).slice(2, 8), name: 'サンプル景品', rarity: 'N', icon: '🎁', iconType: 'emoji', weight: 10, description: '' },
+      ],
     });
     saveData();
     renderSettings();
@@ -1895,9 +2036,8 @@ function setupSettings() {
           return;
         }
         if (!confirm(`${parsed.users.length}名分のデータで現在の内容を置き換えます。よろしいですか？`)) return;
-        data = Object.assign(getDefaultData(), parsed);
-        // 設定マージ（一部欠落対策）
-        data.settings = Object.assign(getDefaultData().settings, parsed.settings || {});
+        // 旧スキーマも normalizeData が吸収する
+        data = normalizeData(Object.assign(getDefaultData(), parsed));
         saveData();
         renderAll();
         showToast('インポートしました');
@@ -1948,60 +2088,143 @@ function renderSettings() {
     }
   }
 
-  // ガチャ閾値
-  const thInput = document.getElementById('setGachaThreshold');
-  if (thInput) thInput.value = data.settings.gachaThreshold || 5000;
+  // ガチャタイプ別エディタ
+  const editor = document.getElementById('gachaTypesEditor');
+  editor.innerHTML = '';
+  (data.settings.gachaTypes || []).forEach((t, ti) => {
+    const card = document.createElement('div');
+    card.className = 'gacha-type-card';
+    card.dataset.typeId = t.id || '';
+    card.style.borderLeftColor = t.accent || '#e8638a';
+    const candyIsImg = isImageData(t.candyIcon);
+    const totalWeight = (t.prizes || []).reduce((s, p) => s + (p.weight || 0), 0) || 1;
 
-  // ガチャ景品リスト
-  const list = document.getElementById('prizeEditList');
-  list.innerHTML = '';
-  (data.settings.gachaPrizes || []).forEach((p, i) => {
-    const row = document.createElement('div');
-    row.className = 'rank-edit-row prize-edit-row';
-    row.dataset.prizeId = p.id || '';
-    const isImg = isImageData(p.icon);
-    const rarityOpts = RARITY_OPTIONS.map(r => `<option value="${r}"${r === (p.rarity || 'N') ? ' selected' : ''}>${r}</option>`).join('');
-    row.innerHTML = `
-      <div class="rank-no">No.${String(i+1).padStart(2,'0')}</div>
-      <input class="input" data-f="name" value="${escapeHtml(p.name)}" placeholder="景品名">
-      <select class="select" data-f="rarity" style="padding:0.5rem 0.7rem;font-size:0.82rem">${rarityOpts}</select>
-      <input class="input" data-f="description" value="${escapeHtml(p.description || '')}" placeholder="説明テキスト">
-      <div class="rank-icon-cell prize-icon-cell" data-prize-idx="${i}" data-icon-value="${escapeHtml(p.icon || '🎁')}">
-        <button type="button" class="rank-icon-thumb${isImg ? ' has-image' : ''}" data-act="upload">
-          ${renderRewardIcon(p.icon)}
-          <span class="rank-icon-thumb-hint">画像</span>
-          <span class="rank-icon-thumb-clear" data-act="clear">✕</span>
-        </button>
-        <input class="input rank-icon-emoji" data-f="iconEmoji" maxlength="2" value="${isImg ? '' : escapeHtml(p.icon || '')}" placeholder="🎁">
+    // ヘッダー部
+    let prizesHtml = '';
+    (t.prizes || []).forEach((p, pi) => {
+      const isImg = isImageData(p.icon);
+      const rarityOpts = RARITY_OPTIONS.map(r => `<option value="${r}"${r === (p.rarity || 'N') ? ' selected' : ''}>${r}</option>`).join('');
+      const pct = ((p.weight || 0) / totalWeight * 100).toFixed(1);
+      prizesHtml += `
+        <div class="rank-edit-row prize-edit-row" data-prize-id="${escapeHtml(p.id || '')}">
+          <div class="rank-no">${String(pi+1).padStart(2,'0')}</div>
+          <input class="input" data-f="name" value="${escapeHtml(p.name)}" placeholder="景品名">
+          <select class="select" data-f="rarity" style="padding:0.5rem 0.7rem;font-size:0.82rem">${rarityOpts}</select>
+          <input class="input" data-f="description" value="${escapeHtml(p.description || '')}" placeholder="説明テキスト">
+          <div class="rank-icon-cell" data-icon-value="${escapeHtml(p.icon || '🎁')}">
+            <button type="button" class="rank-icon-thumb${isImg ? ' has-image' : ''}" data-act="upload">
+              ${renderRewardIcon(p.icon)}
+              <span class="rank-icon-thumb-hint">画像</span>
+              <span class="rank-icon-thumb-clear" data-act="clear">✕</span>
+            </button>
+            <input class="input rank-icon-emoji" data-f="iconEmoji" maxlength="2" value="${isImg ? '' : escapeHtml(p.icon || '')}" placeholder="🎁">
+          </div>
+          <div class="prize-edit-extra">
+            <span class="prize-extra-label">Weight</span>
+            <input class="input" data-f="weight" type="number" min="0" step="1" value="${p.weight || 0}">
+            <span class="prize-extra-pct">≒ ${pct}%</span>
+            <span style="flex:1"></span>
+            <button type="button" class="btn btn-danger btn-sm" data-act="remove-prize"><span>削除</span></button>
+          </div>
+        </div>
+      `;
+    });
+
+    card.innerHTML = `
+      <div class="gacha-type-head">
+        <div class="candy-icon-cell rank-icon-cell" data-icon-value="${escapeHtml(t.candyIcon || '🍬')}">
+          <button type="button" class="rank-icon-thumb${candyIsImg ? ' has-image' : ''}" data-act="upload" style="height:48px">
+            ${renderRewardIcon(t.candyIcon)}
+            <span class="rank-icon-thumb-hint">画像</span>
+            <span class="rank-icon-thumb-clear" data-act="clear">✕</span>
+          </button>
+          <input class="input rank-icon-emoji" data-f="iconEmoji" maxlength="2" value="${candyIsImg ? '' : escapeHtml(t.candyIcon || '')}" placeholder="🍬">
+        </div>
+        <div class="gacha-type-fields">
+          <div class="gacha-type-field">
+            <label class="label-text">ガチャ名</label>
+            <input class="input" data-tf="name" value="${escapeHtml(t.name || '')}" placeholder="例：イエローキャンディ">
+          </div>
+          <div class="gacha-type-field">
+            <label class="label-text">コスト (Spoon)</label>
+            <input class="input" data-tf="cost" type="number" min="1" step="1" value="${t.cost || 100}">
+          </div>
+          <div class="gacha-type-field">
+            <label class="label-text">テーマカラー</label>
+            <input class="input" data-tf="accent" type="color" value="${escapeHtml(t.accent || '#e8638a')}" style="height:42px;padding:0.2rem">
+          </div>
+          <div class="gacha-type-actions">
+            <button type="button" class="btn btn-danger btn-sm" data-act="remove-type"><span>このガチャを削除</span></button>
+          </div>
+        </div>
       </div>
-      <div class="prize-edit-extra">
-        <span class="prize-extra-label">Weight</span>
-        <input class="input" data-f="weight" type="number" min="0" step="1" value="${p.weight || 0}">
-        <span style="flex:1"></span>
-        <button type="button" class="btn btn-danger btn-sm" data-act="remove-prize"><span>削除</span></button>
+      <div class="gacha-type-prizes">
+        <div class="gacha-type-prizes-title">景品リスト（合計重み：${totalWeight}）</div>
+        ${prizesHtml}
+        <div style="margin-top:0.6rem">
+          <button type="button" class="btn btn-ghost btn-sm" data-act="add-prize"><span>＋ 景品を追加</span></button>
+        </div>
       </div>
     `;
-    list.appendChild(row);
+    editor.appendChild(card);
   });
 
-  // 削除ボタン
-  list.querySelectorAll('[data-act="remove-prize"]').forEach(b => {
+  // ガチャタイプ削除
+  editor.querySelectorAll('[data-act="remove-type"]').forEach(b => {
     b.addEventListener('click', () => {
-      const row = b.closest('.prize-edit-row');
-      const id = row.dataset.prizeId;
-      if (data.settings.gachaPrizes.length <= 1) { showToast('最低1つの景品が必要です'); return; }
-      if (!confirm('この景品を削除しますか？')) return;
-      data.settings.gachaPrizes = data.settings.gachaPrizes.filter(p => p.id !== id);
+      const card = b.closest('.gacha-type-card');
+      const id = card.dataset.typeId;
+      if ((data.settings.gachaTypes || []).length <= 1) { showToast('最低1つのガチャタイプが必要です'); return; }
+      if (!confirm('このガチャタイプを削除しますか？景品もまとめて消えます。')) return;
+      data.settings.gachaTypes = data.settings.gachaTypes.filter(t => t.id !== id);
       saveData();
       renderSettings();
     });
   });
 
-  // ランク報酬アイコンの操作ハンドラ
-  list.querySelectorAll('.rank-icon-thumb').forEach(btn => {
+  // 景品追加
+  editor.querySelectorAll('[data-act="add-prize"]').forEach(b => {
+    b.addEventListener('click', () => {
+      const card = b.closest('.gacha-type-card');
+      const id = card.dataset.typeId;
+      const t = (data.settings.gachaTypes || []).find(x => x.id === id);
+      if (!t) return;
+      t.prizes = t.prizes || [];
+      t.prizes.push({
+        id: 'p-' + Math.random().toString(36).slice(2, 8),
+        name: '新しい景品',
+        rarity: 'N',
+        icon: '🎁',
+        iconType: 'emoji',
+        weight: 10,
+        description: '',
+      });
+      saveData();
+      renderSettings();
+    });
+  });
+
+  // 景品削除
+  editor.querySelectorAll('[data-act="remove-prize"]').forEach(b => {
+    b.addEventListener('click', () => {
+      const row = b.closest('.prize-edit-row');
+      const card = b.closest('.gacha-type-card');
+      const typeId = card.dataset.typeId;
+      const prizeId = row.dataset.prizeId;
+      const t = (data.settings.gachaTypes || []).find(x => x.id === typeId);
+      if (!t) return;
+      if ((t.prizes || []).length <= 1) { showToast('最低1つの景品が必要です'); return; }
+      if (!confirm('この景品を削除しますか？')) return;
+      t.prizes = t.prizes.filter(p => p.id !== prizeId);
+      saveData();
+      renderSettings();
+    });
+  });
+
+  // アイコン操作（景品＆キャンディ共通）
+  editor.querySelectorAll('.rank-icon-thumb').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const cell = btn.closest('.rank-icon-cell');
-      // ✕ クリックは画像クリア
       if (e.target.dataset.act === 'clear') {
         e.stopPropagation();
         clearRankIconImage(cell);
@@ -2010,11 +2233,10 @@ function renderSettings() {
       openRankIconPicker(cell);
     });
   });
-  // 絵文字テキスト入力 → 入力された瞬間に画像から絵文字に切り替わる
-  list.querySelectorAll('.rank-icon-emoji').forEach(inp => {
+  editor.querySelectorAll('.rank-icon-emoji').forEach(inp => {
     inp.addEventListener('input', () => {
       const v = inp.value.trim();
-      if (!v) return; // 空入力は何もしない（画像維持）
+      if (!v) return;
       const cell = inp.closest('.rank-icon-cell');
       cell.dataset.iconValue = v;
       const thumb = cell.querySelector('.rank-icon-thumb');
@@ -2239,7 +2461,7 @@ function seedDemoData() {
       iconType: 'emoji',
       totalSpoon: d.spoon,
       history,
-      gachaConsumed: 0,
+      spentSpoon: 0,
       gachaHistory: [],
       createdAt: now - (DEMO_USERS.length - i) * 60000,  // 1分ずつずらして登録順を演出
     });
