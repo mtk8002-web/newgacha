@@ -1,12 +1,12 @@
- {
-    "name": "newgacha",
-    "version": "1.0.0",
-    "private": true,
-    "type": "module",
-    "scripts": {
-      "dev": "vercel dev"
-    },
-    "dependencies": {
-      "@upstash/redis": "^1.34.3"
-    }
+{
+  "name": "newgacha",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.34.3"
   }
+}

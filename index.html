@@ -476,13 +476,32 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
   margin-bottom: 0.3rem; font-weight: 600;
 }
 
-@media (max-width: 700px) {
+/* タブレット〜スマホ：1〜3位を縦に積む */
+@media (max-width: 860px) {
   .podium { flex-direction: column; gap: 0.8rem; align-items: stretch; }
-  .podium-card { max-width: 100%; }
-  .podium-card.gold { padding: 2rem 1.2rem 1.2rem; order: -1; max-width: 100%; }
+  .podium-card,
+  .podium-card.gold,
+  .podium-card.silver,
+  .podium-card.bronze { max-width: 100%; flex: 1 1 auto; }
+  .podium-card.gold { padding: 2rem 1.2rem 1.2rem; order: -1; }
   .podium-card.gold .podium-icon { width: 90px; height: 90px; font-size: 3rem; }
   .podium-card.gold .podium-rank { font-size: 1.5rem; }
   .podium-card.gold .podium-name { font-size: 1.15rem; }
+  .podium-card.gold .podium-spoon { font-size: 1.7rem; }
+  .podium-card.gold .podium-base { font-size: 1.8rem; }
+}
+@media (max-width: 480px) {
+  .podium-card { padding: 1.4rem 1rem 1.2rem; }
+  .podium-card.gold { padding: 1.6rem 1rem 1.2rem; }
+  .podium-icon { width: 64px; height: 64px; font-size: 2rem; }
+  .podium-card.gold .podium-icon { width: 76px; height: 76px; font-size: 2.4rem; }
+  .podium-name { font-size: 1rem; }
+  .podium-spoon { font-size: 1.3rem; }
+  .podium-card.gold .podium-spoon { font-size: 1.5rem; }
+  .podium-base { font-size: 1.3rem; padding-top: 0.6rem; margin-top: 0.7rem; }
+  .podium-card.gold .podium-base { font-size: 1.5rem; }
+  .podium-medal { font-size: 1.9rem; }
+  .podium-card.gold .podium-medal { font-size: 2.2rem; }
 }
 
 .ranking-list {
