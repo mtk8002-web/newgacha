@@ -1,0 +1,2286 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>株式会社mtk | 管理画面</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #080b14;
+  --dark: #111827;
+  --charcoal: #1f2937;
+  --pink: #e8638a;
+  --pink-soft: #f2a3ba;
+  --pink-glow: rgba(232,99,138,0.12);
+  --gold: #c9a94e;
+  --gold-bright: #e6c87a;
+  --cream: #faf8f4;
+  --gray: #6b7280;
+  --white: #ffffff;
+  --danger: #d63838;
+  --font-jp: 'Noto Sans JP', sans-serif;
+  --font-en: 'Syne', sans-serif;
+  --font-serif: 'Cormorant Garamond', serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font-jp);
+  color: var(--cream);
+  background: var(--navy);
+  min-height: 100vh;
+}
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: 9998;
+  pointer-events: none; opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+a { color: var(--pink); text-decoration: none; }
+input, select, textarea, button { font-family: inherit; color: inherit; }
+
+/* ============ 共通フォーム ============ */
+.input, .select, .textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--white);
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  font-size: 0.92rem;
+  outline: none;
+  letter-spacing: 0.04em;
+  transition: all 0.2s;
+}
+.input::placeholder, .textarea::placeholder { color: rgba(255,255,255,0.3); }
+.input:focus, .select:focus, .textarea:focus {
+  border-color: var(--pink);
+  background: rgba(232,99,138,0.04);
+  box-shadow: 0 0 0 3px rgba(232,99,138,0.1);
+}
+.label-text {
+  display: block;
+  font-family: var(--font-en);
+  font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.3em;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+/* ============ ボタン ============ */
+.btn {
+  font-family: var(--font-en); font-weight: 700;
+  font-size: 0.7rem; letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.7rem 1.6rem;
+  border: 1px solid var(--pink);
+  background: transparent; color: var(--white);
+  cursor: pointer; transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+  position: relative; overflow: hidden;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.btn::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--pink);
+  transform: translateX(-101%);
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.btn:hover::before { transform: translateX(0); }
+.btn span { position: relative; z-index: 1; }
+.btn-primary { background: var(--pink); }
+.btn-primary::before { background: var(--pink); filter: brightness(1.15); }
+.btn-ghost {
+  border-color: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.7);
+}
+.btn-ghost::before { background: rgba(255,255,255,0.08); }
+.btn-ghost:hover { color: var(--white); }
+.btn-danger { border-color: var(--danger); color: var(--danger); }
+.btn-danger::before { background: var(--danger); }
+.btn-danger:hover { color: var(--white); }
+.btn-sm { padding: 0.45rem 0.9rem; font-size: 0.6rem; letter-spacing: 0.15em; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn:disabled::before { display: none; }
+
+/* ============ 認証ゲート ============ */
+.auth-gate {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--navy); z-index: 1000;
+  padding: 2rem;
+}
+.auth-card {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(232,99,138,0.25);
+  border-radius: 6px;
+  padding: 3rem 2.5rem;
+  max-width: 440px; width: 100%;
+  position: relative;
+}
+.auth-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--pink), transparent);
+}
+.auth-logo {
+  text-align: center;
+  font-family: var(--font-en);
+  font-size: 1.8rem; font-weight: 800;
+  letter-spacing: 0.18em;
+  color: var(--white);
+  margin-bottom: 0.4rem;
+}
+.auth-logo span { color: var(--pink); }
+.auth-en {
+  text-align: center;
+  font-family: var(--font-en); font-size: 0.6rem;
+  letter-spacing: 0.4em; color: var(--pink);
+  text-transform: uppercase; margin-bottom: 2rem;
+}
+.auth-title {
+  text-align: center;
+  font-size: 1.1rem; font-weight: 700;
+  margin-bottom: 0.4rem; color: var(--white);
+  letter-spacing: 0.06em;
+}
+.auth-desc {
+  text-align: center;
+  font-size: 0.78rem; color: rgba(255,255,255,0.5);
+  margin-bottom: 2rem; line-height: 1.7;
+}
+.auth-error {
+  background: rgba(214,56,56,0.12);
+  border-left: 3px solid var(--danger);
+  padding: 0.7rem 1rem;
+  font-size: 0.78rem; color: var(--white);
+  margin-bottom: 1.2rem;
+  display: none;
+}
+.auth-error.show { display: block; }
+.auth-form .input { margin-bottom: 1rem; }
+.auth-form .btn { width: 100%; margin-top: 0.6rem; padding: 0.9rem; font-size: 0.75rem; }
+.auth-warning {
+  margin-top: 1.6rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.7rem; color: rgba(255,255,255,0.4);
+  line-height: 1.7; letter-spacing: 0.04em;
+}
+
+/* ============ ヘッダー ============ */
+.app-header {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(8,11,20,0.92);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 1rem 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.app-logo {
+  font-family: var(--font-en); font-size: 1.2rem; font-weight: 800;
+  color: var(--white); letter-spacing: 0.15em;
+}
+.app-logo span { color: var(--pink); }
+.app-logo .badge {
+  display: inline-block;
+  margin-left: 0.6rem; padding: 0.15rem 0.6rem;
+  background: rgba(232,99,138,0.15); color: var(--pink);
+  font-family: var(--font-en); font-size: 0.55rem; font-weight: 700;
+  letter-spacing: 0.25em; text-transform: uppercase;
+  vertical-align: middle;
+  border: 1px solid rgba(232,99,138,0.3);
+  border-radius: 3px;
+}
+.header-actions { display: flex; gap: 0.6rem; align-items: center; }
+.public-link {
+  font-family: var(--font-en); font-size: 0.65rem;
+  color: rgba(255,255,255,0.5); letter-spacing: 0.18em;
+  text-transform: uppercase; padding: 0.5rem 0.8rem;
+}
+.public-link:hover { color: var(--pink); }
+
+/* ============ タブ ============ */
+.tabs-wrap {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 0 2rem;
+  background: var(--navy);
+  position: sticky; top: 64px; z-index: 49;
+}
+.tabs {
+  display: flex; gap: 0;
+  max-width: 1200px; margin: 0 auto;
+}
+.tab {
+  font-family: var(--font-jp); font-size: 0.85rem; font-weight: 500;
+  color: rgba(255,255,255,0.4); padding: 1rem 1.4rem;
+  border: none; background: transparent; cursor: pointer;
+  position: relative; transition: color 0.2s;
+  letter-spacing: 0.06em;
+}
+.tab:hover { color: rgba(255,255,255,0.8); }
+.tab.active { color: var(--white); }
+.tab.active::after {
+  content: ''; position: absolute; left: 1.4rem; right: 1.4rem; bottom: 0;
+  height: 2px; background: var(--pink);
+}
+.tab .tab-en {
+  display: block; font-family: var(--font-en); font-size: 0.55rem; font-weight: 600;
+  letter-spacing: 0.25em; color: rgba(232,99,138,0.7);
+  text-transform: uppercase; margin-bottom: 0.2rem;
+}
+
+/* ============ メイン ============ */
+main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+.pane-title {
+  font-size: 1.4rem; font-weight: 900;
+  margin-bottom: 0.4rem; color: var(--white); letter-spacing: 0.05em;
+}
+.pane-en {
+  font-family: var(--font-en); font-size: 0.6rem; font-weight: 700;
+  letter-spacing: 0.4em; color: var(--pink); text-transform: uppercase;
+  margin-bottom: 1.8rem;
+}
+
+/* ============ ユーザー一覧 ============ */
+.toolbar {
+  display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center;
+  margin-bottom: 1.4rem;
+}
+.toolbar .input { flex: 1; min-width: 200px; max-width: 320px; }
+.toolbar .select { max-width: 200px; }
+.toolbar-spacer { flex: 1; }
+
+.user-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 6px;
+}
+.user-table th {
+  font-family: var(--font-en); font-size: 0.6rem; font-weight: 700;
+  letter-spacing: 0.25em; color: rgba(255,255,255,0.4);
+  text-transform: uppercase; text-align: left;
+  padding: 0 1rem 0.6rem;
+  white-space: nowrap;
+}
+.user-table td {
+  background: rgba(255,255,255,0.025);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding: 0.9rem 1rem; vertical-align: middle;
+}
+.user-table tr td:first-child {
+  border-left: 1px solid rgba(255,255,255,0.05);
+  border-radius: 4px 0 0 4px;
+}
+.user-table tr td:last-child {
+  border-right: 1px solid rgba(255,255,255,0.05);
+  border-radius: 0 4px 4px 0;
+}
+.user-table tr:hover td { background: rgba(232,99,138,0.05); }
+.cell-icon {
+  width: 38px; height: 38px;
+  border-radius: 50%; overflow: hidden;
+  background: var(--charcoal);
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; flex-shrink: 0;
+}
+.cell-icon img { width: 100%; height: 100%; object-fit: cover; }
+.cell-name { font-weight: 600; color: var(--white); letter-spacing: 0.04em; }
+.cell-rank {
+  display: inline-block;
+  font-family: var(--font-en); font-size: 0.55rem; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--pink); border: 1px solid var(--pink);
+  padding: 0.2rem 0.7rem; margin-bottom: 0.2rem;
+}
+.cell-rank-jp { font-size: 0.7rem; color: rgba(255,255,255,0.6); }
+.cell-spoon {
+  font-family: var(--font-en); font-size: 0.95rem; font-weight: 800;
+  color: var(--gold); letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.cell-spoon .unit { font-size: 0.55rem; color: var(--gold); margin-left: 0.2rem; letter-spacing: 0.2em; }
+.cell-actions { display: flex; gap: 0.4rem; flex-wrap: nowrap; }
+
+@media (max-width: 800px) {
+  .user-table th.col-date,
+  .user-table td.col-date { display: none; }
+  .toolbar .input { max-width: none; }
+}
+
+.empty-row {
+  text-align: center !important;
+  color: rgba(255,255,255,0.4) !important;
+  padding: 3rem 1rem !important;
+  font-size: 0.85rem;
+}
+
+/* ============ 新規登録 ============ */
+.form-card {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 6px;
+  padding: 2rem;
+  max-width: 700px;
+}
+.form-row { margin-bottom: 1.4rem; }
+.form-row:last-child { margin-bottom: 0; }
+.form-hint {
+  margin-top: 0.4rem; font-size: 0.7rem;
+  color: rgba(255,255,255,0.4); letter-spacing: 0.03em;
+}
+
+/* アイコン選択 */
+.icon-tabs {
+  display: flex; gap: 0;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  overflow: hidden; width: fit-content;
+  margin-bottom: 1rem;
+}
+.icon-tab {
+  padding: 0.5rem 1.1rem;
+  font-family: var(--font-en); font-size: 0.6rem; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  background: transparent;
+  border: none; cursor: pointer; transition: all 0.2s;
+}
+.icon-tab.active { background: var(--pink); color: var(--white); }
+.icon-tab + .icon-tab { border-left: 1px solid rgba(255,255,255,0.1); }
+.icon-pane { display: none; }
+.icon-pane.active { display: block; }
+
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+  gap: 6px;
+  max-width: 540px;
+}
+.emoji-btn {
+  aspect-ratio: 1;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px;
+  font-size: 1.4rem; cursor: pointer;
+  transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.emoji-btn:hover { background: rgba(232,99,138,0.15); border-color: var(--pink); transform: scale(1.05); }
+.emoji-btn.selected { background: var(--pink); border-color: var(--pink); box-shadow: 0 0 12px rgba(232,99,138,0.4); }
+
+.upload-area {
+  border: 1px dashed rgba(255,255,255,0.18);
+  border-radius: 4px;
+  padding: 1.6rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 1rem;
+}
+.upload-area:hover { border-color: var(--pink); background: rgba(232,99,138,0.04); }
+.upload-area .upload-text {
+  font-size: 0.85rem; color: rgba(255,255,255,0.6);
+  margin-bottom: 0.3rem;
+}
+.upload-area .upload-hint {
+  font-size: 0.7rem; color: rgba(255,255,255,0.35);
+  letter-spacing: 0.03em;
+}
+
+.icon-preview {
+  width: 96px; height: 96px;
+  border-radius: 50%; overflow: hidden;
+  background: var(--charcoal);
+  border: 2px solid var(--pink);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem; margin: 1rem auto 0;
+}
+.icon-preview img { width: 100%; height: 100%; object-fit: cover; }
+.icon-preview.empty { border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); }
+
+/* ヘッダー画像プレビュー */
+.header-image-preview {
+  width: 220px; height: 124px;
+  border-radius: 6px; overflow: hidden;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  background-size: cover; background-position: center;
+}
+.header-image-empty {
+  font-family: var(--font-en); font-size: 0.65rem; font-weight: 600;
+  letter-spacing: 0.3em; color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+}
+@media (max-width: 700px) {
+  .header-image-grid { grid-template-columns: 1fr !important; }
+  .header-image-preview { width: 100%; height: 140px; }
+}
+
+/* ============ 設定 ============ */
+.setting-section {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 6px;
+  padding: 1.6rem;
+  margin-bottom: 1.4rem;
+}
+.setting-section-title {
+  font-size: 1rem; font-weight: 700;
+  color: var(--white); letter-spacing: 0.05em;
+  margin-bottom: 0.2rem;
+}
+.setting-section-en {
+  font-family: var(--font-en); font-size: 0.55rem;
+  letter-spacing: 0.3em; color: var(--pink);
+  text-transform: uppercase; margin-bottom: 1.2rem;
+}
+.field-row {
+  display: grid; grid-template-columns: 160px 1fr;
+  gap: 1rem; align-items: center; margin-bottom: 0.8rem;
+}
+@media (max-width: 600px) {
+  .field-row { grid-template-columns: 1fr; gap: 0.3rem; }
+}
+
+.rank-edit-row {
+  display: grid;
+  grid-template-columns: 50px 1fr 130px 1fr 96px;
+  gap: 0.6rem;
+  align-items: center;
+  background: rgba(255,255,255,0.025);
+  padding: 0.7rem 0.8rem;
+  border-radius: 4px;
+  margin-bottom: 0.4rem;
+}
+.rank-edit-row .rank-no {
+  font-family: var(--font-en); font-size: 0.7rem; font-weight: 700;
+  color: var(--pink); letter-spacing: 0.2em; text-align: center;
+}
+.rank-edit-row .input { padding: 0.5rem 0.7rem; font-size: 0.82rem; }
+
+/* ランク報酬アイコン編集セル */
+.rank-icon-cell {
+  display: flex; flex-direction: column; gap: 4px; align-items: stretch;
+}
+.rank-icon-thumb {
+  position: relative;
+  width: 100%; height: 38px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; cursor: pointer;
+  overflow: hidden;
+  transition: all 0.15s;
+  padding: 0;
+}
+.rank-icon-thumb:hover {
+  border-color: var(--pink);
+  background: rgba(232,99,138,0.08);
+}
+.rank-icon-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.rank-icon-thumb-clear {
+  position: absolute; top: 2px; right: 2px;
+  width: 16px; height: 16px;
+  background: rgba(214,56,56,0.9); color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 9px; line-height: 16px;
+  cursor: pointer; padding: 0;
+  display: none;
+}
+.rank-icon-thumb.has-image .rank-icon-thumb-clear { display: block; }
+.rank-icon-thumb-hint {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.55rem; letter-spacing: 0.15em; color: rgba(255,255,255,0.55);
+  text-transform: uppercase; pointer-events: none;
+}
+.rank-icon-thumb.has-image .rank-icon-thumb-hint { display: none; }
+.rank-icon-emoji {
+  width: 100%; padding: 0.3rem 0.4rem !important;
+  font-size: 0.78rem !important;
+  text-align: center;
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+.prize-edit-row .prize-edit-extra {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: 0.5rem;
+  padding-top: 0.3rem;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  margin-top: 0.4rem;
+}
+.prize-extra-label {
+  font-family: var(--font-en); font-size: 0.6rem; letter-spacing: 0.2em;
+  color: rgba(255,255,255,0.5); text-transform: uppercase;
+}
+.prize-edit-row .prize-edit-extra .input {
+  width: 100px; padding: 0.4rem 0.6rem; font-size: 0.82rem;
+}
+
+@media (max-width: 800px) {
+  .rank-edit-row { grid-template-columns: 1fr 1fr; }
+  .rank-edit-row .rank-no { grid-column: span 2; text-align: left; }
+  .rank-icon-cell { grid-column: span 2; flex-direction: row; }
+  .rank-icon-thumb { width: 80px; flex-shrink: 0; }
+  .rank-icon-emoji { flex: 1; }
+  .prize-edit-row .prize-edit-extra { grid-column: 1 / -1; }
+}
+
+/* ============ モーダル ============ */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(8,11,20,0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 1.5rem;
+}
+.modal-backdrop.show { display: flex; animation: fadeIn 0.2s; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  background: var(--dark);
+  border: 1px solid rgba(232,99,138,0.25);
+  border-radius: 6px;
+  padding: 2rem;
+  width: 100%; max-width: 520px;
+  max-height: 90vh; overflow-y: auto;
+  position: relative;
+}
+.modal::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--pink), transparent);
+}
+.modal-title {
+  font-size: 1.1rem; font-weight: 700;
+  margin-bottom: 0.3rem; color: var(--white); letter-spacing: 0.06em;
+}
+.modal-en {
+  font-family: var(--font-en); font-size: 0.55rem;
+  letter-spacing: 0.35em; color: var(--pink);
+  text-transform: uppercase; margin-bottom: 1.4rem;
+}
+.modal-actions {
+  display: flex; gap: 0.6rem; justify-content: flex-end;
+  margin-top: 1.6rem;
+}
+
+.quick-buttons { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+.quick-btn {
+  font-family: var(--font-en); font-size: 0.7rem; font-weight: 700;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.04);
+  color: var(--white); cursor: pointer;
+  border-radius: 3px; letter-spacing: 0.05em;
+  transition: all 0.2s;
+}
+.quick-btn:hover { background: var(--pink); border-color: var(--pink); }
+
+.user-pre-info {
+  display: flex; align-items: center; gap: 1rem;
+  margin-bottom: 1.2rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.user-pre-info .cell-icon { width: 48px; height: 48px; font-size: 1.7rem; }
+.user-pre-info-name { font-size: 1.05rem; font-weight: 700; color: var(--white); }
+.user-pre-info-spoon {
+  font-family: var(--font-en); font-size: 1.1rem; font-weight: 800;
+  color: var(--gold); letter-spacing: 0.02em;
+}
+
+.history-list {
+  max-height: 50vh; overflow-y: auto;
+  margin-top: 0.5rem;
+}
+.history-item {
+  display: grid; grid-template-columns: 1fr auto auto;
+  gap: 1rem; align-items: center;
+  padding: 0.7rem 0.8rem;
+  background: rgba(255,255,255,0.03);
+  border-radius: 4px;
+  margin-bottom: 4px;
+  font-size: 0.82rem;
+}
+.history-time {
+  font-family: var(--font-en); font-size: 0.7rem;
+  color: rgba(255,255,255,0.5); letter-spacing: 0.04em;
+}
+.history-amount {
+  font-family: var(--font-en); font-weight: 800;
+  color: var(--gold);
+}
+.history-note { color: rgba(255,255,255,0.55); font-size: 0.78rem; }
+
+/* ============ トースト ============ */
+.toast {
+  position: fixed; bottom: 30px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--charcoal);
+  color: var(--white);
+  padding: 0.8rem 1.4rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.1);
+  font-size: 0.85rem;
+  z-index: 400;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+  letter-spacing: 0.05em;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* ============ 昇進オーバーレイ ============ */
+.promo-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(8,11,20,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 2rem;
+}
+.promo-overlay.show {
+  display: flex;
+  animation: promoIn 0.5s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes promoIn { from { opacity: 0; } to { opacity: 1; } }
+.promo-stamp {
+  text-align: center;
+  position: relative;
+}
+.promo-label {
+  font-family: var(--font-en); font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.5em; color: var(--gold);
+  text-transform: uppercase; margin-bottom: 0.6rem;
+  animation: promoSlide 0.6s 0.2s cubic-bezier(0.16,1,0.3,1) backwards;
+}
+.promo-name {
+  font-size: 1.8rem; font-weight: 900;
+  color: var(--white); letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
+  animation: promoSlide 0.6s 0.4s cubic-bezier(0.16,1,0.3,1) backwards;
+}
+.promo-rank {
+  font-family: var(--font-en); font-size: 0.65rem; font-weight: 700;
+  letter-spacing: 0.4em; color: var(--pink);
+  text-transform: uppercase; margin-bottom: 1.2rem;
+  animation: promoSlide 0.6s 0.6s cubic-bezier(0.16,1,0.3,1) backwards;
+}
+.promo-rank-jp {
+  font-size: 3.4rem; font-weight: 900;
+  color: var(--gold); letter-spacing: 0.18em;
+  margin-bottom: 0.6rem;
+  text-shadow: 0 0 30px rgba(201,169,78,0.5);
+  animation: promoStamp 0.7s 0.8s cubic-bezier(0.34,1.56,0.64,1) backwards;
+}
+.promo-msg {
+  font-size: 0.95rem; color: rgba(255,255,255,0.7);
+  letter-spacing: 0.06em;
+  animation: promoSlide 0.6s 1.2s cubic-bezier(0.16,1,0.3,1) backwards;
+}
+@keyframes promoSlide {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes promoStamp {
+  from { opacity: 0; transform: scale(2.3) rotate(-8deg); }
+  to { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+/* ============ ロゴ用ヘルパー ============ */
+@media (max-width: 700px) {
+  .app-header { padding: 0.8rem 1rem; }
+  main { padding: 1.6rem 1rem 4rem; }
+  .tabs-wrap { padding: 0 1rem; top: 60px; }
+  .tab { padding: 0.8rem 0.9rem; font-size: 0.78rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ 認証ゲート ============ -->
+<div class="auth-gate" id="authGate">
+  <div class="auth-card">
+    <div class="auth-logo">M<span>T</span>K</div>
+    <div class="auth-en">Admin Console</div>
+
+    <!-- 初期セットアップ -->
+    <div id="authSetup" style="display:none">
+      <h2 class="auth-title">初期パスワード設定</h2>
+      <p class="auth-desc">
+        管理者パスワードを設定してください。<br>
+        本パスワードは復旧不可ですので、忘れないようご注意ください。
+      </p>
+      <div class="auth-error" id="setupError"></div>
+      <form class="auth-form" id="setupForm">
+        <input type="password" class="input" id="setupPw1" placeholder="新しいパスワード（4文字以上）" autocomplete="new-password" required>
+        <input type="password" class="input" id="setupPw2" placeholder="確認のためもう一度入力" autocomplete="new-password" required>
+        <button type="submit" class="btn btn-primary"><span>パスワードを設定</span></button>
+      </form>
+      <div class="auth-warning">
+        ※ パスワードはSHA-256でハッシュ化されてから保存されます。本機能はあくまで簡易的な保護です。本格的な機密保護にはサーバーサイド認証が必要です。
+      </div>
+    </div>
+
+    <!-- ログイン -->
+    <div id="authLogin" style="display:none">
+      <h2 class="auth-title">管理者ログイン</h2>
+      <p class="auth-desc">
+        管理者トークンを入力してください。<br>
+        セッションはタブを閉じるまで有効です。
+      </p>
+      <div class="auth-error" id="loginError">管理者トークンが違います</div>
+      <form class="auth-form" id="loginForm">
+        <input type="password" class="input" id="loginPw" placeholder="管理者トークン" autocomplete="current-password" required>
+        <button type="submit" class="btn btn-primary"><span>ログイン</span></button>
+      </form>
+      <div class="auth-warning">
+        ※ トークンは Vercel のプロジェクト設定（環境変数 ADMIN_TOKEN）で管理されます。<br>
+        ※ 変更したい場合は Vercel ダッシュボードの Environment Variables から書き換えて再デプロイしてください。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 認証後の画面 ============ -->
+<div id="appRoot" style="display:none">
+
+  <header class="app-header">
+    <div class="app-logo">M<span>T</span>K <span class="badge">Admin</span></div>
+    <div class="header-actions">
+      <a href="mtk-index.html" class="public-link" target="_blank">PUBLIC ↗</a>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn"><span>ログアウト</span></button>
+    </div>
+  </header>
+
+  <div class="tabs-wrap">
+    <div class="tabs">
+      <button class="tab active" data-tab="users"><span class="tab-en">Users</span>ユーザー</button>
+      <button class="tab" data-tab="add"><span class="tab-en">Register</span>新規登録</button>
+      <button class="tab" data-tab="settings"><span class="tab-en">Settings</span>設定</button>
+    </div>
+  </div>
+
+  <main>
+
+    <!-- ===== ユーザータブ ===== -->
+    <div class="tab-pane active" id="tab-users">
+      <div class="pane-en">User Management</div>
+      <h1 class="pane-title">ユーザー一覧</h1>
+
+      <div class="toolbar">
+        <input type="text" class="input" id="userSearch" placeholder="名前で検索...">
+        <select class="select" id="userSort">
+          <option value="spoon">Spoon数 (多い順)</option>
+          <option value="name">名前順</option>
+          <option value="created">登録日 (新しい順)</option>
+        </select>
+        <div class="toolbar-spacer"></div>
+        <span style="font-family:var(--font-en);font-size:0.65rem;letter-spacing:0.2em;color:rgba(255,255,255,0.5);text-transform:uppercase">
+          Total: <span id="userTotal" style="color:var(--pink);font-weight:700">0</span>
+        </span>
+      </div>
+
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th style="width:50px"></th>
+            <th>名前 / ランク</th>
+            <th style="width:130px">Spoon</th>
+            <th class="col-date" style="width:110px">登録日</th>
+            <th style="width:1px"></th>
+          </tr>
+        </thead>
+        <tbody id="userTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- ===== 新規登録タブ ===== -->
+    <div class="tab-pane" id="tab-add">
+      <div class="pane-en">Register New Employee</div>
+      <h1 class="pane-title">新規登録</h1>
+
+      <div class="form-card">
+        <div class="form-row">
+          <label class="label-text" for="newUserName">表示名 <span style="color:var(--danger)">*</span></label>
+          <input type="text" class="input" id="newUserName" maxlength="16" placeholder="例：たろう">
+          <div class="form-hint">最大16文字。重複不可。</div>
+        </div>
+        <div class="form-row">
+          <label class="label-text" for="newUserSpoon">初期 Spoon 数（任意）</label>
+          <input type="number" class="input" id="newUserSpoon" min="0" step="1" value="0" placeholder="0">
+          <div class="form-hint">登録時の累計 Spoon を任意で設定。0 なら未加算でスタート。</div>
+        </div>
+
+        <div class="form-row">
+          <label class="label-text">アイコン</label>
+          <div class="icon-tabs">
+            <button type="button" class="icon-tab active" data-icon-tab="image">画像</button>
+            <button type="button" class="icon-tab" data-icon-tab="emoji">絵文字</button>
+          </div>
+          <div class="icon-pane active" id="iconPane-image">
+            <div class="upload-area" id="uploadArea">
+              <div class="upload-text">クリック または ドロップで画像を選択</div>
+              <div class="upload-hint">JPG / PNG / WebP / GIF・最大3MB・正方形にトリミングされます</div>
+            </div>
+            <input type="file" id="uploadInput" accept="image/*" style="display:none">
+          </div>
+          <div class="icon-pane" id="iconPane-emoji">
+            <div class="emoji-grid" id="emojiGrid"></div>
+          </div>
+          <div class="icon-preview empty" id="iconPreview">？</div>
+        </div>
+
+        <div class="form-row" style="text-align:right">
+          <button class="btn btn-primary" id="addUserBtn"><span>登録する</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 設定タブ ===== -->
+    <div class="tab-pane" id="tab-settings">
+      <div class="pane-en">Configuration</div>
+      <h1 class="pane-title">設定</h1>
+
+      <!-- イベント設定 -->
+      <div class="setting-section">
+        <div class="setting-section-en">Event</div>
+        <div class="setting-section-title">イベント情報</div>
+        <div class="field-row">
+          <label class="label-text">イベント名</label>
+          <input type="text" class="input" id="setEventName" maxlength="40">
+        </div>
+        <div class="field-row">
+          <label class="label-text">開始日時</label>
+          <input type="datetime-local" class="input" id="setEventStart">
+        </div>
+        <div class="field-row">
+          <label class="label-text">終了日時</label>
+          <input type="datetime-local" class="input" id="setEventEnd">
+        </div>
+        <div style="text-align:right;margin-top:1rem">
+          <button class="btn btn-primary btn-sm" id="saveEventBtn"><span>保存</span></button>
+        </div>
+      </div>
+
+      <!-- ヘッダー画像設定 -->
+      <div class="setting-section">
+        <div class="setting-section-en">Header Image</div>
+        <div class="setting-section-title">公開ホームのヘッダー画像</div>
+        <div style="display:grid;grid-template-columns:1fr 220px;gap:1.4rem;align-items:center" class="header-image-grid">
+          <div>
+            <div class="upload-area" id="headerImageUploadArea">
+              <div class="upload-text">クリック または ドロップで画像を選択</div>
+              <div class="upload-hint">JPG / PNG / WebP・推奨 1600×700px・最大3MB</div>
+            </div>
+            <input type="file" id="headerImageInput" accept="image/*" style="display:none">
+            <div style="display:flex;gap:0.5rem;margin-top:0.6rem">
+              <button class="btn btn-ghost btn-sm" id="headerImageRemoveBtn" type="button"><span>削除して既定に戻す</span></button>
+            </div>
+            <div class="form-hint" style="margin-top:0.8rem">
+              ※ 公開ホームのヒーロー背景に使用されます。テキストが読めるよう薄いオーバーレイがかかります。
+            </div>
+          </div>
+          <div class="header-image-preview" id="headerImagePreview">
+            <div class="header-image-empty">未設定</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ガチャ閾値 -->
+      <div class="setting-section">
+        <div class="setting-section-en">Gacha Threshold</div>
+        <div class="setting-section-title">ガチャ獲得の閾値</div>
+        <div class="field-row">
+          <label class="label-text">何 Spoon ごとに 1 回？</label>
+          <input type="number" class="input" id="setGachaThreshold" min="100" step="100" placeholder="5000">
+        </div>
+        <div class="form-hint" style="margin-top:0.4rem">
+          ※ 累計 Spoon が この値ごとに ガチャ権利1回 が付与されます。例：5,000 → 累計15,000で 3回獲得。
+        </div>
+        <div style="text-align:right;margin-top:1rem">
+          <button class="btn btn-primary btn-sm" id="saveThresholdBtn"><span>保存</span></button>
+        </div>
+      </div>
+
+      <!-- ガチャ景品設定 -->
+      <div class="setting-section">
+        <div class="setting-section-en">Prizes</div>
+        <div class="setting-section-title">ガチャ景品設定</div>
+        <div id="prizeEditList"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1rem;flex-wrap:wrap;gap:0.6rem">
+          <button class="btn btn-ghost btn-sm" id="addPrizeBtn"><span>＋ 景品を追加</span></button>
+          <div style="display:flex;gap:0.5rem">
+            <button class="btn btn-primary btn-sm" id="savePrizesBtn"><span>保存</span></button>
+            <button class="btn btn-ghost btn-sm" id="resetPrizesBtn"><span>初期値に戻す</span></button>
+          </div>
+        </div>
+        <div class="form-hint" style="margin-top:0.6rem">
+          ※ Weight は出現の重み（合計に対する割合で確率算出）。レアリティは N / R / SR / SSR のいずれか。<br>
+          ※ アイコンは絵文字 or 画像どちらでも OK。
+        </div>
+      </div>
+
+      <!-- 認証情報の説明（パスワード変更はVercel環境変数管理に移行） -->
+      <div class="setting-section">
+        <div class="setting-section-en">Authentication</div>
+        <div class="setting-section-title">管理者トークンの変更</div>
+        <div class="form-hint" style="font-size:0.85rem;color:rgba(255,255,255,0.7);line-height:1.7">
+          管理者トークンは Vercel のプロジェクト設定で管理されています。<br>
+          変更するには：<br>
+          1. <a href="https://vercel.com/dashboard" target="_blank" style="color:var(--pink)">Vercel ダッシュボード</a> を開く<br>
+          2. プロジェクトを開いて「Settings」→「Environment Variables」<br>
+          3. <code style="background:rgba(255,255,255,0.06);padding:0.1rem 0.4rem;border-radius:3px">ADMIN_TOKEN</code> を編集<br>
+          4. 上部の「Deployments」→ 最新デプロイの「⋯」→「Redeploy」で反映
+        </div>
+      </div>
+
+      <!-- データ管理 -->
+      <div class="setting-section">
+        <div class="setting-section-en">Data</div>
+        <div class="setting-section-title">データ管理</div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.6rem">
+          <button class="btn btn-primary btn-sm" id="demoDataBtn"><span>デモデータを投入</span></button>
+          <button class="btn btn-ghost btn-sm" id="exportBtn"><span>エクスポート (JSON)</span></button>
+          <button class="btn btn-ghost btn-sm" id="importBtn"><span>インポート (JSON)</span></button>
+          <input type="file" id="importInput" accept="application/json,.json" style="display:none">
+          <input type="file" id="rankIconFile" accept="image/*" style="display:none">
+          <button class="btn btn-danger btn-sm" id="resetAllBtn"><span>全データリセット</span></button>
+        </div>
+        <div class="form-hint" style="margin-top:0.8rem">
+          ※ デモデータは現在のユーザー一覧に追加されます（既存データは消えません）。<br>
+          ※ 全データリセットはユーザー・履歴・設定・パスワードを含めて全て消去します（二重確認あり）。
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+
+<!-- ============ Spoon加算モーダル ============ -->
+<div class="modal-backdrop" id="donateModal">
+  <div class="modal">
+    <div class="modal-en">Add Donation</div>
+    <h3 class="modal-title">Spoon加算</h3>
+    <div class="user-pre-info" id="donateUserInfo"></div>
+    <div class="quick-buttons">
+      <button type="button" class="quick-btn" data-amt="100">+100</button>
+      <button type="button" class="quick-btn" data-amt="500">+500</button>
+      <button type="button" class="quick-btn" data-amt="1000">+1,000</button>
+      <button type="button" class="quick-btn" data-amt="5000">+5,000</button>
+      <button type="button" class="quick-btn" data-amt="10000">+10,000</button>
+    </div>
+    <label class="label-text">数量</label>
+    <input type="number" class="input" id="donateAmount" min="1" placeholder="数値を入力">
+    <label class="label-text" style="margin-top:0.8rem">メモ（任意）</label>
+    <input type="text" class="input" id="donateNote" maxlength="40" placeholder="例：コメント枠特別">
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" id="undoLastBtn"><span>直前を取り消し</span></button>
+      <span style="flex:1"></span>
+      <button class="btn btn-ghost btn-sm" data-close-modal><span>キャンセル</span></button>
+      <button class="btn btn-primary btn-sm" id="donateConfirmBtn"><span>決定</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ユーザー編集モーダル ============ -->
+<div class="modal-backdrop" id="editModal">
+  <div class="modal">
+    <div class="modal-en">Edit Employee</div>
+    <h3 class="modal-title">ユーザー編集</h3>
+    <div class="form-row">
+      <label class="label-text">名前</label>
+      <input type="text" class="input" id="editName" maxlength="16">
+    </div>
+    <div class="form-row">
+      <label class="label-text">アイコン</label>
+      <div class="icon-tabs">
+        <button type="button" class="icon-tab active" data-edit-icon-tab="image">画像</button>
+        <button type="button" class="icon-tab" data-edit-icon-tab="emoji">絵文字</button>
+      </div>
+      <div class="icon-pane active" id="editIconPane-image">
+        <div class="upload-area" id="editUploadArea">
+          <div class="upload-text">クリック または ドロップで画像を選択</div>
+          <div class="upload-hint">JPG / PNG / WebP / GIF・最大3MB</div>
+        </div>
+        <input type="file" id="editUploadInput" accept="image/*" style="display:none">
+      </div>
+      <div class="icon-pane" id="editIconPane-emoji">
+        <div class="emoji-grid" id="editEmojiGrid"></div>
+      </div>
+      <div class="icon-preview empty" id="editIconPreview">？</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" data-close-modal><span>キャンセル</span></button>
+      <button class="btn btn-primary btn-sm" id="editSaveBtn"><span>保存</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 履歴モーダル ============ -->
+<div class="modal-backdrop" id="historyModal">
+  <div class="modal">
+    <div class="modal-en">Donation History</div>
+    <h3 class="modal-title">投げ銭履歴</h3>
+    <div class="user-pre-info" id="historyUserInfo"></div>
+    <div class="history-list" id="historyList"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" data-close-modal><span>閉じる</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 確認モーダル ============ -->
+<div class="modal-backdrop" id="confirmModal">
+  <div class="modal" style="max-width:420px">
+    <h3 class="modal-title" id="confirmTitle">確認</h3>
+    <p style="font-size:0.88rem;color:rgba(255,255,255,0.7);line-height:1.8;margin-bottom:0.4rem" id="confirmMsg"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" data-close-modal><span>キャンセル</span></button>
+      <button class="btn btn-danger btn-sm" id="confirmOkBtn"><span>実行</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 昇進演出オーバーレイ ============ -->
+<div class="promo-overlay" id="promoOverlay">
+  <div class="promo-stamp">
+    <div class="promo-label">★ PROMOTION ★</div>
+    <div class="promo-name" id="promoName"></div>
+    <div class="promo-rank" id="promoRankEn"></div>
+    <div class="promo-rank-jp" id="promoRankJp"></div>
+    <div class="promo-msg">昇進おめでとうございます</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ============================================================
+// 定数 / 初期データ
+// ============================================================
+const STORAGE_KEY = 'mtk_app_data';
+const SESSION_KEY = 'mtk_admin_session';
+const POLL_INTERVAL_MS = 15000;  // 15秒ごとにサーバから取得（無料枠節約）
+
+// プリセット絵文字（30種）
+const EMOJI_PRESET = ['😀','😎','🥳','🤠','👑','🎩','🦊','🐱','🐶','🐰','🦁','🐼','🐨','🦄','🐉','🌸','🌟','⭐','🔥','⚡','🎵','🎤','🎸','🎮','🎲','🍣','🍵','🗾','🌙','☕'];
+
+const RARITY_OPTIONS = ['N', 'R', 'SR', 'SSR'];
+
+const DEFAULT_PRIZES = [
+  { id: 'p-n-1',   name: 'サンクスメッセージ',     rarity: 'N',   icon: '💌', iconType: 'emoji', weight: 50, description: '配信中に名前を呼んで感謝メッセージ' },
+  { id: 'p-n-2',   name: 'スタンプ画像',           rarity: 'N',   icon: '🎴', iconType: 'emoji', weight: 35, description: 'ロゴ入りスタンプ風画像1枚' },
+  { id: 'p-r-1',   name: 'SDちびイラスト',         rarity: 'R',   icon: '🖼️', iconType: 'emoji', weight: 20, description: 'デフォルメSDイラスト1枚' },
+  { id: 'p-sr-1',  name: 'バストアップカラー',     rarity: 'SR',  icon: '🎨', iconType: 'emoji', weight: 8,  description: 'バストアップのカラーイラスト1枚' },
+  { id: 'p-sr-2',  name: '全身カラー＋背景つき',   rarity: 'SR',  icon: '🖌️', iconType: 'emoji', weight: 4,  description: '全身カラーイラスト＋背景つき' },
+  { id: 'p-ssr-1', name: '描き下ろし限定＋サイン', rarity: 'SSR', icon: '👑', iconType: 'emoji', weight: 1,  description: '描き下ろし限定イラスト＋直筆サイン' },
+];
+
+function getDefaultData() {
+  const now = new Date();
+  const end = new Date(Date.now() + 14 * 86400000);
+  return {
+    users: [],
+    settings: {
+      eventName: '春の出世大競争',
+      eventStartDate: now.toISOString(),
+      eventEndDate: end.toISOString(),
+      gachaThreshold: 5000,                       // X Spoon 加算ごとに1ガチャ権利
+      gachaPrizes: DEFAULT_PRIZES.slice(),
+      headerImage: '',
+    },
+    adminPasswordHash: '',
+    version: 2,
+  };
+}
+
+// ============================================================
+// データレイヤー（サーバAPI経由 / Upstash Redis）
+// ============================================================
+let data = getDefaultData();
+
+// データ取得は /api/data から（共有 Redis）
+function normalizeData(parsed) {
+  const def = getDefaultData();
+  parsed.settings = Object.assign({}, def.settings, parsed.settings || {});
+  if (!Array.isArray(parsed.settings.gachaPrizes) || parsed.settings.gachaPrizes.length === 0) {
+    parsed.settings.gachaPrizes = DEFAULT_PRIZES.slice();
+  }
+  if (typeof parsed.settings.gachaThreshold !== 'number' || parsed.settings.gachaThreshold <= 0) {
+    parsed.settings.gachaThreshold = 5000;
+  }
+  if (!Array.isArray(parsed.users)) parsed.users = [];
+  for (const u of parsed.users) {
+    if (typeof u.gachaConsumed !== 'number') u.gachaConsumed = 0;
+    if (!Array.isArray(u.gachaHistory)) u.gachaHistory = [];
+  }
+  return parsed;
+}
+async function loadData() {
+  try {
+    const res = await fetch('/api/data', { cache: 'no-store' });
+    if (!res.ok) throw new Error('fetch failed: ' + res.status);
+    const json = await res.json();
+    data = normalizeData(json);
+  } catch (e) {
+    console.warn('データ読み込み失敗:', e);
+    if (!data) data = getDefaultData();
+  }
+  return data;
+}
+
+// ガチャ権利残数
+function gachaRights(user, threshold) {
+  if (!threshold || threshold <= 0) return { earned: 0, consumed: 0, remaining: 0 };
+  const earned = Math.floor((user.totalSpoon || 0) / threshold);
+  const consumed = user.gachaConsumed || 0;
+  return { earned, consumed, remaining: Math.max(0, earned - consumed) };
+}
+
+// 保存は /api/data に POST（管理者トークン必須）
+async function saveData() {
+  const token = sessionStorage.getItem(SESSION_KEY) || '';
+  try {
+    const res = await fetch('/api/data', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+    if (res.status === 401) {
+      showToast('セッションが無効です。再ログインしてください');
+      logout();
+      return;
+    }
+    if (!res.ok) throw new Error('save failed: ' + res.status);
+  } catch (e) {
+    console.error('保存失敗:', e);
+    showToast('保存に失敗しました（ネットワーク確認）');
+  }
+}
+
+// ============================================================
+// ユーティリティ
+// ============================================================
+function uuid() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  // フォールバック
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+async function hashPassword(plain) {
+  const enc = new TextEncoder();
+  const buf = await crypto.subtle.digest('SHA-256', enc.encode(plain));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function fmt(n) { return Number(n || 0).toLocaleString('ja-JP'); }
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function getRankByAmount(amount, ranks) {
+  let currentIdx = 0;
+  for (let i = 0; i < ranks.length; i++) {
+    if (amount >= ranks[i].threshold) currentIdx = i;
+  }
+  const current = ranks[currentIdx];
+  const next = ranks[currentIdx + 1] || null;
+  const remaining = next ? Math.max(0, next.threshold - amount) : 0;
+  return { currentIdx, current, next, remaining };
+}
+
+function renderUserIcon(user) {
+  if (user.iconType === 'image' && user.icon) {
+    return `<img src="${escapeHtml(user.icon)}" alt="">`;
+  }
+  return escapeHtml(user.icon || '👤');
+}
+// 報酬アイコンレンダラ：data:image なら画像、それ以外は絵文字テキスト
+function renderRewardIcon(value) {
+  if (typeof value === 'string' && value.startsWith('data:image')) {
+    return `<img src="${escapeHtml(value)}" alt="">`;
+  }
+  return escapeHtml(value || '🎁');
+}
+function isImageData(s) {
+  return typeof s === 'string' && s.startsWith('data:image');
+}
+
+function dateStr(ts) {
+  const d = new Date(ts);
+  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+}
+function timeStr(ts) {
+  const d = new Date(ts);
+  const ymd = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+  const hm = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  return `${ymd} ${hm}`;
+}
+
+function toLocalInputValue(iso) {
+  // ISO文字列 → datetime-local 用の "yyyy-MM-ddTHH:mm"
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const y = d.getFullYear();
+  const M = String(d.getMonth()+1).padStart(2,'0');
+  const D = String(d.getDate()).padStart(2,'0');
+  const H = String(d.getHours()).padStart(2,'0');
+  const m = String(d.getMinutes()).padStart(2,'0');
+  return `${y}-${M}-${D}T${H}:${m}`;
+}
+
+// ============================================================
+// 認証
+// ============================================================
+// 管理者トークンは Vercel の環境変数 ADMIN_TOKEN で設定。
+// 入力された値を /api/auth に送信して検証し、成功すれば sessionStorage にトークンを保存。
+function getStoredToken() {
+  return sessionStorage.getItem(SESSION_KEY) || '';
+}
+function isLoggedIn() {
+  return !!getStoredToken();
+}
+function login(token) {
+  sessionStorage.setItem(SESSION_KEY, token);
+}
+function logout() {
+  sessionStorage.removeItem(SESSION_KEY);
+  location.reload();
+}
+
+async function validateToken(token) {
+  try {
+    const res = await fetch('/api/auth', {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${token}` },
+    });
+    return res.ok;
+  } catch (e) { return false; }
+}
+
+async function setupAuthGate() {
+  // 初期セットアップ画面は Vercel 環境変数管理になったため非表示
+  const setup = document.getElementById('authSetup');
+  if (setup) setup.style.display = 'none';
+  const loginBox = document.getElementById('authLogin');
+
+  // 既存セッションがあれば検証
+  const stored = getStoredToken();
+  if (stored) {
+    const ok = await validateToken(stored);
+    if (ok) { await onAuthSuccess(); return; }
+    sessionStorage.removeItem(SESSION_KEY);
+  }
+
+  // ログインフォームを表示
+  loginBox.style.display = 'block';
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const token = document.getElementById('loginPw').value;
+    const err = document.getElementById('loginError');
+    err.classList.remove('show');
+    const ok = await validateToken(token);
+    if (ok) {
+      login(token);
+      await onAuthSuccess();
+    } else {
+      err.textContent = '管理者トークンが違います';
+      err.classList.add('show');
+      document.getElementById('loginPw').value = '';
+    }
+  });
+}
+
+async function onAuthSuccess() {
+  document.getElementById('authGate').style.display = 'none';
+  document.getElementById('appRoot').style.display = 'block';
+  await loadData();
+  setupApp();
+}
+
+// ============================================================
+// アプリ本体
+// ============================================================
+function setupApp() {
+  // データは onAuthSuccess で取得済み
+
+  setupTabs();
+  setupUserList();
+  setupAddUser();
+  setupSettings();
+  setupRankIconFileInput();
+  setupHeaderImage();
+  setupModalCloseHandlers();
+  setupSync();
+
+  document.getElementById('logoutBtn').addEventListener('click', logout);
+
+  renderAll();
+}
+
+function renderAll() {
+  renderUserList();
+  renderSettings();
+}
+
+function setupTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const id = tab.dataset.tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('tab-' + id).classList.add('active');
+    });
+  });
+}
+
+// ============================================================
+// ユーザー一覧
+// ============================================================
+let userSearchQuery = '';
+let userSortKey = 'spoon';
+
+function setupUserList() {
+  document.getElementById('userSearch').addEventListener('input', (e) => {
+    userSearchQuery = e.target.value;
+    renderUserList();
+  });
+  document.getElementById('userSort').addEventListener('change', (e) => {
+    userSortKey = e.target.value;
+    renderUserList();
+  });
+}
+
+function renderUserList() {
+  const tbody = document.getElementById('userTableBody');
+  tbody.innerHTML = '';
+  document.getElementById('userTotal').textContent = data.users.length;
+
+  let users = data.users.slice();
+  const q = userSearchQuery.toLowerCase().trim();
+  if (q) users = users.filter(u => (u.name || '').toLowerCase().includes(q));
+
+  users.sort((a, b) => {
+    if (userSortKey === 'name') return (a.name || '').localeCompare(b.name || '', 'ja');
+    if (userSortKey === 'created') return (b.createdAt || 0) - (a.createdAt || 0);
+    return (b.totalSpoon || 0) - (a.totalSpoon || 0);
+  });
+
+  if (users.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-row">ユーザーが登録されていません</td></tr>`;
+    return;
+  }
+
+  for (const u of users) {
+    const rights = gachaRights(u, data.settings.gachaThreshold);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><div class="cell-icon">${renderUserIcon(u)}</div></td>
+      <td>
+        <div class="cell-name">${escapeHtml(u.name)}</div>
+        <div class="cell-rank-jp">🎰 ${rights.earned}回獲得 / 残り <strong style="color:var(--pink)">${rights.remaining}</strong></div>
+      </td>
+      <td><span class="cell-spoon">${fmt(u.totalSpoon || 0)}<span class="unit">SPOON</span></span></td>
+      <td class="col-date" style="font-size:0.75rem;color:rgba(255,255,255,0.5);font-family:var(--font-en)">${dateStr(u.createdAt || Date.now())}</td>
+      <td>
+        <div class="cell-actions">
+          <button class="btn btn-primary btn-sm" data-act="donate" data-id="${escapeHtml(u.id)}"><span>+ Spoon</span></button>
+          <button class="btn btn-ghost btn-sm" data-act="edit" data-id="${escapeHtml(u.id)}"><span>編集</span></button>
+          <button class="btn btn-ghost btn-sm" data-act="history" data-id="${escapeHtml(u.id)}"><span>履歴</span></button>
+          <button class="btn btn-danger btn-sm" data-act="delete" data-id="${escapeHtml(u.id)}"><span>削除</span></button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  tbody.querySelectorAll('button[data-act]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      const act = btn.dataset.act;
+      if (act === 'donate') openDonateModal(id);
+      if (act === 'edit') openEditModal(id);
+      if (act === 'history') openHistoryModal(id);
+      if (act === 'delete') openDeleteConfirm(id);
+    });
+  });
+}
+
+// ============================================================
+// 新規登録
+// ============================================================
+let newIcon = { type: 'emoji', value: '👤' };
+
+function setupAddUser() {
+  // アイコンタブ
+  document.querySelectorAll('.icon-tab[data-icon-tab]').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.icon-tab[data-icon-tab]').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      const k = t.dataset.iconTab;
+      document.getElementById('iconPane-emoji').classList.toggle('active', k === 'emoji');
+      document.getElementById('iconPane-image').classList.toggle('active', k === 'image');
+    });
+  });
+
+  // 絵文字グリッド
+  const grid = document.getElementById('emojiGrid');
+  EMOJI_PRESET.forEach(em => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'emoji-btn';
+    b.textContent = em;
+    b.addEventListener('click', () => {
+      grid.querySelectorAll('.emoji-btn').forEach(x => x.classList.remove('selected'));
+      b.classList.add('selected');
+      newIcon = { type: 'emoji', value: em };
+      updateIconPreview('iconPreview', newIcon);
+    });
+    grid.appendChild(b);
+  });
+
+  // 画像アップロード
+  const ua = document.getElementById('uploadArea');
+  const ui = document.getElementById('uploadInput');
+  ua.addEventListener('click', () => ui.click());
+  ['dragover','dragenter'].forEach(ev => ua.addEventListener(ev, e => { e.preventDefault(); ua.style.borderColor = 'var(--pink)'; }));
+  ['dragleave','drop'].forEach(ev => ua.addEventListener(ev, e => { e.preventDefault(); ua.style.borderColor = ''; }));
+  ua.addEventListener('drop', (e) => {
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) handleIconUpload(e.dataTransfer.files[0], 'iconPreview', val => { newIcon = val; });
+  });
+  ui.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) handleIconUpload(e.target.files[0], 'iconPreview', val => { newIcon = val; });
+  });
+
+  document.getElementById('addUserBtn').addEventListener('click', () => {
+    const name = document.getElementById('newUserName').value.trim();
+    const initialSpoon = Math.max(0, parseInt(document.getElementById('newUserSpoon').value || '0', 10) || 0);
+    if (!name) { showToast('名前を入力してください'); return; }
+    if (name.length > 16) { showToast('名前は16文字以内で入力してください'); return; }
+    if (data.users.some(u => u.name === name)) { showToast('同じ名前のユーザーが既に存在します'); return; }
+    const user = {
+      id: uuid(),
+      name,
+      icon: newIcon.value || '👤',
+      iconType: newIcon.type,
+      totalSpoon: initialSpoon,
+      history: initialSpoon > 0 ? [{ amount: initialSpoon, timestamp: Date.now(), note: '初期設定' }] : [],
+      gachaConsumed: 0,
+      gachaHistory: [],
+      createdAt: Date.now(),
+    };
+    data.users.push(user);
+    saveData();
+    showToast(`${name} さんを登録しました`);
+    // フォームリセット
+    document.getElementById('newUserName').value = '';
+    document.getElementById('newUserSpoon').value = '0';
+    newIcon = { type: 'emoji', value: '👤' };
+    document.querySelectorAll('#emojiGrid .emoji-btn').forEach(b => b.classList.remove('selected'));
+    updateIconPreview('iconPreview', newIcon);
+    renderUserList();
+    // ユーザータブへ移動
+    document.querySelector('.tab[data-tab="users"]').click();
+  });
+
+  updateIconPreview('iconPreview', newIcon);
+}
+
+function updateIconPreview(elId, icon) {
+  const el = document.getElementById(elId);
+  el.classList.remove('empty');
+  if (icon.type === 'image' && icon.value) {
+    el.innerHTML = `<img src="${escapeHtml(icon.value)}" alt="">`;
+  } else if (icon.type === 'emoji' && icon.value && icon.value !== '👤') {
+    el.innerHTML = escapeHtml(icon.value);
+  } else {
+    el.classList.add('empty');
+    el.innerHTML = '？';
+  }
+}
+
+// 画像 → 256x256 中央クロップ → base64
+function handleIconUpload(file, previewId, onResult) {
+  if (!file.type.startsWith('image/')) { showToast('画像ファイルを選択してください'); return; }
+  if (file.size > 3 * 1024 * 1024) { showToast('ファイルサイズは3MB以下にしてください'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const size = 256;
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      // 中央クロップ
+      const minSide = Math.min(img.width, img.height);
+      const sx = (img.width - minSide) / 2;
+      const sy = (img.height - minSide) / 2;
+      ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+      const dataUrl = canvas.toDataURL('image/png');
+      const result = { type: 'image', value: dataUrl };
+      onResult(result);
+      updateIconPreview(previewId, result);
+    };
+    img.onerror = () => showToast('画像の読み込みに失敗しました');
+    img.src = reader.result;
+  };
+  reader.onerror = () => showToast('ファイルの読み込みに失敗しました');
+  reader.readAsDataURL(file);
+}
+
+// ============================================================
+// Spoon加算モーダル
+// ============================================================
+let donateUserId = null;
+let lastDonateUserId = null; // 直前の加算対象（Undo用）
+
+function openDonateModal(userId) {
+  const u = data.users.find(x => x.id === userId);
+  if (!u) return;
+  donateUserId = userId;
+  document.getElementById('donateUserInfo').innerHTML = `
+    <div class="cell-icon">${renderUserIcon(u)}</div>
+    <div>
+      <div class="user-pre-info-name">${escapeHtml(u.name)}</div>
+      <div class="user-pre-info-spoon">現在 ${fmt(u.totalSpoon || 0)} Spoon</div>
+    </div>
+  `;
+  document.getElementById('donateAmount').value = '';
+  document.getElementById('donateNote').value = '';
+  document.getElementById('undoLastBtn').disabled = !((u.history || []).length > 0);
+  showModal('donateModal');
+  setTimeout(() => document.getElementById('donateAmount').focus(), 100);
+}
+
+function setupDonateModal() {
+  document.querySelectorAll('#donateModal .quick-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      const cur = parseInt(document.getElementById('donateAmount').value || '0', 10) || 0;
+      document.getElementById('donateAmount').value = cur + parseInt(b.dataset.amt, 10);
+    });
+  });
+  document.getElementById('donateConfirmBtn').addEventListener('click', () => {
+    const amt = parseInt(document.getElementById('donateAmount').value || '0', 10);
+    const note = document.getElementById('donateNote').value.trim();
+    if (!amt || amt <= 0) { showToast('数値を入力してください'); return; }
+    addDonation(donateUserId, amt, note);
+  });
+  document.getElementById('undoLastBtn').addEventListener('click', () => {
+    if (!donateUserId) return;
+    undoLastDonation(donateUserId);
+  });
+}
+
+function addDonation(userId, amount, note) {
+  const u = data.users.find(x => x.id === userId);
+  if (!u) return;
+  const threshold = data.settings.gachaThreshold;
+  const beforeEarned = Math.floor((u.totalSpoon || 0) / threshold);
+  u.totalSpoon = (u.totalSpoon || 0) + amount;
+  u.history = u.history || [];
+  u.history.push({ amount, timestamp: Date.now(), note: note || undefined });
+  const afterEarned = Math.floor(u.totalSpoon / threshold);
+  saveData();
+  lastDonateUserId = userId;
+  hideModal('donateModal');
+  renderUserList();
+  if (afterEarned > beforeEarned) {
+    const newRights = afterEarned - beforeEarned;
+    showToast(`${u.name} さんに +${fmt(amount)} Spoon → 🎰 ガチャ権利 +${newRights}！`);
+  } else {
+    showToast(`${u.name} さんに +${fmt(amount)} Spoon`);
+  }
+}
+
+function undoLastDonation(userId) {
+  const u = data.users.find(x => x.id === userId);
+  if (!u || !u.history || u.history.length === 0) { showToast('取り消せる加算がありません'); return; }
+  const last = u.history.pop();
+  u.totalSpoon = Math.max(0, (u.totalSpoon || 0) - last.amount);
+  saveData();
+  hideModal('donateModal');
+  renderUserList();
+  showToast(`${u.name} さんへの直前の加算（${fmt(last.amount)}）を取り消しました`);
+}
+
+// ============================================================
+// 編集 / 削除 / 履歴
+// ============================================================
+let editUserId = null;
+let editIcon = null;
+
+function openEditModal(userId) {
+  const u = data.users.find(x => x.id === userId);
+  if (!u) return;
+  editUserId = userId;
+  document.getElementById('editName').value = u.name || '';
+  editIcon = { type: u.iconType || 'emoji', value: u.icon || '👤' };
+  // タブ位置を反映
+  document.querySelectorAll('.icon-tab[data-edit-icon-tab]').forEach(t => {
+    t.classList.toggle('active', t.dataset.editIconTab === editIcon.type);
+  });
+  document.getElementById('editIconPane-emoji').classList.toggle('active', editIcon.type === 'emoji');
+  document.getElementById('editIconPane-image').classList.toggle('active', editIcon.type === 'image');
+  // 絵文字選択ハイライト
+  document.querySelectorAll('#editEmojiGrid .emoji-btn').forEach(b => {
+    b.classList.toggle('selected', b.textContent === editIcon.value);
+  });
+  updateIconPreview('editIconPreview', editIcon);
+  showModal('editModal');
+}
+
+function setupEditModal() {
+  // タブ
+  document.querySelectorAll('.icon-tab[data-edit-icon-tab]').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.icon-tab[data-edit-icon-tab]').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      const k = t.dataset.editIconTab;
+      document.getElementById('editIconPane-emoji').classList.toggle('active', k === 'emoji');
+      document.getElementById('editIconPane-image').classList.toggle('active', k === 'image');
+    });
+  });
+  // 絵文字グリッド
+  const grid = document.getElementById('editEmojiGrid');
+  EMOJI_PRESET.forEach(em => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'emoji-btn';
+    b.textContent = em;
+    b.addEventListener('click', () => {
+      grid.querySelectorAll('.emoji-btn').forEach(x => x.classList.remove('selected'));
+      b.classList.add('selected');
+      editIcon = { type: 'emoji', value: em };
+      updateIconPreview('editIconPreview', editIcon);
+    });
+    grid.appendChild(b);
+  });
+  // 画像
+  const ua = document.getElementById('editUploadArea');
+  const ui = document.getElementById('editUploadInput');
+  ua.addEventListener('click', () => ui.click());
+  ['dragover','dragenter'].forEach(ev => ua.addEventListener(ev, e => { e.preventDefault(); ua.style.borderColor = 'var(--pink)'; }));
+  ['dragleave','drop'].forEach(ev => ua.addEventListener(ev, e => { e.preventDefault(); ua.style.borderColor = ''; }));
+  ua.addEventListener('drop', (e) => {
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) handleIconUpload(e.dataTransfer.files[0], 'editIconPreview', val => { editIcon = val; });
+  });
+  ui.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) handleIconUpload(e.target.files[0], 'editIconPreview', val => { editIcon = val; });
+  });
+  // 保存
+  document.getElementById('editSaveBtn').addEventListener('click', () => {
+    if (!editUserId) return;
+    const u = data.users.find(x => x.id === editUserId);
+    if (!u) return;
+    const name = document.getElementById('editName').value.trim();
+    if (!name) { showToast('名前を入力してください'); return; }
+    if (name.length > 16) { showToast('名前は16文字以内で入力してください'); return; }
+    if (data.users.some(x => x.id !== editUserId && x.name === name)) { showToast('同じ名前のユーザーが既に存在します'); return; }
+    u.name = name;
+    if (editIcon) {
+      u.icon = editIcon.value;
+      u.iconType = editIcon.type;
+    }
+    saveData();
+    hideModal('editModal');
+    renderUserList();
+    showToast('保存しました');
+  });
+}
+
+let pendingDeleteId = null;
+
+function openDeleteConfirm(userId) {
+  const u = data.users.find(x => x.id === userId);
+  if (!u) return;
+  pendingDeleteId = userId;
+  document.getElementById('confirmTitle').textContent = 'ユーザー削除';
+  document.getElementById('confirmMsg').innerHTML = `「<strong style="color:var(--white)">${escapeHtml(u.name)}</strong>」を削除します。<br>履歴を含めて完全に削除され、復元できません。よろしいですか？`;
+  document.getElementById('confirmOkBtn').dataset.kind = 'delete';
+  showModal('confirmModal');
+}
+
+function setupConfirmModal() {
+  document.getElementById('confirmOkBtn').addEventListener('click', () => {
+    const kind = document.getElementById('confirmOkBtn').dataset.kind;
+    if (kind === 'delete') {
+      data.users = data.users.filter(u => u.id !== pendingDeleteId);
+      saveData();
+      hideModal('confirmModal');
+      renderUserList();
+      showToast('削除しました');
+    } else if (kind === 'reset') {
+      // 全データリセット：サーバ側のデータを初期値で上書き
+      data = getDefaultData();
+      saveData().finally(() => {
+        hideModal('confirmModal');
+        showToast('全データをリセットしました');
+        setTimeout(() => location.reload(), 800);
+      });
+    } else if (kind === 'reset-confirm2') {
+      openResetConfirm2();
+    }
+    pendingDeleteId = null;
+  });
+}
+
+function openHistoryModal(userId) {
+  const u = data.users.find(x => x.id === userId);
+  if (!u) return;
+  document.getElementById('historyUserInfo').innerHTML = `
+    <div class="cell-icon">${renderUserIcon(u)}</div>
+    <div>
+      <div class="user-pre-info-name">${escapeHtml(u.name)}</div>
+      <div class="user-pre-info-spoon">累計 ${fmt(u.totalSpoon || 0)} Spoon</div>
+    </div>
+  `;
+  const list = document.getElementById('historyList');
+  const hist = (u.history || []).slice().reverse();
+  if (hist.length === 0) {
+    list.innerHTML = `<div class="empty-row" style="padding:2rem 0;text-align:center;color:rgba(255,255,255,0.4)">履歴がありません</div>`;
+  } else {
+    list.innerHTML = hist.map(h => `
+      <div class="history-item">
+        <div class="history-time">${timeStr(h.timestamp)}</div>
+        <div class="history-note">${escapeHtml(h.note || '—')}</div>
+        <div class="history-amount">+${fmt(h.amount)}</div>
+      </div>
+    `).join('');
+  }
+  showModal('historyModal');
+}
+
+// ============================================================
+// 設定
+// ============================================================
+function setupSettings() {
+  document.getElementById('saveEventBtn').addEventListener('click', () => {
+    const name = document.getElementById('setEventName').value.trim();
+    const start = document.getElementById('setEventStart').value;
+    const end = document.getElementById('setEventEnd').value;
+    if (!name) { showToast('イベント名を入力してください'); return; }
+    if (!start || !end) { showToast('開始日時・終了日時を入力してください'); return; }
+    if (new Date(start).getTime() >= new Date(end).getTime()) { showToast('終了日時は開始日時より後にしてください'); return; }
+    data.settings.eventName = name;
+    data.settings.eventStartDate = new Date(start).toISOString();
+    data.settings.eventEndDate = new Date(end).toISOString();
+    saveData();
+    showToast('イベント情報を保存しました');
+  });
+
+  // ガチャ閾値保存
+  document.getElementById('saveThresholdBtn').addEventListener('click', () => {
+    const v = parseInt(document.getElementById('setGachaThreshold').value || '0', 10);
+    if (!v || v < 100) { showToast('100 以上の数値を入れてください'); return; }
+    data.settings.gachaThreshold = v;
+    saveData();
+    renderUserList();
+    showToast(`ガチャ閾値を ${fmt(v)} Spoon に設定しました`);
+  });
+
+  // ガチャ景品保存
+  document.getElementById('savePrizesBtn').addEventListener('click', () => {
+    const rows = document.querySelectorAll('#prizeEditList .prize-edit-row');
+    const newPrizes = [];
+    let ok = true;
+    rows.forEach(row => {
+      const name = row.querySelector('[data-f="name"]').value.trim();
+      const rarity = row.querySelector('[data-f="rarity"]').value;
+      const weight = Math.max(0, parseInt(row.querySelector('[data-f="weight"]').value || '0', 10) || 0);
+      const description = row.querySelector('[data-f="description"]').value.trim();
+      const cell = row.querySelector('.rank-icon-cell');
+      const iconValue = (cell && cell.dataset.iconValue) || '🎁';
+      const id = row.dataset.prizeId || ('p-' + Math.random().toString(36).slice(2, 8));
+      if (!name) { ok = false; }
+      newPrizes.push({
+        id,
+        name,
+        rarity,
+        icon: iconValue,
+        iconType: (typeof iconValue === 'string' && iconValue.startsWith('data:image')) ? 'image' : 'emoji',
+        weight,
+        description,
+      });
+    });
+    if (!ok) { showToast('景品名を全て入力してください'); return; }
+    if (newPrizes.length === 0) { showToast('最低1つの景品を残してください'); return; }
+    const totalWeight = newPrizes.reduce((s, p) => s + p.weight, 0);
+    if (totalWeight <= 0) { showToast('Weight の合計が0です。少なくとも1つは1以上にしてください'); return; }
+    data.settings.gachaPrizes = newPrizes;
+    saveData();
+    showToast('ガチャ景品を保存しました');
+  });
+
+  document.getElementById('resetPrizesBtn').addEventListener('click', () => {
+    if (!confirm('景品を初期セットに戻します。よろしいですか？')) return;
+    data.settings.gachaPrizes = DEFAULT_PRIZES.slice();
+    saveData();
+    renderSettings();
+    showToast('景品を初期値に戻しました');
+  });
+
+  // 景品追加
+  document.getElementById('addPrizeBtn').addEventListener('click', () => {
+    data.settings.gachaPrizes.push({
+      id: 'p-' + Math.random().toString(36).slice(2, 8),
+      name: '新しい景品',
+      rarity: 'N',
+      icon: '🎁',
+      iconType: 'emoji',
+      weight: 10,
+      description: '',
+    });
+    saveData();
+    renderSettings();
+  });
+
+  // パスワード変更は Vercel 環境変数で管理（UI 経由不可）
+
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const today = new Date().toISOString().slice(0, 10);
+    const a = document.createElement('a');
+    a.href = url; a.download = `mtk-backup-${today}.json`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('エクスポートしました');
+  });
+
+  document.getElementById('importBtn').addEventListener('click', () => {
+    document.getElementById('importInput').click();
+  });
+  document.getElementById('importInput').addEventListener('change', (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(reader.result);
+        if (!parsed || !Array.isArray(parsed.users)) {
+          alert('無効なJSONファイルです（users 配列がありません）。');
+          return;
+        }
+        if (!confirm(`${parsed.users.length}名分のデータで現在の内容を置き換えます。よろしいですか？`)) return;
+        data = Object.assign(getDefaultData(), parsed);
+        // 設定マージ（一部欠落対策）
+        data.settings = Object.assign(getDefaultData().settings, parsed.settings || {});
+        saveData();
+        renderAll();
+        showToast('インポートしました');
+      } catch (err) {
+        alert('JSONの読み込みに失敗しました: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById('demoDataBtn').addEventListener('click', () => {
+    if (!confirm('12名のデモ社員を追加します。よろしいですか？')) return;
+    seedDemoData();
+    showToast('デモデータを追加しました');
+    renderUserList();
+    document.querySelector('.tab[data-tab="users"]').click();
+  });
+
+  document.getElementById('resetAllBtn').addEventListener('click', () => {
+    document.getElementById('confirmTitle').textContent = '全データリセット';
+    document.getElementById('confirmMsg').innerHTML = '全てのユーザー・履歴・設定・パスワードを削除します。<br>復元できません。よろしいですか？';
+    document.getElementById('confirmOkBtn').dataset.kind = 'reset-confirm2';
+    showModal('confirmModal');
+  });
+}
+
+function openResetConfirm2() {
+  document.getElementById('confirmTitle').textContent = '本当によろしいですか？';
+  document.getElementById('confirmMsg').innerHTML = '<strong style="color:var(--danger)">最終確認</strong>：全データを削除します。<br>本当に実行する場合は「実行」を押してください。';
+  document.getElementById('confirmOkBtn').dataset.kind = 'reset';
+  showModal('confirmModal');
+}
+
+function renderSettings() {
+  document.getElementById('setEventName').value = data.settings.eventName || '';
+  document.getElementById('setEventStart').value = toLocalInputValue(data.settings.eventStartDate);
+  document.getElementById('setEventEnd').value = toLocalInputValue(data.settings.eventEndDate);
+
+  // ヘッダー画像プレビュー
+  const preview = document.getElementById('headerImagePreview');
+  if (preview) {
+    if (data.settings.headerImage) {
+      preview.style.backgroundImage = `url("${data.settings.headerImage}")`;
+      preview.innerHTML = '';
+    } else {
+      preview.style.backgroundImage = '';
+      preview.innerHTML = '<div class="header-image-empty">未設定</div>';
+    }
+  }
+
+  // ガチャ閾値
+  const thInput = document.getElementById('setGachaThreshold');
+  if (thInput) thInput.value = data.settings.gachaThreshold || 5000;
+
+  // ガチャ景品リスト
+  const list = document.getElementById('prizeEditList');
+  list.innerHTML = '';
+  (data.settings.gachaPrizes || []).forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'rank-edit-row prize-edit-row';
+    row.dataset.prizeId = p.id || '';
+    const isImg = isImageData(p.icon);
+    const rarityOpts = RARITY_OPTIONS.map(r => `<option value="${r}"${r === (p.rarity || 'N') ? ' selected' : ''}>${r}</option>`).join('');
+    row.innerHTML = `
+      <div class="rank-no">No.${String(i+1).padStart(2,'0')}</div>
+      <input class="input" data-f="name" value="${escapeHtml(p.name)}" placeholder="景品名">
+      <select class="select" data-f="rarity" style="padding:0.5rem 0.7rem;font-size:0.82rem">${rarityOpts}</select>
+      <input class="input" data-f="description" value="${escapeHtml(p.description || '')}" placeholder="説明テキスト">
+      <div class="rank-icon-cell prize-icon-cell" data-prize-idx="${i}" data-icon-value="${escapeHtml(p.icon || '🎁')}">
+        <button type="button" class="rank-icon-thumb${isImg ? ' has-image' : ''}" data-act="upload">
+          ${renderRewardIcon(p.icon)}
+          <span class="rank-icon-thumb-hint">画像</span>
+          <span class="rank-icon-thumb-clear" data-act="clear">✕</span>
+        </button>
+        <input class="input rank-icon-emoji" data-f="iconEmoji" maxlength="2" value="${isImg ? '' : escapeHtml(p.icon || '')}" placeholder="🎁">
+      </div>
+      <div class="prize-edit-extra">
+        <span class="prize-extra-label">Weight</span>
+        <input class="input" data-f="weight" type="number" min="0" step="1" value="${p.weight || 0}">
+        <span style="flex:1"></span>
+        <button type="button" class="btn btn-danger btn-sm" data-act="remove-prize"><span>削除</span></button>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+
+  // 削除ボタン
+  list.querySelectorAll('[data-act="remove-prize"]').forEach(b => {
+    b.addEventListener('click', () => {
+      const row = b.closest('.prize-edit-row');
+      const id = row.dataset.prizeId;
+      if (data.settings.gachaPrizes.length <= 1) { showToast('最低1つの景品が必要です'); return; }
+      if (!confirm('この景品を削除しますか？')) return;
+      data.settings.gachaPrizes = data.settings.gachaPrizes.filter(p => p.id !== id);
+      saveData();
+      renderSettings();
+    });
+  });
+
+  // ランク報酬アイコンの操作ハンドラ
+  list.querySelectorAll('.rank-icon-thumb').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const cell = btn.closest('.rank-icon-cell');
+      // ✕ クリックは画像クリア
+      if (e.target.dataset.act === 'clear') {
+        e.stopPropagation();
+        clearRankIconImage(cell);
+        return;
+      }
+      openRankIconPicker(cell);
+    });
+  });
+  // 絵文字テキスト入力 → 入力された瞬間に画像から絵文字に切り替わる
+  list.querySelectorAll('.rank-icon-emoji').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const v = inp.value.trim();
+      if (!v) return; // 空入力は何もしない（画像維持）
+      const cell = inp.closest('.rank-icon-cell');
+      cell.dataset.iconValue = v;
+      const thumb = cell.querySelector('.rank-icon-thumb');
+      thumb.classList.remove('has-image');
+      thumb.innerHTML = `${renderRewardIcon(v)}<span class="rank-icon-thumb-hint">画像</span><span class="rank-icon-thumb-clear" data-act="clear">✕</span>`;
+    });
+  });
+}
+
+// ===== ヘッダー画像（公開ホーム用） =====
+function setupHeaderImage() {
+  const ua = document.getElementById('headerImageUploadArea');
+  const fi = document.getElementById('headerImageInput');
+  const removeBtn = document.getElementById('headerImageRemoveBtn');
+  if (!ua || !fi) return;
+
+  ua.addEventListener('click', () => fi.click());
+  ['dragover','dragenter'].forEach(ev => ua.addEventListener(ev, e => {
+    e.preventDefault();
+    ua.style.borderColor = 'var(--pink)';
+  }));
+  ['dragleave','drop'].forEach(ev => ua.addEventListener(ev, e => {
+    e.preventDefault();
+    ua.style.borderColor = '';
+  }));
+  ua.addEventListener('drop', (e) => {
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) handleHeaderImageUpload(e.dataTransfer.files[0]);
+  });
+  fi.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) handleHeaderImageUpload(e.target.files[0]);
+    fi.value = '';
+  });
+  removeBtn.addEventListener('click', () => {
+    if (!data.settings.headerImage) { showToast('ヘッダー画像はまだ設定されていません'); return; }
+    if (!confirm('ヘッダー画像を削除しますか？')) return;
+    data.settings.headerImage = '';
+    saveData();
+    renderSettings();
+    showToast('ヘッダー画像を削除しました');
+  });
+}
+
+function handleHeaderImageUpload(file) {
+  if (!file.type.startsWith('image/')) { showToast('画像ファイルを選択してください'); return; }
+  if (file.size > 3 * 1024 * 1024) { showToast('ファイルサイズは3MB以下にしてください'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      // ヒーロー帯用に最大1600x720で中央クロップしてJPEG化（容量節約）
+      const targetW = 1600, targetH = 720;
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW; canvas.height = targetH;
+      const ctx = canvas.getContext('2d');
+      // cover: 元画像を縦横どちらかフィットさせて中央クロップ
+      const scale = Math.max(targetW / img.width, targetH / img.height);
+      const w = img.width * scale, h = img.height * scale;
+      const dx = (targetW - w) / 2, dy = (targetH - h) / 2;
+      ctx.fillStyle = '#faf6ee'; ctx.fillRect(0, 0, targetW, targetH);
+      ctx.drawImage(img, dx, dy, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      data.settings.headerImage = dataUrl;
+      try {
+        saveData();
+      } catch (err) {
+        showToast('保存に失敗しました（容量超過の可能性）');
+        return;
+      }
+      renderSettings();
+      showToast('ヘッダー画像を設定しました');
+    };
+    img.onerror = () => showToast('画像の読み込みに失敗しました');
+    img.src = reader.result;
+  };
+  reader.onerror = () => showToast('ファイルの読み込みに失敗しました');
+  reader.readAsDataURL(file);
+}
+
+// ===== ランク報酬アイコンの画像アップロード =====
+let _pendingRankCell = null;
+function openRankIconPicker(cell) {
+  _pendingRankCell = cell;
+  document.getElementById('rankIconFile').click();
+}
+function clearRankIconImage(cell) {
+  // 絵文字入力欄に値があればそれを使用、無ければ🎁にフォールバック
+  const emojiInput = cell.querySelector('.rank-icon-emoji');
+  const fallback = (emojiInput.value || '').trim() || '🎁';
+  cell.dataset.iconValue = fallback;
+  const thumb = cell.querySelector('.rank-icon-thumb');
+  thumb.classList.remove('has-image');
+  thumb.innerHTML = `${renderRewardIcon(fallback)}<span class="rank-icon-thumb-hint">画像</span><span class="rank-icon-thumb-clear" data-act="clear">✕</span>`;
+}
+function setupRankIconFileInput() {
+  const f = document.getElementById('rankIconFile');
+  if (!f) return;
+  f.addEventListener('change', (e) => {
+    const file = e.target.files && e.target.files[0];
+    f.value = '';
+    if (!file || !_pendingRankCell) return;
+    handleRankIconUpload(file, _pendingRankCell);
+    _pendingRankCell = null;
+  });
+}
+function handleRankIconUpload(file, cell) {
+  if (!file.type.startsWith('image/')) { showToast('画像ファイルを選択してください'); return; }
+  if (file.size > 3 * 1024 * 1024) { showToast('ファイルサイズは3MB以下にしてください'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const size = 128; // ランクアイコンは小さく表示するので 128x128 で十分
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const minSide = Math.min(img.width, img.height);
+      const sx = (img.width - minSide) / 2;
+      const sy = (img.height - minSide) / 2;
+      ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+      const dataUrl = canvas.toDataURL('image/png');
+      cell.dataset.iconValue = dataUrl;
+      const thumb = cell.querySelector('.rank-icon-thumb');
+      thumb.classList.add('has-image');
+      thumb.innerHTML = `<img src="${escapeHtml(dataUrl)}" alt=""><span class="rank-icon-thumb-hint">画像</span><span class="rank-icon-thumb-clear" data-act="clear">✕</span>`;
+    };
+    img.onerror = () => showToast('画像の読み込みに失敗しました');
+    img.src = reader.result;
+  };
+  reader.onerror = () => showToast('ファイルの読み込みに失敗しました');
+  reader.readAsDataURL(file);
+}
+
+// ============================================================
+// 昇進演出
+// ============================================================
+function showPromotion(user, rank) {
+  document.getElementById('promoName').textContent = `${user.name} さん`;
+  document.getElementById('promoRankEn').textContent = '— PROMOTED TO —';
+  document.getElementById('promoRankJp').textContent = rank.name;
+  const ov = document.getElementById('promoOverlay');
+  ov.classList.add('show');
+  setTimeout(() => {
+    ov.classList.remove('show');
+    showToast(`${user.name} さんが ${rank.name} に昇進しました`);
+  }, 2400);
+}
+
+// ============================================================
+// モーダル汎用
+// ============================================================
+function showModal(id) { document.getElementById(id).classList.add('show'); }
+function hideModal(id) { document.getElementById(id).classList.remove('show'); }
+function setupModalCloseHandlers() {
+  document.querySelectorAll('[data-close-modal]').forEach(b => {
+    b.addEventListener('click', () => {
+      const m = b.closest('.modal-backdrop');
+      if (m) m.classList.remove('show');
+    });
+  });
+  document.querySelectorAll('.modal-backdrop').forEach(m => {
+    m.addEventListener('click', (e) => { if (e.target === m) m.classList.remove('show'); });
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-backdrop.show').forEach(m => m.classList.remove('show'));
+    }
+  });
+  setupDonateModal();
+  setupEditModal();
+  setupConfirmModal();
+}
+
+// ============================================================
+// デモデータ投入
+// ============================================================
+const DEMO_USERS = [
+  { name: 'メイ',    icon: '🌸', spoon: 152400 },
+  { name: 'ハル',    icon: '🌟', spoon: 110800 },
+  { name: 'アオイ',  icon: '🦄', spoon: 68000  },
+  { name: 'ユウキ',  icon: '🦊', spoon: 42500  },
+  { name: 'リン',    icon: '🎤', spoon: 35200  },
+  { name: 'タクヤ',  icon: '🎸', spoon: 18900  },
+  { name: 'モモ',    icon: '🐱', spoon: 14200  },
+  { name: 'ケンタ',  icon: '🦁', spoon: 11500  },
+  { name: 'サクラ',  icon: '🐰', spoon: 7200   },
+  { name: 'ジュン',  icon: '🐉', spoon: 4500   },
+  { name: 'ノエル',  icon: '🐼', spoon: 1200   },
+  { name: 'ヒカル',  icon: '☕', spoon: 0      },
+];
+
+function seedDemoData() {
+  const now = Date.now();
+  // 既存ユーザー名と被らないように suffix を付ける
+  const existingNames = new Set(data.users.map(u => u.name));
+  DEMO_USERS.forEach((d, i) => {
+    let name = d.name;
+    let n = 2;
+    while (existingNames.has(name)) name = `${d.name}${n++}`;
+    existingNames.add(name);
+
+    // 履歴を 2〜3 件に分割（時系列で過去にさかのぼる）
+    const history = [];
+    let remain = d.spoon;
+    if (remain > 0) {
+      const splits = remain >= 10000 ? 3 : remain >= 3000 ? 2 : 1;
+      for (let s = 0; s < splits; s++) {
+        const isLast = s === splits - 1;
+        const amt = isLast ? remain : Math.floor(remain * (0.3 + Math.random() * 0.4));
+        history.push({
+          amount: amt,
+          timestamp: now - (splits - s) * (3600000 + Math.random() * 7200000),
+          note: ['配信スタート枠', 'コメント枠', 'リスナー枠', '記念枠'][Math.floor(Math.random() * 4)],
+        });
+        remain -= amt;
+      }
+    }
+
+    data.users.push({
+      id: uuid(),
+      name,
+      icon: d.icon,
+      iconType: 'emoji',
+      totalSpoon: d.spoon,
+      history,
+      gachaConsumed: 0,
+      gachaHistory: [],
+      createdAt: now - (DEMO_USERS.length - i) * 60000,  // 1分ずつずらして登録順を演出
+    });
+  });
+  saveData();
+}
+
+// ============================================================
+// 同期
+// ============================================================
+function setupSync() {
+  // 15秒ごとに /api/data を再取得（リスナー側のガチャ実行を拾うため）
+  setInterval(async () => {
+    if (document.visibilityState !== 'visible') return;
+    await loadData();
+    renderUserList();
+  }, POLL_INTERVAL_MS);
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible') {
+      await loadData();
+      renderUserList();
+    }
+  });
+}
+
+// ============================================================
+// トースト
+// ============================================================
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ============================================================
+// 起動
+// ============================================================
+setupAuthGate();
+</script>
+</body>
+</html>
