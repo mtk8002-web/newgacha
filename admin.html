@@ -1992,6 +1992,7 @@ function setupSettings() {
   });
 
   document.getElementById('addGachaTypeBtn').addEventListener('click', () => {
+    captureGachaTypesFromForm();
     data.settings.gachaTypes.push({
       id: 't-' + Math.random().toString(36).slice(2, 8),
       name: '新しいガチャ',
@@ -2071,6 +2072,45 @@ function openResetConfirm2() {
   showModal('confirmModal');
 }
 
+// フォーム上の現在の入力内容を data.settings.gachaTypes に取り込む（バリデーションなし）。
+// 景品/タイプの追加・削除のように再描画を伴う操作の前に呼ぶ。これがないと、
+// 「全て保存」を押す前に入力していた値が renderSettings() で初期状態に戻ってしまう。
+function captureGachaTypesFromForm() {
+  const editor = document.getElementById('gachaTypesEditor');
+  if (!editor) return;
+  const cards = editor.querySelectorAll('.gacha-type-card');
+  if (cards.length === 0) return;
+  const newTypes = [];
+  cards.forEach(card => {
+    const id = card.dataset.typeId || ('t-' + Math.random().toString(36).slice(2, 8));
+    const name = card.querySelector('[data-tf="name"]').value;
+    const cost = Math.max(1, parseInt(card.querySelector('[data-tf="cost"]').value || '0', 10) || 1);
+    const accent = card.querySelector('[data-tf="accent"]').value || '#e8638a';
+    const candyCell = card.querySelector('.candy-icon-cell');
+    const candyIcon = (candyCell && candyCell.dataset.iconValue) || '🍬';
+    const candyIconType = (typeof candyIcon === 'string' && candyIcon.startsWith('data:image')) ? 'image' : 'emoji';
+    const prizeRows = card.querySelectorAll('.prize-edit-row');
+    const prizes = [];
+    prizeRows.forEach(row => {
+      const pname = row.querySelector('[data-f="name"]').value;
+      const rarity = row.querySelector('[data-f="rarity"]').value;
+      const weight = Math.max(0, parseInt(row.querySelector('[data-f="weight"]').value || '0', 10) || 0);
+      const description = row.querySelector('[data-f="description"]').value;
+      const cell = row.querySelector('.rank-icon-cell');
+      const iconValue = (cell && cell.dataset.iconValue) || '🎁';
+      const pid = row.dataset.prizeId || ('p-' + Math.random().toString(36).slice(2, 8));
+      prizes.push({
+        id: pid, name: pname, rarity,
+        icon: iconValue,
+        iconType: (typeof iconValue === 'string' && iconValue.startsWith('data:image')) ? 'image' : 'emoji',
+        weight, description,
+      });
+    });
+    newTypes.push({ id, name, cost, accent, candyIcon, candyIconType, prizes });
+  });
+  data.settings.gachaTypes = newTypes;
+}
+
 function renderSettings() {
   document.getElementById('setEventName').value = data.settings.eventName || '';
   document.getElementById('setEventStart').value = toLocalInputValue(data.settings.eventStartDate);
@@ -2117,7 +2157,6 @@ function renderSettings() {
               <span class="rank-icon-thumb-hint">画像</span>
               <span class="rank-icon-thumb-clear" data-act="clear">✕</span>
             </button>
-            <input class="input rank-icon-emoji" data-f="iconEmoji" maxlength="2" value="${isImg ? '' : escapeHtml(p.icon || '')}" placeholder="🎁">
           </div>
           <div class="prize-edit-extra">
             <span class="prize-extra-label">Weight</span>
@@ -2176,6 +2215,7 @@ function renderSettings() {
       const id = card.dataset.typeId;
       if ((data.settings.gachaTypes || []).length <= 1) { showToast('最低1つのガチャタイプが必要です'); return; }
       if (!confirm('このガチャタイプを削除しますか？景品もまとめて消えます。')) return;
+      captureGachaTypesFromForm();
       data.settings.gachaTypes = data.settings.gachaTypes.filter(t => t.id !== id);
       saveData();
       renderSettings();
@@ -2185,6 +2225,7 @@ function renderSettings() {
   // 景品追加
   editor.querySelectorAll('[data-act="add-prize"]').forEach(b => {
     b.addEventListener('click', () => {
+      captureGachaTypesFromForm();
       const card = b.closest('.gacha-type-card');
       const id = card.dataset.typeId;
       const t = (data.settings.gachaTypes || []).find(x => x.id === id);
@@ -2211,11 +2252,16 @@ function renderSettings() {
       const card = b.closest('.gacha-type-card');
       const typeId = card.dataset.typeId;
       const prizeId = row.dataset.prizeId;
+      const before = (data.settings.gachaTypes || []).find(x => x.id === typeId);
+      if (!before) return;
+      if ((before.prizes || []).length <= 1) { showToast('最低1つの景品が必要です'); return; }
+      if (!confirm('この景品を削除しますか？')) return;
+      // フォームの未保存編集を data に取り込む。これで data.settings.gachaTypes 配列自体が
+      // 新しい参照に置き換わるので、t は再取得する必要がある。
+      captureGachaTypesFromForm();
       const t = (data.settings.gachaTypes || []).find(x => x.id === typeId);
       if (!t) return;
-      if ((t.prizes || []).length <= 1) { showToast('最低1つの景品が必要です'); return; }
-      if (!confirm('この景品を削除しますか？')) return;
-      t.prizes = t.prizes.filter(p => p.id !== prizeId);
+      t.prizes = (t.prizes || []).filter(p => p.id !== prizeId);
       saveData();
       renderSettings();
     });
@@ -2322,9 +2368,11 @@ function openRankIconPicker(cell) {
   document.getElementById('rankIconFile').click();
 }
 function clearRankIconImage(cell) {
-  // 絵文字入力欄に値があればそれを使用、無ければ🎁にフォールバック
+  // 絵文字入力欄が存在する場合（キャンディアイコン側）はその値を、無ければデフォルト絵文字にフォールバック
   const emojiInput = cell.querySelector('.rank-icon-emoji');
-  const fallback = (emojiInput.value || '').trim() || '🎁';
+  const typed = emojiInput ? (emojiInput.value || '').trim() : '';
+  const defaultIcon = cell.classList.contains('candy-icon-cell') ? '🍬' : '🎁';
+  const fallback = typed || defaultIcon;
   cell.dataset.iconValue = fallback;
   const thumb = cell.querySelector('.rank-icon-thumb');
   thumb.classList.remove('has-image');
