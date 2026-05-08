@@ -963,6 +963,13 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
           <label class="label-text">終了日時</label>
           <input type="datetime-local" class="input" id="setEventEnd">
         </div>
+        <div class="field-row" style="align-items:start">
+          <label class="label-text" style="margin-top:0.55rem">ガチャ説明（任意）</label>
+          <div>
+            <textarea class="textarea" id="setGachaDesc" rows="3" maxlength="400" placeholder="例：このガチャはイベント期間中限定です。SSR以上で限定景品が出ます！"></textarea>
+            <div class="form-hint" style="margin-top:0.4rem">公開ホームの残り期間カウンター下に表示されます。空欄なら非表示。</div>
+          </div>
+        </div>
         <div style="text-align:right;margin-top:1rem">
           <button class="btn btn-primary btn-sm" id="saveEventBtn"><span>保存</span></button>
         </div>
@@ -1202,6 +1209,7 @@ function getDefaultData() {
       eventName: '春の出世大競争',
       eventStartDate: now.toISOString(),
       eventEndDate: end.toISOString(),
+      gachaDescription: '',
       headerImage: '',
       gachaTypes: JSON.parse(JSON.stringify(DEFAULT_GACHA_TYPES)),  // ディープコピー
     },
@@ -1928,12 +1936,14 @@ function setupSettings() {
     const name = document.getElementById('setEventName').value.trim();
     const start = document.getElementById('setEventStart').value;
     const end = document.getElementById('setEventEnd').value;
+    const desc = document.getElementById('setGachaDesc').value;
     if (!name) { showToast('イベント名を入力してください'); return; }
     if (!start || !end) { showToast('開始日時・終了日時を入力してください'); return; }
     if (new Date(start).getTime() >= new Date(end).getTime()) { showToast('終了日時は開始日時より後にしてください'); return; }
     data.settings.eventName = name;
     data.settings.eventStartDate = new Date(start).toISOString();
     data.settings.eventEndDate = new Date(end).toISOString();
+    data.settings.gachaDescription = desc;
     saveData();
     showToast('イベント情報を保存しました');
   });
@@ -2115,6 +2125,7 @@ function renderSettings() {
   document.getElementById('setEventName').value = data.settings.eventName || '';
   document.getElementById('setEventStart').value = toLocalInputValue(data.settings.eventStartDate);
   document.getElementById('setEventEnd').value = toLocalInputValue(data.settings.eventEndDate);
+  document.getElementById('setGachaDesc').value = data.settings.gachaDescription || '';
 
   // ヘッダー画像プレビュー
   const preview = document.getElementById('headerImagePreview');
