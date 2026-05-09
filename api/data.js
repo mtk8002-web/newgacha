@@ -2,6 +2,7 @@
 // GET  : 共有データを取得（誰でもOK）
 // POST : 共有データを上書き（Bearer ADMIN_TOKEN 必須）
 import { Redis } from '@upstash/redis';
+import { withDataLock } from '../lib/lock.js';
 
 const KEY = 'mtk_app_data';
 const redis = Redis.fromEnv();
@@ -105,6 +106,21 @@ function sanitizeForClient(data) {
   };
 }
 
+// 容量肥大対策：保存前に全ユーザーの gachaHistory から base64 画像を削除する。
+// 表示時は prizeId/gachaTypeId から gachaTypes に問い合わせれば最新のアイコンが取れるので、
+// 履歴側に画像本体を持たせる必要はない。
+function sanitizeAllGachaHistory(data) {
+  if (!data || !Array.isArray(data.users)) return;
+  for (const u of data.users) {
+    if (!Array.isArray(u.gachaHistory)) continue;
+    for (const h of u.gachaHistory) {
+      if (typeof h.prizeIcon === 'string' && h.prizeIcon.startsWith('data:image')) {
+        h.prizeIcon = '';
+      }
+    }
+  }
+}
+
 export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
@@ -122,28 +138,43 @@ export default async function handler(req, res) {
       if (!body || typeof body !== 'object' || !body.settings) {
         return res.status(400).json({ ok: false, error: 'invalid body' });
       }
-      // クライアントが触らない/触るべきでないフィールドは既存値で上書きから守る：
-      //  - passwordHash / passwordSalt（GETで返さないので body には含まれない）
-      //  - pityCounts（pull が真実の源。adminの古いキャッシュで巻き戻さないため）
-      const existing = await redis.get(KEY);
-      if (existing && Array.isArray(existing.users) && Array.isArray(body.users)) {
-        for (const u of body.users) {
-          const old = existing.users.find(x => x.id === u.id);
-          if (old) {
-            if (old.passwordHash) {
-              u.passwordHash = old.passwordHash;
-              u.passwordSalt = old.passwordSalt;
+      // 分散ロックで GET-MERGE-SET を直列化（pull/auth と同時実行された場合の上書き競合を防止）
+      const lockResult = await withDataLock(redis, async () => {
+        // クライアントが触らない/触るべきでないフィールドは既存値で上書きから守る：
+        //  - passwordHash / passwordSalt（GETで返さないので body には含まれない）
+        //  - pityCounts（pull が真実の源。adminの古いキャッシュで巻き戻さないため）
+        //  - spentSpoon / gachaHistory（pull が真実の源。adminは加算/削除しないので保護）
+        const existing = await redis.get(KEY);
+        if (existing && Array.isArray(existing.users) && Array.isArray(body.users)) {
+          for (const u of body.users) {
+            const old = existing.users.find(x => x.id === u.id);
+            if (old) {
+              if (old.passwordHash) {
+                u.passwordHash = old.passwordHash;
+                u.passwordSalt = old.passwordSalt;
+              }
+              if (old.pityCounts && typeof old.pityCounts === 'object') {
+                u.pityCounts = old.pityCounts;
+              }
+              if (typeof old.spentSpoon === 'number') {
+                u.spentSpoon = old.spentSpoon;
+              }
+              if (Array.isArray(old.gachaHistory)) {
+                u.gachaHistory = old.gachaHistory;
+              }
             }
-            if (old.pityCounts && typeof old.pityCounts === 'object') {
-              u.pityCounts = old.pityCounts;
-            }
+            delete u.hasPassword;
           }
-          delete u.hasPassword;
+        } else if (Array.isArray(body.users)) {
+          for (const u of body.users) delete u.hasPassword;
         }
-      } else if (Array.isArray(body.users)) {
-        for (const u of body.users) delete u.hasPassword;
+        // 履歴の base64 画像を保存前に削除（10MB制限対策）
+        sanitizeAllGachaHistory(body);
+        await redis.set(KEY, body);
+      });
+      if (lockResult.busy) {
+        return res.status(503).json({ ok: false, error: 'busy, retry' });
       }
-      await redis.set(KEY, body);
       return res.status(200).json({ ok: true });
     }
 

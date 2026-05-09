@@ -2827,32 +2827,50 @@ async function doGachaPull(userId, gachaTypeId, count) {
   const btn = document.querySelector(`.candy-pull-btn[data-type-id="${gachaTypeId}"][data-count="${c}"]`);
   const origHtml = btn ? btn.innerHTML : '';
   if (btn) { btn.disabled = true; btn.textContent = '抽選中…'; }
+  // サーバー側ロックでビジー時は最大3回までリトライ
+  const maxAttempts = 3;
+  let attempt = 0;
   try {
-    const res = await fetch('/api/pull', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, gachaTypeId, count: c }),
-    });
-    const json = await res.json();
-    if (!res.ok || !json.ok) {
-      const msg = (json && json.error) || '抽選に失敗しました';
-      if (msg === 'not enough pt') alert('pt が足りません。');
-      else if (msg === 'user not found') { alert('ユーザーが見つかりません。'); setCurrentUserId(null); }
-      else if (msg === 'invalid count') alert('連数指定が不正です。');
-      else if (msg === 'multi-pull not enabled') alert('このガチャでは連ガチャが無効化されています。');
-      else alert('エラー: ' + msg);
+    while (attempt < maxAttempts) {
+      attempt++;
+      const res = await fetch('/api/pull', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, gachaTypeId, count: c }),
+      });
+      const json = await res.json().catch(() => ({}));
+      // 503 busy → 少し待って再試行
+      if (res.status === 503 && json && json.error === 'busy, retry') {
+        if (attempt < maxAttempts) {
+          if (btn) btn.textContent = `混雑中…再試行 ${attempt}/${maxAttempts - 1}`;
+          await new Promise(r => setTimeout(r, 400 * attempt));
+          continue;
+        }
+        alert('サーバー混雑中です。少し時間を置いてから再度お試しください。');
+        if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+        return;
+      }
+      if (!res.ok || !json.ok) {
+        const msg = (json && json.error) || '抽選に失敗しました';
+        if (msg === 'not enough pt') alert('pt が足りません。');
+        else if (msg === 'user not found') { alert('ユーザーが見つかりません。'); setCurrentUserId(null); }
+        else if (msg === 'invalid count') alert('連数指定が不正です。');
+        else if (msg === 'multi-pull not enabled') alert('このガチャでは連ガチャが無効化されています。');
+        else alert('エラー: ' + msg);
+        await fetchRemoteData();
+        renderAll();
+        return;
+      }
       await fetchRemoteData();
+      const prizes = Array.isArray(json.prizes) ? json.prizes : [json.prize];
+      if (prizes.length > 1) {
+        showMultiGachaResult(prizes, json.totalCost || (prizes.length * 0));
+      } else {
+        showGachaResult(prizes[0]);
+      }
       renderAll();
       return;
     }
-    await fetchRemoteData();
-    const prizes = Array.isArray(json.prizes) ? json.prizes : [json.prize];
-    if (prizes.length > 1) {
-      showMultiGachaResult(prizes, json.totalCost || (prizes.length * 0));
-    } else {
-      showGachaResult(prizes[0]);
-    }
-    renderAll();
   } catch (e) {
     alert('通信エラー：' + (e.message || e));
     if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
