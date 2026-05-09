@@ -2631,14 +2631,30 @@ async function submitPasswordModal() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, action: mode, password: pw1 }),
     });
-    const json = await res.json();
-    if (!res.ok || !json.ok) {
-      const msg = (json && json.error) || 'エラーが発生しました';
+    // レスポンスの中身を取り出す（JSON でない場合は text として読む）
+    const raw = await res.text();
+    let json = null;
+    try { json = raw ? JSON.parse(raw) : null; } catch { /* not json */ }
+
+    if (!res.ok || !json || !json.ok) {
+      if (!json) {
+        // レスポンスがJSONでない（404 HTMLなど）→ エンドポイント未デプロイの可能性が高い
+        console.error('[user-auth] non-JSON response:', res.status, raw.slice(0, 200));
+        if (res.status === 404) {
+          errorEl.textContent = 'エンドポイント未デプロイ（/api/user-auth が見つかりません）';
+        } else {
+          errorEl.textContent = `サーバーエラー HTTP ${res.status}`;
+        }
+        return;
+      }
+      const msg = json.error || 'エラーが発生しました';
+      console.error('[user-auth] error response:', res.status, json);
       if (msg === 'wrong password') errorEl.textContent = 'パスワードが違います';
       else if (msg === 'password not set') errorEl.textContent = 'パスワードが未設定です。管理者にリセット依頼を';
       else if (msg === 'password already set') errorEl.textContent = 'すでに設定済みです。ログインしてください';
       else if (msg === 'invalid password format') errorEl.textContent = '4桁の数字で入力してください';
       else if (msg === 'user not found') errorEl.textContent = 'ユーザーが見つかりません';
+      else if (msg === 'no data') errorEl.textContent = 'データが見つかりません';
       else errorEl.textContent = `エラー: ${msg}`;
       return;
     }
@@ -2648,7 +2664,8 @@ async function submitPasswordModal() {
     await fetchRemoteData();
     renderAll();
   } catch (e) {
-    errorEl.textContent = 'ネットワークエラー';
+    console.error('[user-auth] fetch failed:', e);
+    errorEl.textContent = `通信エラー: ${e.message || e}`;
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = '決定';
