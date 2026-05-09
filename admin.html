@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>株式会社mtk | 管理画面</title>
+<title>管理画面 | GACHA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -529,6 +529,28 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
   width: 100px; padding: 0.4rem 0.6rem; font-size: 0.82rem;
 }
 
+/* 天井設定セクション */
+.gacha-type-pity {
+  margin-top: 1.2rem;
+  padding-top: 0.8rem;
+  border-top: 1px dashed rgba(255,255,255,0.08);
+}
+.pity-count-row {
+  display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+}
+.pity-count-row .input {
+  width: 110px; padding: 0.45rem 0.6rem; font-size: 0.85rem;
+}
+.pity-edit-row .rank-no {
+  font-size: 0.6rem; line-height: 1.2;
+  color: var(--gold);
+}
+@media (max-width: 800px) {
+  .pity-count-row { gap: 0.4rem; }
+  .pity-count-row .input { flex: 1; min-width: 0; }
+}
+
 @media (max-width: 800px) {
   .rank-edit-row { grid-template-columns: 1fr 1fr; }
   .rank-edit-row .rank-no { grid-column: span 2; text-align: left; }
@@ -538,7 +560,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
   .prize-edit-row .prize-edit-extra { grid-column: 1 / -1; }
 }
 
-/* ============ 残スプーン表示 / レアリティチップ ============ */
+/* ============ 残pt表示 / レアリティチップ ============ */
 .cell-remain {
   font-family: var(--font-en); font-size: 0.92rem; font-weight: 800;
   color: var(--pink); letter-spacing: 0.02em;
@@ -849,7 +871,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
 <div id="appRoot" style="display:none">
 
   <header class="app-header">
-    <div class="app-logo">M<span>T</span>K <span class="badge">Admin</span></div>
+    <div class="app-logo"><span id="appLogoText">GACHA</span> <span class="badge">Admin</span></div>
     <div class="header-actions">
       <a href="/" class="public-link" target="_blank">PUBLIC ↗</a>
       <button class="btn btn-ghost btn-sm" id="logoutBtn"><span>ログアウト</span></button>
@@ -874,7 +896,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
       <div class="toolbar">
         <input type="text" class="input" id="userSearch" placeholder="名前で検索...">
         <select class="select" id="userSort">
-          <option value="spoon">Spoon数 (多い順)</option>
+          <option value="spoon">pt数 (多い順)</option>
           <option value="name">名前順</option>
           <option value="created">登録日 (新しい順)</option>
         </select>
@@ -889,8 +911,8 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
           <tr>
             <th style="width:50px"></th>
             <th>名前</th>
-            <th style="width:130px">累計 Spoon</th>
-            <th style="width:120px">残 Spoon</th>
+            <th style="width:130px">累計 pt</th>
+            <th style="width:120px">残 pt</th>
             <th>ガチャ獲得</th>
             <th class="col-date" style="width:110px">登録日</th>
             <th style="width:1px"></th>
@@ -902,7 +924,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
 
     <!-- ===== 新規登録タブ ===== -->
     <div class="tab-pane" id="tab-add">
-      <div class="pane-en">Register New Employee</div>
+      <div class="pane-en">Register New User</div>
       <h1 class="pane-title">新規登録</h1>
 
       <div class="form-card">
@@ -912,9 +934,9 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
           <div class="form-hint">最大16文字。重複不可。</div>
         </div>
         <div class="form-row">
-          <label class="label-text" for="newUserSpoon">初期 Spoon 数（任意）</label>
+          <label class="label-text" for="newUserSpoon">初期 pt 数（任意）</label>
           <input type="number" class="input" id="newUserSpoon" min="0" step="1" value="0" placeholder="0">
-          <div class="form-hint">登録時の累計 Spoon を任意で設定。0 なら未加算でスタート。</div>
+          <div class="form-hint">登録時の累計 pt を任意で設定。0 なら未加算でスタート。</div>
         </div>
 
         <div class="form-row">
@@ -947,13 +969,45 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
       <div class="pane-en">Configuration</div>
       <h1 class="pane-title">設定</h1>
 
+      <!-- サイト基本情報 -->
+      <div class="setting-section">
+        <div class="setting-section-en">Site</div>
+        <div class="setting-section-title">サイト基本情報</div>
+        <div class="field-row">
+          <label class="label-text">サイト名（ブラウザタブ）</label>
+          <input type="text" class="input" id="setSiteName" maxlength="40" placeholder="GACHA">
+        </div>
+        <div class="field-row">
+          <label class="label-text">ロゴ表示テキスト</label>
+          <input type="text" class="input" id="setLogoText" maxlength="20" placeholder="GACHA">
+          <div class="form-hint">ヘッダー左上・フッターのロゴに表示されます。</div>
+        </div>
+        <div class="field-row">
+          <label class="label-text">フッター表記</label>
+          <input type="text" class="input" id="setFooterText" maxlength="80" placeholder="© GACHA">
+        </div>
+        <div class="field-row">
+          <label class="label-text">参加者の呼称</label>
+          <input type="text" class="input" id="setUserLabel" maxlength="10" placeholder="ユーザー">
+          <div class="form-hint">「ランキングに表示できる○○がいません」などで使用されます。</div>
+        </div>
+        <div style="text-align:right;margin-top:1rem">
+          <button class="btn btn-primary btn-sm" id="saveSiteBtn"><span>保存</span></button>
+        </div>
+      </div>
+
       <!-- イベント設定 -->
       <div class="setting-section">
         <div class="setting-section-en">Event</div>
         <div class="setting-section-title">イベント情報</div>
         <div class="field-row">
-          <label class="label-text">イベント名</label>
+          <label class="label-text">イベント名（日本語）</label>
           <input type="text" class="input" id="setEventName" maxlength="40">
+        </div>
+        <div class="field-row">
+          <label class="label-text">イベント名（英語サブ）</label>
+          <input type="text" class="input" id="setEventNameEn" maxlength="40" placeholder="Event">
+          <div class="form-hint">ヒーローのイベント名上部に表示される英文。</div>
         </div>
         <div class="field-row">
           <label class="label-text">開始日時</label>
@@ -972,6 +1026,53 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
         </div>
         <div style="text-align:right;margin-top:1rem">
           <button class="btn btn-primary btn-sm" id="saveEventBtn"><span>保存</span></button>
+        </div>
+      </div>
+
+      <!-- セクションタイトル -->
+      <div class="setting-section">
+        <div class="setting-section-en">Section Titles</div>
+        <div class="setting-section-title">セクションタイトル</div>
+        <div class="form-hint" style="margin-bottom:1rem">公開ホームの各セクション見出しを変更できます。</div>
+
+        <div class="field-row">
+          <label class="label-text">ランキング（日本語）</label>
+          <input type="text" class="input" id="setRankingTitle" maxlength="20" placeholder="ランキング">
+        </div>
+        <div class="field-row">
+          <label class="label-text">ランキング（英語サブ）</label>
+          <input type="text" class="input" id="setRankingTitleEn" maxlength="40" placeholder="Top Players">
+        </div>
+
+        <div class="field-row" style="margin-top:1rem">
+          <label class="label-text">ガチャ（日本語）</label>
+          <input type="text" class="input" id="setGachaTitle" maxlength="20" placeholder="ガチャ">
+        </div>
+        <div class="field-row">
+          <label class="label-text">ガチャ（英語サブ）</label>
+          <input type="text" class="input" id="setGachaTitleEn" maxlength="40" placeholder="Lucky Draw">
+        </div>
+
+        <div class="field-row" style="margin-top:1rem">
+          <label class="label-text">アクティビティ（日本語）</label>
+          <input type="text" class="input" id="setFeedTitle" maxlength="20" placeholder="アクティビティ">
+        </div>
+        <div class="field-row">
+          <label class="label-text">アクティビティ（英語サブ）</label>
+          <input type="text" class="input" id="setFeedTitleEn" maxlength="40" placeholder="Activity Feed">
+        </div>
+
+        <div class="field-row" style="margin-top:1rem">
+          <label class="label-text">景品一覧（日本語）</label>
+          <input type="text" class="input" id="setPrizeTitle" maxlength="20" placeholder="景品一覧">
+        </div>
+        <div class="field-row">
+          <label class="label-text">景品一覧（英語サブ）</label>
+          <input type="text" class="input" id="setPrizeTitleEn" maxlength="40" placeholder="Prize Catalog">
+        </div>
+
+        <div style="text-align:right;margin-top:1rem">
+          <button class="btn btn-primary btn-sm" id="saveSectionTitlesBtn"><span>保存</span></button>
         </div>
       </div>
 
@@ -1004,9 +1105,9 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
         <div class="setting-section-en">Gacha Types</div>
         <div class="setting-section-title">ガチャ種類別 設定</div>
         <div class="form-hint" style="margin-bottom:1rem">
-          ※ Spoon コストごとに別ガチャを設定できます（例：100 / 1000 / 2000）。<br>
+          ※ pt コストごとに別ガチャを設定できます（例：100 / 1000 / 2000）。<br>
           ※ Weight は出現の重み（合計に対する割合で確率算出）。レアリティは N / R / SR / SSR / UR のいずれか。<br>
-          ※ ユーザーは保有 Spoon の範囲で好きなガチャを引けます。
+          ※ ユーザーは保有 pt の範囲で好きなガチャを引けます。
         </div>
         <div id="gachaTypesEditor"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1rem;flex-wrap:wrap;gap:0.6rem">
@@ -1055,11 +1156,11 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
 
 </div>
 
-<!-- ============ Spoon加算モーダル ============ -->
+<!-- ============ pt加算モーダル ============ -->
 <div class="modal-backdrop" id="donateModal">
   <div class="modal">
     <div class="modal-en">Add Donation</div>
-    <h3 class="modal-title">Spoon加算</h3>
+    <h3 class="modal-title">pt加算</h3>
     <div class="user-pre-info" id="donateUserInfo"></div>
     <div class="quick-buttons">
       <button type="button" class="quick-btn" data-amt="100">+100</button>
@@ -1143,11 +1244,11 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
 <!-- ============ 昇進演出オーバーレイ ============ -->
 <div class="promo-overlay" id="promoOverlay">
   <div class="promo-stamp">
-    <div class="promo-label">★ PROMOTION ★</div>
+    <div class="promo-label">★ RANK UP ★</div>
     <div class="promo-name" id="promoName"></div>
     <div class="promo-rank" id="promoRankEn"></div>
     <div class="promo-rank-jp" id="promoRankJp"></div>
-    <div class="promo-msg">昇進おめでとうございます</div>
+    <div class="promo-msg">ランクアップおめでとうございます</div>
   </div>
 </div>
 
@@ -1170,32 +1271,32 @@ const RARITY_OPTIONS = ['N', 'R', 'SR', 'SSR', 'UR'];
 
 const DEFAULT_GACHA_TYPES = [
   {
-    id: 'yellow', name: 'イエローキャンディ', cost: 100, accent: '#f3c654',
+    id: 'yellow', name: 'イエローキャンディ', cost: 100, multiPullCount: 10, pityCount: 0, pityPrize: null, accent: '#f3c654',
     candyIcon: '🍬', candyIconType: 'emoji',
     prizes: [
-      { id: 'y-n-1',  name: 'サンクスメッセージ', rarity: 'N',  icon: '💌', iconType: 'emoji', weight: 60, description: '配信中に感謝メッセージ' },
+      { id: 'y-n-1',  name: 'サンクスメッセージ', rarity: 'N',  icon: '💌', iconType: 'emoji', weight: 60, description: '管理者から感謝メッセージ' },
       { id: 'y-r-1',  name: 'スタンプ画像',       rarity: 'R',  icon: '🎴', iconType: 'emoji', weight: 30, description: 'ロゴ入りスタンプ画像' },
-      { id: 'y-sr-1', name: 'ハート×10',          rarity: 'SR', icon: '💖', iconType: 'emoji', weight: 10, description: '愛風船バスター×10個' },
+      { id: 'y-sr-1', name: 'ハート×10',          rarity: 'SR', icon: '💖', iconType: 'emoji', weight: 10, description: 'プレミアム景品×10個' },
     ],
   },
   {
-    id: 'pink', name: 'ピンクキャンディ', cost: 1000, accent: '#e8638a',
+    id: 'pink', name: 'ピンクキャンディ', cost: 1000, multiPullCount: 10, pityCount: 0, pityPrize: null, accent: '#e8638a',
     candyIcon: '🍭', candyIconType: 'emoji',
     prizes: [
-      { id: 'p-r-1',   name: 'ハート×1',       rarity: 'R',   icon: '💖', iconType: 'emoji', weight: 50, description: '愛風船バスター×1個' },
+      { id: 'p-r-1',   name: 'ハート×1',       rarity: 'R',   icon: '💖', iconType: 'emoji', weight: 50, description: 'プレミアム景品×1個' },
       { id: 'p-sr-1',  name: 'SDちびイラスト', rarity: 'SR',  icon: '🖼️', iconType: 'emoji', weight: 35, description: 'デフォルメSDイラスト' },
       { id: 'p-ssr-1', name: 'バストアップ',   rarity: 'SSR', icon: '🎨', iconType: 'emoji', weight: 14, description: 'バストアップカラー' },
-      { id: 'p-ur-1',  name: '2000Spoon相当',  rarity: 'UR',  icon: '🪙', iconType: 'emoji', weight: 1,  description: '2000 Spoon相当のボーナス' },
+      { id: 'p-ur-1',  name: '2000pt相当',  rarity: 'UR',  icon: '🪙', iconType: 'emoji', weight: 1,  description: '2000 pt相当のボーナス' },
     ],
   },
   {
-    id: 'blue', name: 'ブルーキャンディ', cost: 2000, accent: '#5fa8c8',
+    id: 'blue', name: 'ブルーキャンディ', cost: 2000, multiPullCount: 10, pityCount: 0, pityPrize: null, accent: '#5fa8c8',
     candyIcon: '🧁', candyIconType: 'emoji',
     prizes: [
-      { id: 'b-sr-1',  name: 'ハート×5',        rarity: 'SR',  icon: '💖', iconType: 'emoji', weight: 50, description: '愛風船バスター×5個' },
+      { id: 'b-sr-1',  name: 'ハート×5',        rarity: 'SR',  icon: '💖', iconType: 'emoji', weight: 50, description: 'プレミアム景品×5個' },
       { id: 'b-ssr-1', name: '全身カラー＋背景', rarity: 'SSR', icon: '🖌️', iconType: 'emoji', weight: 30, description: '全身カラー＋背景つき' },
       { id: 'b-ssr-2', name: '描き下ろし限定',  rarity: 'SSR', icon: '👑', iconType: 'emoji', weight: 19, description: '描き下ろし限定イラスト' },
-      { id: 'b-ur-1',  name: '10000Spoon相当',  rarity: 'UR',  icon: '🪙', iconType: 'emoji', weight: 1,  description: '10000 Spoon相当のボーナス' },
+      { id: 'b-ur-1',  name: '10000pt相当',  rarity: 'UR',  icon: '🪙', iconType: 'emoji', weight: 1,  description: '10000 pt相当のボーナス' },
     ],
   },
 ];
@@ -1206,14 +1307,31 @@ function getDefaultData() {
   return {
     users: [],
     settings: {
-      eventName: '春の出世大競争',
+      // サイト基本情報
+      siteName: 'GACHA',
+      logoText: 'GACHA',
+      footerText: '© GACHA',
+      // イベント
+      eventName: 'イベント',
+      eventNameEn: 'Event',
       eventStartDate: now.toISOString(),
       eventEndDate: end.toISOString(),
       gachaDescription: '',
       headerImage: '',
+      // セクションタイトル
+      rankingTitle: 'ランキング',
+      rankingTitleEn: 'Top Players',
+      gachaTitle: 'ガチャ',
+      gachaTitleEn: 'Lucky Draw',
+      feedTitle: 'アクティビティ',
+      feedTitleEn: 'Activity Feed',
+      prizeTitle: '景品一覧',
+      prizeTitleEn: 'Prize Catalog',
+      // 表記
+      userLabel: 'ユーザー',
       gachaTypes: JSON.parse(JSON.stringify(DEFAULT_GACHA_TYPES)),  // ディープコピー
     },
-    version: 3,
+    version: 4,
   };
 }
 
@@ -1259,7 +1377,7 @@ async function loadData() {
   return data;
 }
 
-// 残スプーン（ガチャ消費後に残っている分）
+// 残pt（ガチャ消費後に残っている分）
 function availableSpoon(user) {
   return Math.max(0, (user.totalSpoon || 0) - (user.spentSpoon || 0));
 }
@@ -1468,7 +1586,15 @@ function setupApp() {
   renderAll();
 }
 
+function applyAdminSiteText() {
+  const s = data.settings || {};
+  const logoEl = document.getElementById('appLogoText');
+  if (logoEl && s.logoText) logoEl.textContent = s.logoText;
+  if (s.siteName) document.title = `管理画面 | ${s.siteName}`;
+}
+
 function renderAll() {
+  applyAdminSiteText();
   renderUserList();
   renderSettings();
 }
@@ -1536,7 +1662,7 @@ function renderUserList() {
       <td>
         <div class="cell-name">${escapeHtml(u.name)}</div>
       </td>
-      <td><span class="cell-spoon">${fmt(u.totalSpoon || 0)}<span class="unit">SPOON</span></span></td>
+      <td><span class="cell-spoon">${fmt(u.totalSpoon || 0)}<span class="unit">PT</span></span></td>
       <td><span class="cell-remain">${fmt(remain)}<span class="unit">残</span></span></td>
       <td>
         ${totalPulls > 0
@@ -1546,9 +1672,10 @@ function renderUserList() {
       <td class="col-date" style="font-size:0.75rem;color:rgba(255,255,255,0.5);font-family:var(--font-en)">${dateStr(u.createdAt || Date.now())}</td>
       <td>
         <div class="cell-actions">
-          <button class="btn btn-primary btn-sm" data-act="donate" data-id="${escapeHtml(u.id)}"><span>+ Spoon</span></button>
+          <button class="btn btn-primary btn-sm" data-act="donate" data-id="${escapeHtml(u.id)}"><span>+ pt</span></button>
           <button class="btn btn-ghost btn-sm" data-act="edit" data-id="${escapeHtml(u.id)}"><span>編集</span></button>
           <button class="btn btn-ghost btn-sm" data-act="history" data-id="${escapeHtml(u.id)}"><span>履歴</span></button>
+          <button class="btn btn-ghost btn-sm" data-act="resetpw" data-id="${escapeHtml(u.id)}" title="${u.hasPassword ? 'パスワードをリセット' : 'パスワード未設定'}"><span>${u.hasPassword ? '🔑' : '🔓'}</span></button>
           <button class="btn btn-danger btn-sm" data-act="delete" data-id="${escapeHtml(u.id)}"><span>削除</span></button>
         </div>
       </td>
@@ -1563,6 +1690,7 @@ function renderUserList() {
       if (act === 'donate') openDonateModal(id);
       if (act === 'edit') openEditModal(id);
       if (act === 'history') openHistoryModal(id);
+      if (act === 'resetpw') resetUserPassword(id);
       if (act === 'delete') openDeleteConfirm(id);
     });
   });
@@ -1691,7 +1819,7 @@ function handleIconUpload(file, previewId, onResult) {
 }
 
 // ============================================================
-// Spoon加算モーダル
+// pt加算モーダル
 // ============================================================
 let donateUserId = null;
 let lastDonateUserId = null; // 直前の加算対象（Undo用）
@@ -1704,7 +1832,7 @@ function openDonateModal(userId) {
     <div class="cell-icon">${renderUserIcon(u)}</div>
     <div>
       <div class="user-pre-info-name">${escapeHtml(u.name)}</div>
-      <div class="user-pre-info-spoon">現在 ${fmt(u.totalSpoon || 0)} Spoon</div>
+      <div class="user-pre-info-spoon">現在 ${fmt(u.totalSpoon || 0)} pt</div>
     </div>
   `;
   document.getElementById('donateAmount').value = '';
@@ -1743,7 +1871,7 @@ function addDonation(userId, amount, note) {
   lastDonateUserId = userId;
   hideModal('donateModal');
   renderUserList();
-  showToast(`${u.name} さんに +${fmt(amount)} Spoon`);
+  showToast(`${u.name} さんに +${fmt(amount)} pt`);
 }
 
 function undoLastDonation(userId) {
@@ -1844,6 +1972,40 @@ function setupEditModal() {
 
 let pendingDeleteId = null;
 
+async function resetUserPassword(userId) {
+  const u = data.users.find(x => x.id === userId);
+  if (!u) return;
+  if (!u.hasPassword) {
+    showToast(`${u.name} さんはまだパスワードを設定していません`);
+    return;
+  }
+  if (!confirm(`「${u.name}」さんのパスワードをリセットしますか？\n次回ログイン時に新しい4桁パスワードの再設定が必要になります。`)) return;
+  const token = sessionStorage.getItem(SESSION_KEY) || '';
+  try {
+    const res = await fetch('/api/user-auth', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ userId, action: 'reset' }),
+    });
+    const json = await res.json();
+    if (!res.ok || !json.ok) {
+      showToast('リセットに失敗しました：' + (json.error || res.status));
+      return;
+    }
+    // ローカルキャッシュも更新
+    u.hasPassword = false;
+    delete u.passwordHash;
+    delete u.passwordSalt;
+    showToast(`${u.name} さんのパスワードをリセットしました`);
+    renderUserList();
+  } catch (e) {
+    showToast('ネットワークエラー');
+  }
+}
+
 function openDeleteConfirm(userId) {
   const u = data.users.find(x => x.id === userId);
   if (!u) return;
@@ -1886,7 +2048,7 @@ function openHistoryModal(userId) {
     <div class="cell-icon">${renderUserIcon(u)}</div>
     <div>
       <div class="user-pre-info-name">${escapeHtml(u.name)}</div>
-      <div class="user-pre-info-spoon">累計 ${fmt(u.totalSpoon || 0)} Spoon ／ 残 ${fmt(remain)}</div>
+      <div class="user-pre-info-spoon">累計 ${fmt(u.totalSpoon || 0)} pt ／ 残 ${fmt(remain)}</div>
     </div>
   `;
   const list = document.getElementById('historyList');
@@ -1912,7 +2074,7 @@ function openHistoryModal(userId) {
     `).join('');
   }
   // 加算履歴
-  html += `<div class="history-section-title" style="margin-top:1rem">Spoon 加算履歴（${donations.length}件）</div>`;
+  html += `<div class="history-section-title" style="margin-top:1rem">pt 加算履歴（${donations.length}件）</div>`;
   if (donations.length === 0) {
     html += `<div class="empty-row" style="padding:1rem 0;text-align:center;color:rgba(255,255,255,0.4);font-size:0.78rem">加算履歴なし</div>`;
   } else {
@@ -1932,8 +2094,41 @@ function openHistoryModal(userId) {
 // 設定
 // ============================================================
 function setupSettings() {
+  // サイト基本情報
+  document.getElementById('saveSiteBtn').addEventListener('click', () => {
+    const siteName = document.getElementById('setSiteName').value.trim();
+    const logoText = document.getElementById('setLogoText').value.trim();
+    const footerText = document.getElementById('setFooterText').value.trim();
+    const userLabel = document.getElementById('setUserLabel').value.trim();
+    if (!siteName) { showToast('サイト名を入力してください'); return; }
+    if (!logoText) { showToast('ロゴテキストを入力してください'); return; }
+    data.settings.siteName = siteName;
+    data.settings.logoText = logoText;
+    data.settings.footerText = footerText;
+    data.settings.userLabel = userLabel || 'ユーザー';
+    saveData();
+    applyAdminSiteText();
+    showToast('サイト基本情報を保存しました');
+  });
+
+  // セクションタイトル
+  document.getElementById('saveSectionTitlesBtn').addEventListener('click', () => {
+    const get = id => document.getElementById(id).value.trim();
+    data.settings.rankingTitle    = get('setRankingTitle')    || 'ランキング';
+    data.settings.rankingTitleEn  = get('setRankingTitleEn')  || 'Top Players';
+    data.settings.gachaTitle      = get('setGachaTitle')      || 'ガチャ';
+    data.settings.gachaTitleEn    = get('setGachaTitleEn')    || 'Lucky Draw';
+    data.settings.feedTitle       = get('setFeedTitle')       || 'アクティビティ';
+    data.settings.feedTitleEn     = get('setFeedTitleEn')     || 'Activity Feed';
+    data.settings.prizeTitle      = get('setPrizeTitle')      || '景品一覧';
+    data.settings.prizeTitleEn    = get('setPrizeTitleEn')    || 'Prize Catalog';
+    saveData();
+    showToast('セクションタイトルを保存しました');
+  });
+
   document.getElementById('saveEventBtn').addEventListener('click', () => {
     const name = document.getElementById('setEventName').value.trim();
+    const nameEn = document.getElementById('setEventNameEn').value.trim();
     const start = document.getElementById('setEventStart').value;
     const end = document.getElementById('setEventEnd').value;
     const desc = document.getElementById('setGachaDesc').value;
@@ -1941,6 +2136,7 @@ function setupSettings() {
     if (!start || !end) { showToast('開始日時・終了日時を入力してください'); return; }
     if (new Date(start).getTime() >= new Date(end).getTime()) { showToast('終了日時は開始日時より後にしてください'); return; }
     data.settings.eventName = name;
+    data.settings.eventNameEn = nameEn || 'Event';
     data.settings.eventStartDate = new Date(start).toISOString();
     data.settings.eventEndDate = new Date(end).toISOString();
     data.settings.gachaDescription = desc;
@@ -1958,11 +2154,14 @@ function setupSettings() {
       const id = card.dataset.typeId || ('t-' + Math.random().toString(36).slice(2, 8));
       const name = card.querySelector('[data-tf="name"]').value.trim();
       const cost = Math.max(1, parseInt(card.querySelector('[data-tf="cost"]').value || '0', 10) || 0);
+      const multiPullInput = card.querySelector('[data-tf="multiPullCount"]');
+      const multiPullCount = Math.max(0, parseInt((multiPullInput && multiPullInput.value) || '0', 10) || 0);
       const accent = card.querySelector('[data-tf="accent"]').value || '#e8638a';
       const candyCell = card.querySelector('.candy-icon-cell');
       const candyIcon = (candyCell && candyCell.dataset.iconValue) || '🍬';
       const candyIconType = (typeof candyIcon === 'string' && candyIcon.startsWith('data:image')) ? 'image' : 'emoji';
       if (!name) { ok = false; errMsg = 'ガチャ名を入力してください'; }
+      if (multiPullCount === 1) { ok = false; errMsg = `「${name}」連数は0または2以上にしてください`; }
       const prizeRows = card.querySelectorAll('.prize-edit-row');
       const prizes = [];
       prizeRows.forEach(row => {
@@ -1984,7 +2183,28 @@ function setupSettings() {
       if (prizes.length === 0) { ok = false; errMsg = `「${name}」に景品が1つもありません`; }
       const totalWeight = prizes.reduce((s, p) => s + p.weight, 0);
       if (totalWeight <= 0) { ok = false; errMsg = `「${name}」の Weight 合計が0です`; }
-      newTypes.push({ id, name, cost, accent, candyIcon, candyIconType, prizes });
+
+      // 天井設定の取り込み
+      const pityCountInput = card.querySelector('.pity-count-row [data-pf="count"]');
+      const pityRow = card.querySelector('.pity-edit-row');
+      let pityCount = pityCountInput ? Math.max(0, parseInt(pityCountInput.value || '0', 10) || 0) : 0;
+      let pityPrize = null;
+      if (pityRow) {
+        const pName = (pityRow.querySelector('[data-pf="name"]').value || '').trim();
+        const pRarity = pityRow.querySelector('[data-pf="rarity"]').value || 'UR';
+        const pDesc = (pityRow.querySelector('[data-pf="description"]').value || '').trim();
+        const pCell = pityRow.querySelector('.pity-icon-cell');
+        const pIconValue = (pCell && pCell.dataset.iconValue) || '🏆';
+        const pIconType = (typeof pIconValue === 'string' && pIconValue.startsWith('data:image')) ? 'image' : 'emoji';
+        if (pityCount > 0 && !pName) {
+          ok = false; errMsg = `「${name}」の天井景品名を入力してください（無効化したい場合は回数を0に）`;
+        }
+        if (pityCount > 0 && pName) {
+          pityPrize = { id: `pity-${id}`, name: pName, rarity: pRarity, icon: pIconValue, iconType: pIconType, description: pDesc };
+        }
+      }
+
+      newTypes.push({ id, name, cost, multiPullCount, pityCount, pityPrize, accent, candyIcon, candyIconType, prizes });
     });
     if (!ok) { showToast(errMsg || '入力に不備があります'); return; }
     if (newTypes.length === 0) { showToast('最低1つのガチャタイプが必要です'); return; }
@@ -2007,6 +2227,7 @@ function setupSettings() {
       id: 't-' + Math.random().toString(36).slice(2, 8),
       name: '新しいガチャ',
       cost: 500,
+      multiPullCount: 10,
       accent: '#9b8ad6',
       candyIcon: '🍬',
       candyIconType: 'emoji',
@@ -2026,7 +2247,7 @@ function setupSettings() {
     const url = URL.createObjectURL(blob);
     const today = new Date().toISOString().slice(0, 10);
     const a = document.createElement('a');
-    a.href = url; a.download = `mtk-backup-${today}.json`;
+    a.href = url; a.download = `gacha-backup-${today}.json`;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
     showToast('エクスポートしました');
@@ -2060,7 +2281,7 @@ function setupSettings() {
   });
 
   document.getElementById('demoDataBtn').addEventListener('click', () => {
-    if (!confirm('12名のデモ社員を追加します。よろしいですか？')) return;
+    if (!confirm('12名のデモユーザーを追加します。よろしいですか？')) return;
     seedDemoData();
     showToast('デモデータを追加しました');
     renderUserList();
@@ -2095,6 +2316,8 @@ function captureGachaTypesFromForm() {
     const id = card.dataset.typeId || ('t-' + Math.random().toString(36).slice(2, 8));
     const name = card.querySelector('[data-tf="name"]').value;
     const cost = Math.max(1, parseInt(card.querySelector('[data-tf="cost"]').value || '0', 10) || 1);
+    const multiPullInput = card.querySelector('[data-tf="multiPullCount"]');
+    const multiPullCount = Math.max(0, parseInt((multiPullInput && multiPullInput.value) || '0', 10) || 0);
     const accent = card.querySelector('[data-tf="accent"]').value || '#e8638a';
     const candyCell = card.querySelector('.candy-icon-cell');
     const candyIcon = (candyCell && candyCell.dataset.iconValue) || '🍬';
@@ -2116,13 +2339,45 @@ function captureGachaTypesFromForm() {
         weight, description,
       });
     });
-    newTypes.push({ id, name, cost, accent, candyIcon, candyIconType, prizes });
+    // 天井設定の取り込み（再描画前のフォーム状態を保持するための関数なので緩く）
+    const pityCountInput = card.querySelector('.pity-count-row [data-pf="count"]');
+    const pityRow = card.querySelector('.pity-edit-row');
+    let pityCount = pityCountInput ? Math.max(0, parseInt(pityCountInput.value || '0', 10) || 0) : 0;
+    let pityPrize = null;
+    if (pityRow) {
+      const pName = (pityRow.querySelector('[data-pf="name"]').value || '').trim();
+      const pRarity = pityRow.querySelector('[data-pf="rarity"]').value || 'UR';
+      const pDesc = (pityRow.querySelector('[data-pf="description"]').value || '').trim();
+      const pCell = pityRow.querySelector('.pity-icon-cell');
+      const pIconValue = (pCell && pCell.dataset.iconValue) || '🏆';
+      const pIconType = (typeof pIconValue === 'string' && pIconValue.startsWith('data:image')) ? 'image' : 'emoji';
+      if (pName) {
+        pityPrize = { id: `pity-${id}`, name: pName, rarity: pRarity, icon: pIconValue, iconType: pIconType, description: pDesc };
+      }
+    }
+    newTypes.push({ id, name, cost, multiPullCount, pityCount, pityPrize, accent, candyIcon, candyIconType, prizes });
   });
   data.settings.gachaTypes = newTypes;
 }
 
 function renderSettings() {
+  // サイト基本情報
+  document.getElementById('setSiteName').value   = data.settings.siteName   || '';
+  document.getElementById('setLogoText').value   = data.settings.logoText   || '';
+  document.getElementById('setFooterText').value = data.settings.footerText || '';
+  document.getElementById('setUserLabel').value  = data.settings.userLabel  || '';
+  // セクションタイトル
+  document.getElementById('setRankingTitle').value   = data.settings.rankingTitle   || '';
+  document.getElementById('setRankingTitleEn').value = data.settings.rankingTitleEn || '';
+  document.getElementById('setGachaTitle').value     = data.settings.gachaTitle     || '';
+  document.getElementById('setGachaTitleEn').value   = data.settings.gachaTitleEn   || '';
+  document.getElementById('setFeedTitle').value      = data.settings.feedTitle      || '';
+  document.getElementById('setFeedTitleEn').value    = data.settings.feedTitleEn    || '';
+  document.getElementById('setPrizeTitle').value     = data.settings.prizeTitle     || '';
+  document.getElementById('setPrizeTitleEn').value   = data.settings.prizeTitleEn   || '';
+  // イベント
   document.getElementById('setEventName').value = data.settings.eventName || '';
+  document.getElementById('setEventNameEn').value = data.settings.eventNameEn || '';
   document.getElementById('setEventStart').value = toLocalInputValue(data.settings.eventStartDate);
   document.getElementById('setEventEnd').value = toLocalInputValue(data.settings.eventEndDate);
   document.getElementById('setGachaDesc').value = data.settings.gachaDescription || '';
@@ -2149,6 +2404,36 @@ function renderSettings() {
     card.style.borderLeftColor = t.accent || '#e8638a';
     const candyIsImg = isImageData(t.candyIcon);
     const totalWeight = (t.prizes || []).reduce((s, p) => s + (p.weight || 0), 0) || 1;
+
+    // 天井景品セクションHTML
+    const pityCount = Math.max(0, parseInt(t.pityCount || 0, 10) || 0);
+    const pp = (t.pityPrize && typeof t.pityPrize === 'object') ? t.pityPrize : {};
+    const ppRarityOpts = RARITY_OPTIONS.map(r => `<option value="${r}"${r === (pp.rarity || 'UR') ? ' selected' : ''}>${r}</option>`).join('');
+    const ppIcon = pp.icon || '🏆';
+    const ppIsImg = isImageData(ppIcon);
+    const pityHtml = `
+      <div class="gacha-type-pity">
+        <div class="gacha-type-prizes-title">天井設定（回数 0 で無効）</div>
+        <div class="pity-count-row">
+          <label class="label-text" for="pityCount-${escapeHtml(t.id)}">天井までの回数</label>
+          <input class="input" id="pityCount-${escapeHtml(t.id)}" data-pf="count" type="number" min="0" step="1" value="${pityCount}" placeholder="例：50">
+          <span class="form-hint" style="margin:0">※ 1 以上で有効化、各ユーザーごとに独立カウント</span>
+        </div>
+        <div class="rank-edit-row pity-edit-row">
+          <div class="rank-no">天井<br>景品</div>
+          <input class="input" data-pf="name" value="${escapeHtml(pp.name || '')}" placeholder="天井景品名">
+          <select class="select" data-pf="rarity" style="padding:0.5rem 0.7rem;font-size:0.82rem">${ppRarityOpts}</select>
+          <input class="input" data-pf="description" value="${escapeHtml(pp.description || '')}" placeholder="説明テキスト">
+          <div class="rank-icon-cell pity-icon-cell" data-icon-value="${escapeHtml(ppIcon)}">
+            <button type="button" class="rank-icon-thumb${ppIsImg ? ' has-image' : ''}" data-act="upload">
+              ${renderRewardIcon(ppIcon)}
+              <span class="rank-icon-thumb-hint">画像</span>
+              <span class="rank-icon-thumb-clear" data-act="clear">✕</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
 
     // ヘッダー部
     let prizesHtml = '';
@@ -2196,8 +2481,12 @@ function renderSettings() {
             <input class="input" data-tf="name" value="${escapeHtml(t.name || '')}" placeholder="例：イエローキャンディ">
           </div>
           <div class="gacha-type-field">
-            <label class="label-text">コスト (Spoon)</label>
+            <label class="label-text">コスト (pt)</label>
             <input class="input" data-tf="cost" type="number" min="1" step="1" value="${t.cost || 100}">
+          </div>
+          <div class="gacha-type-field">
+            <label class="label-text">連数 (0=無効)</label>
+            <input class="input" data-tf="multiPullCount" type="number" min="0" step="1" value="${Math.max(0, parseInt(t.multiPullCount || 0, 10) || 0)}" placeholder="例：10">
           </div>
           <div class="gacha-type-field">
             <label class="label-text">テーマカラー</label>
@@ -2215,6 +2504,7 @@ function renderSettings() {
           <button type="button" class="btn btn-ghost btn-sm" data-act="add-prize"><span>＋ 景品を追加</span></button>
         </div>
       </div>
+      ${pityHtml}
     `;
     editor.appendChild(card);
   });
@@ -2439,7 +2729,7 @@ function showPromotion(user, rank) {
   ov.classList.add('show');
   setTimeout(() => {
     ov.classList.remove('show');
-    showToast(`${user.name} さんが ${rank.name} に昇進しました`);
+    showToast(`${user.name} さんが ${rank.name} にランクアップしました`);
   }, 2400);
 }
 

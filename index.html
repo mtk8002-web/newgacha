@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>株式会社mtk | 出世支援プログラム</title>
+<title>GACHA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Syne:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -1228,6 +1228,207 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
 .candy-pull-btn:disabled {
   background: var(--text-soft); cursor: not-allowed;
 }
+/* 連ガチャボタン（カード内2つ目） */
+.candy-pull-btn-multi {
+  margin-top: 0.4rem;
+  background: transparent;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  font-size: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  letter-spacing: 0.06em;
+}
+.candy-pull-btn-multi:hover:not(:disabled) {
+  background: var(--accent);
+  color: #fff;
+}
+.candy-pull-btn-multi:disabled {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-soft);
+}
+.candy-pull-btn-multi .multi-cost {
+  font-size: 0.65rem;
+  opacity: 0.85;
+  margin-left: 0.3rem;
+  font-weight: 600;
+}
+
+/* 天井カウント表示 */
+.candy-pity {
+  margin-bottom: 0.6rem;
+  font-size: 0.72rem;
+  color: var(--gold-deep);
+  background: var(--gold-bg);
+  border: 1px solid #e3c98a;
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  display: inline-block;
+  letter-spacing: 0.04em;
+}
+.candy-pity strong {
+  font-family: var(--font-en);
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--pink-deep);
+  margin: 0 0.15rem;
+}
+
+/* 連ガチャ結果の天井バッジ */
+.gm-pity-badge {
+  position: absolute;
+  top: 4px; right: 4px;
+  font-size: 0.55rem; font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #fff;
+  background: linear-gradient(90deg, var(--pink-deep), var(--gold-deep));
+  padding: 0.15rem 0.4rem;
+  border-radius: 999px;
+  z-index: 1;
+}
+.gm-item.is-pity {
+  border: 2px solid transparent !important;
+  background:
+    linear-gradient(var(--card), var(--card)) padding-box,
+    linear-gradient(135deg, var(--gold-deep), var(--pink-deep), var(--gold-bright)) border-box !important;
+  box-shadow: 0 4px 20px rgba(184,146,63,0.35) !important;
+}
+
+/* 連ガチャ結果モーダル */
+.gacha-multi-modal {
+  position: fixed; inset: 0; z-index: 1100;
+  display: none;
+  align-items: center; justify-content: center;
+  background: rgba(31, 27, 22, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 1rem;
+}
+.gacha-multi-modal.show { display: flex; animation: gachaFadeIn 0.35s; }
+.gacha-multi-modal-inner {
+  width: 100%; max-width: 720px;
+  max-height: 90vh;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.6rem 1.4rem 1.2rem;
+  box-shadow: var(--shadow-soft);
+  display: flex; flex-direction: column;
+}
+.gacha-multi-header {
+  text-align: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border-soft);
+}
+.gacha-multi-title {
+  font-family: var(--font-en); font-weight: 800;
+  font-size: 1.2rem; letter-spacing: 0.1em;
+  color: var(--pink-deep);
+  margin-bottom: 0.5rem;
+}
+.gacha-multi-summary {
+  display: flex; flex-wrap: wrap; gap: 0.4rem;
+  justify-content: center; align-items: center;
+  font-size: 0.78rem;
+}
+.gm-summary-chip {
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-family: var(--font-en); font-weight: 700;
+  letter-spacing: 0.08em;
+  background: var(--bg-warm);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.gm-summary-chip.rarity-r   { color: #2f7fae; border-color: #b6cee0; }
+.gm-summary-chip.rarity-sr  { color: #b54166; border-color: #f0c6d3; background: var(--pink-bg); }
+.gm-summary-chip.rarity-ssr { color: #8f7028; border-color: #e3c98a; background: var(--gold-bg); }
+.gm-summary-chip.rarity-ur  {
+  color: #fff;
+  background: linear-gradient(90deg, var(--pink-deep), var(--gold-deep));
+  border-color: transparent;
+}
+.gm-summary-cost {
+  margin-left: 0.6rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+.gacha-multi-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.6rem;
+  overflow-y: auto;
+  padding: 0.4rem 0.2rem;
+  flex: 1;
+}
+.gm-item {
+  background: var(--bg-warm);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.7rem 0.4rem;
+  text-align: center;
+  position: relative;
+  opacity: 0;
+  animation: gmReveal 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+@keyframes gmReveal {
+  from { opacity: 0; transform: translateY(8px) scale(0.92); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.gm-item.rarity-r   { border-color: #b6cee0; }
+.gm-item.rarity-sr  { border-color: #f0c6d3; background: var(--pink-bg); box-shadow: 0 2px 8px rgba(214,85,122,0.12); }
+.gm-item.rarity-ssr { border-color: #e3c98a; background: var(--gold-bg); box-shadow: 0 2px 12px rgba(184,146,63,0.18); }
+.gm-item.rarity-ur  {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--card), var(--card)) padding-box,
+    linear-gradient(135deg, var(--pink-deep), var(--gold-deep), var(--pink-deep)) border-box;
+  box-shadow: 0 4px 18px rgba(184,146,63,0.3);
+}
+.gm-rarity {
+  display: inline-block;
+  font-family: var(--font-en); font-weight: 800;
+  font-size: 0.65rem; letter-spacing: 0.1em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--text-soft); color: #fff;
+  margin-bottom: 0.4rem;
+}
+.gm-item.rarity-r   .gm-rarity { background: #2f7fae; }
+.gm-item.rarity-sr  .gm-rarity { background: var(--pink); }
+.gm-item.rarity-ssr .gm-rarity { background: var(--gold-deep); }
+.gm-item.rarity-ur  .gm-rarity {
+  background: linear-gradient(90deg, var(--pink-deep), var(--gold-deep));
+}
+.gm-icon {
+  width: 44px; height: 44px;
+  margin: 0 auto 0.4rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+  background: var(--card);
+  border-radius: 50%;
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+.gm-icon img { width: 100%; height: 100%; object-fit: cover; }
+.gm-name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+  word-break: break-word;
+}
+@media (max-width: 600px) {
+  .gacha-multi-modal-inner { padding: 1.2rem 1rem 1rem; max-height: 95vh; }
+  .gacha-multi-title { font-size: 1rem; }
+  .gacha-multi-list { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 0.4rem; }
+  .gm-item { padding: 0.5rem 0.3rem; }
+  .gm-icon { width: 36px; height: 36px; font-size: 1.3rem; }
+  .gm-name { font-size: 0.66rem; }
+}
 
 .gacha-summary {
   display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;
@@ -1453,6 +1654,111 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
   transition: all 0.15s;
 }
 .btn-close-gacha:hover { background: var(--pink-bg); border-color: var(--pink); color: var(--pink-deep); }
+
+/* ===== ユーザーログイン パスワードモーダル ===== */
+.pw-modal {
+  position: fixed; inset: 0; z-index: 9999;
+  display: none;
+  align-items: center; justify-content: center;
+  background: rgba(31, 27, 22, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 1rem;
+}
+.pw-modal.show { display: flex; animation: gachaFadeIn 0.25s; }
+.pw-modal-inner {
+  position: relative;
+  width: 100%; max-width: 380px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 2rem 1.6rem 1.6rem;
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+}
+.pw-close {
+  position: absolute; top: 0.7rem; right: 0.7rem;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-muted); font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+.pw-close:hover { color: var(--pink); border-color: var(--pink); }
+.pw-user-info {
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.pw-icon {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--pink-bg);
+  border: 2px solid var(--pink);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+  overflow: hidden;
+}
+.pw-icon img { width: 100%; height: 100%; object-fit: cover; }
+.pw-name {
+  font-weight: 700; font-size: 1rem; color: var(--text);
+}
+.pw-title {
+  font-size: 1.1rem; font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+.pw-desc {
+  font-size: 0.78rem; color: var(--text-muted);
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+.pw-input {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  font-size: 1.4rem;
+  text-align: center;
+  letter-spacing: 0.6em;
+  font-family: var(--font-en);
+  font-weight: 700;
+  color: var(--text);
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.pw-input:focus {
+  border-color: var(--pink);
+  box-shadow: 0 0 0 3px var(--pink-bg);
+}
+.pw-confirm-wrap { margin-top: 0.6rem; }
+.pw-error {
+  margin-top: 0.7rem;
+  min-height: 1.1rem;
+  font-size: 0.78rem;
+  color: var(--danger);
+  font-weight: 600;
+}
+.pw-submit {
+  margin-top: 0.9rem;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background: var(--pink);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.pw-submit:hover { background: var(--pink-deep); }
+.pw-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+@media (max-width: 480px) {
+  .pw-modal-inner { padding: 1.6rem 1.2rem 1.2rem; }
+  .pw-input { font-size: 1.2rem; letter-spacing: 0.5em; padding: 0.8rem; }
+}
 
 /* ===== ガチャ プレリビール演出（SSR / UR）===== */
 /* 演出全体は約2.2秒。表示中は景品モーダルは出さず、終了後に通常のモーダルへ。 */
@@ -1844,7 +2150,7 @@ footer {
 <div class="cursor-ring" id="cursorRing"></div>
 
 <header id="header">
-  <a href="#" class="logo">M<span>T</span>K</a>
+  <a href="#" class="logo" id="headerLogo">GACHA</a>
   <nav class="top-nav">
     <a href="#hero">HOME</a>
     <a href="#ranking">RANKING</a>
@@ -1867,8 +2173,8 @@ footer {
   <div class="hero-line-v" style="left:80%"></div>
   <div class="hero-inner">
     <div class="hero-label">EVENT IN PROGRESS</div>
-    <div class="hero-event-en" id="heroEventEn">Promotion Race</div>
-    <h1 class="hero-event-name" id="heroEventName">出世大競争</h1>
+    <div class="hero-event-en" id="heroEventEn">Event</div>
+    <h1 class="hero-event-name" id="heroEventName">イベント</h1>
     <div class="countdown" id="countdown">
       <div class="countdown-unit"><div class="countdown-num" id="cdDays">--</div><div class="countdown-label">DAYS</div></div>
       <div class="countdown-sep">:</div>
@@ -1886,8 +2192,8 @@ footer {
 <section class="ranking-section" id="ranking">
   <div class="container">
     <div class="section-label">Ranking</div>
-    <div class="section-title-en">Internal Order</div>
-    <h2 class="section-title">社内序列</h2>
+    <div class="section-title-en" id="rankingSectionTitleEn">Top Players</div>
+    <h2 class="section-title" id="rankingSectionTitle">ランキング</h2>
     <div class="ranking-list" id="rankingList"></div>
   </div>
 </section>
@@ -1896,8 +2202,8 @@ footer {
 <section class="gacha-section" id="gacha">
   <div class="container">
     <div class="section-label">Gacha</div>
-    <div class="section-title-en">Lucky Draw</div>
-    <h2 class="section-title">ガチャ</h2>
+    <div class="section-title-en" id="gachaSectionTitleEn">Lucky Draw</div>
+    <h2 class="section-title" id="gachaSectionTitle">ガチャ</h2>
     <div id="gachaPanel"></div>
   </div>
 </section>
@@ -1920,6 +2226,38 @@ footer {
   </div>
 </div>
 
+<!-- ユーザーログイン パスワードモーダル（4桁数字） -->
+<div class="pw-modal" id="pwModal">
+  <div class="pw-modal-inner">
+    <button class="pw-close" id="pwCloseBtn" type="button" aria-label="閉じる">×</button>
+    <div class="pw-user-info">
+      <div class="pw-icon" id="pwIcon"></div>
+      <div class="pw-name" id="pwUserName"></div>
+    </div>
+    <h3 class="pw-title" id="pwTitle">パスワードを入力</h3>
+    <p class="pw-desc" id="pwDesc">4桁の数字を入力してください</p>
+    <input class="pw-input" id="pwInput1" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off">
+    <div class="pw-confirm-wrap" id="pwConfirmWrap" style="display:none">
+      <p class="pw-desc" style="margin: 0.6rem 0 0.4rem">確認のためもう一度</p>
+      <input class="pw-input" id="pwInput2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off">
+    </div>
+    <div class="pw-error" id="pwError"></div>
+    <button class="pw-submit" id="pwSubmitBtn" type="button">決定</button>
+  </div>
+</div>
+
+<!-- 連ガチャ結果モーダル（複数景品をリスト表示） -->
+<div class="gacha-multi-modal" id="gachaMultiModal">
+  <div class="gacha-multi-modal-inner">
+    <div class="gacha-multi-header">
+      <div class="gacha-multi-title" id="gachaMultiTitle">連ガチャ結果</div>
+      <div class="gacha-multi-summary" id="gachaMultiSummary"></div>
+    </div>
+    <div class="gacha-multi-list" id="gachaMultiList"></div>
+    <button class="btn-close-gacha" id="gachaMultiCloseBtn">閉じる</button>
+  </div>
+</div>
+
 <!-- ガチャ プレリビール演出（SSR / UR の景品表示前に再生） -->
 <div class="gacha-pre-reveal" id="gachaPreReveal">
   <div class="gpr-bg"></div>
@@ -1936,8 +2274,8 @@ footer {
 <section class="timeline-section" id="timeline">
   <div class="container">
     <div class="section-label">Live Activity</div>
-    <div class="section-title-en">Activity Feed</div>
-    <h2 class="section-title">実況フィード</h2>
+    <div class="section-title-en" id="feedSectionTitleEn">Activity Feed</div>
+    <h2 class="section-title" id="feedSectionTitle">アクティビティ</h2>
     <div class="timeline-feed" id="timelineFeed"></div>
   </div>
 </section>
@@ -1946,15 +2284,15 @@ footer {
 <section class="rewards-section" id="rewards">
   <div class="container">
     <div class="section-label">Gacha Prizes</div>
-    <div class="section-title-en">Prize Catalog</div>
-    <h2 class="section-title">ガチャ景品一覧</h2>
+    <div class="section-title-en" id="prizeSectionTitleEn">Prize Catalog</div>
+    <h2 class="section-title" id="prizeSectionTitle">景品一覧</h2>
     <div class="rewards-list" id="rewardsList"></div>
   </div>
 </section>
 
 <footer>
-  <div class="footer-logo">M<span>T</span>K</div>
-  <div class="footer-text">© Mtk Inc. — KAWAKATE PRODUCTION</div>
+  <div class="footer-logo" id="footerLogo">GACHA</div>
+  <div class="footer-text" id="footerText">© GACHA</div>
 </footer>
 
 <script>
@@ -1969,32 +2307,32 @@ const POLL_INTERVAL_MS = 15000;  // 15秒ごとにサーバから取得（無料
 
 const DEFAULT_GACHA_TYPES = [
   {
-    id: 'yellow', name: 'イエローキャンディ', cost: 100, accent: '#f3c654',
+    id: 'yellow', name: 'イエローキャンディ', cost: 100, multiPullCount: 10, pityCount: 0, pityPrize: null, accent: '#f3c654',
     candyIcon: '🍬', candyIconType: 'emoji',
     prizes: [
-      { id: 'y-n-1',  name: 'サンクスメッセージ', rarity: 'N',  icon: '💌', iconType: 'emoji', weight: 60, description: '配信中に感謝メッセージ' },
+      { id: 'y-n-1',  name: 'サンクスメッセージ', rarity: 'N',  icon: '💌', iconType: 'emoji', weight: 60, description: '管理者から感謝メッセージ' },
       { id: 'y-r-1',  name: 'スタンプ画像',       rarity: 'R',  icon: '🎴', iconType: 'emoji', weight: 30, description: 'ロゴ入りスタンプ画像' },
-      { id: 'y-sr-1', name: 'ハート×10',          rarity: 'SR', icon: '💖', iconType: 'emoji', weight: 10, description: '愛風船バスター×10個' },
+      { id: 'y-sr-1', name: 'ハート×10',          rarity: 'SR', icon: '💖', iconType: 'emoji', weight: 10, description: 'プレミアム景品×10個' },
     ],
   },
   {
-    id: 'pink', name: 'ピンクキャンディ', cost: 1000, accent: '#e8638a',
+    id: 'pink', name: 'ピンクキャンディ', cost: 1000, multiPullCount: 10, pityCount: 0, pityPrize: null, accent: '#e8638a',
     candyIcon: '🍭', candyIconType: 'emoji',
     prizes: [
-      { id: 'p-r-1',   name: 'ハート×1',       rarity: 'R',   icon: '💖', iconType: 'emoji', weight: 50, description: '愛風船バスター×1個' },
+      { id: 'p-r-1',   name: 'ハート×1',       rarity: 'R',   icon: '💖', iconType: 'emoji', weight: 50, description: 'プレミアム景品×1個' },
       { id: 'p-sr-1',  name: 'SDちびイラスト', rarity: 'SR',  icon: '🖼️', iconType: 'emoji', weight: 35, description: 'デフォルメSDイラスト' },
       { id: 'p-ssr-1', name: 'バストアップ',   rarity: 'SSR', icon: '🎨', iconType: 'emoji', weight: 14, description: 'バストアップカラー' },
-      { id: 'p-ur-1',  name: '2000Spoon相当',  rarity: 'UR',  icon: '🪙', iconType: 'emoji', weight: 1,  description: '2000 Spoon相当のボーナス' },
+      { id: 'p-ur-1',  name: '2000pt相当',  rarity: 'UR',  icon: '🪙', iconType: 'emoji', weight: 1,  description: '2000 pt相当のボーナス' },
     ],
   },
   {
-    id: 'blue', name: 'ブルーキャンディ', cost: 2000, accent: '#5fa8c8',
+    id: 'blue', name: 'ブルーキャンディ', cost: 2000, multiPullCount: 10, pityCount: 0, pityPrize: null, accent: '#5fa8c8',
     candyIcon: '🧁', candyIconType: 'emoji',
     prizes: [
-      { id: 'b-sr-1',  name: 'ハート×5',        rarity: 'SR',  icon: '💖', iconType: 'emoji', weight: 50, description: '愛風船バスター×5個' },
+      { id: 'b-sr-1',  name: 'ハート×5',        rarity: 'SR',  icon: '💖', iconType: 'emoji', weight: 50, description: 'プレミアム景品×5個' },
       { id: 'b-ssr-1', name: '全身カラー＋背景', rarity: 'SSR', icon: '🖌️', iconType: 'emoji', weight: 30, description: '全身カラー＋背景つき' },
       { id: 'b-ssr-2', name: '描き下ろし限定',  rarity: 'SSR', icon: '👑', iconType: 'emoji', weight: 19, description: '描き下ろし限定イラスト' },
-      { id: 'b-ur-1',  name: '10000Spoon相当',  rarity: 'UR',  icon: '🪙', iconType: 'emoji', weight: 1,  description: '10000 Spoon相当のボーナス' },
+      { id: 'b-ur-1',  name: '10000pt相当',  rarity: 'UR',  icon: '🪙', iconType: 'emoji', weight: 1,  description: '10000 pt相当のボーナス' },
     ],
   },
 ];
@@ -2003,14 +2341,31 @@ function getDefaultData() {
   return {
     users: [],
     settings: {
-      eventName: '春の出世大競争',
+      // サイト基本情報
+      siteName: 'GACHA',
+      logoText: 'GACHA',
+      footerText: '© GACHA',
+      // イベント
+      eventName: 'イベント',
+      eventNameEn: 'Event',
       eventStartDate: new Date().toISOString(),
       eventEndDate: new Date(Date.now() + 14 * 86400000).toISOString(),
       gachaDescription: '',
       headerImage: '',
+      // セクションタイトル
+      rankingTitle: 'ランキング',
+      rankingTitleEn: 'Top Players',
+      gachaTitle: 'ガチャ',
+      gachaTitleEn: 'Lucky Draw',
+      feedTitle: 'アクティビティ',
+      feedTitleEn: 'Activity Feed',
+      prizeTitle: '景品一覧',
+      prizeTitleEn: 'Prize Catalog',
+      // 表記
+      userLabel: 'ユーザー',
       gachaTypes: DEFAULT_GACHA_TYPES,
     },
-    version: 3,
+    version: 4,
   };
 }
 
@@ -2046,7 +2401,7 @@ function loadData() {
   return _cache || getDefaultData();
 }
 
-// 利用可能 Spoon = 累計 - 消費
+// 利用可能 pt = 累計 - 消費
 function availableSpoon(user) {
   return Math.max(0, (user.totalSpoon || 0) - (user.spentSpoon || 0));
 }
@@ -2057,7 +2412,7 @@ function pullsAvailable(user, type) {
   return Math.floor(availableSpoon(user) / cost);
 }
 
-// ランク判定：累計Spoonからランク情報を返す
+// ランク判定：累計ptからランク情報を返す
 function getRankByAmount(amount, ranks) {
   let currentIdx = 0;
   for (let i = 0; i < ranks.length; i++) {
@@ -2196,14 +2551,137 @@ function setupGachaLogin(data) {
       alert(`「${name}」さんはユーザー登録されていません。\n管理者に登録を依頼してください。`);
       return;
     }
-    setCurrentUserId(u.id);
-    renderAll();
+    startLoginFlow(u.id);
   });
   document.querySelectorAll('.gacha-name-chip').forEach(b => {
     b.addEventListener('click', () => {
-      setCurrentUserId(b.dataset.id);
-      renderAll();
+      startLoginFlow(b.dataset.id);
     });
+  });
+}
+
+// ============================================================
+// パスワード認証モーダル
+// ============================================================
+function startLoginFlow(userId) {
+  const data = loadData();
+  const user = (data.users || []).find(u => u.id === userId);
+  if (!user) return;
+  // ユーザー情報をモーダルにセット
+  document.getElementById('pwIcon').innerHTML = renderUserIcon(user);
+  document.getElementById('pwUserName').textContent = user.name;
+  document.getElementById('pwInput1').value = '';
+  document.getElementById('pwInput2').value = '';
+  document.getElementById('pwError').textContent = '';
+  const modal = document.getElementById('pwModal');
+  modal.dataset.userId = userId;
+  if (user.hasPassword) {
+    // 既存ユーザーのログイン
+    document.getElementById('pwTitle').textContent = 'パスワードを入力';
+    document.getElementById('pwDesc').textContent = '4桁の数字を入力してください';
+    document.getElementById('pwConfirmWrap').style.display = 'none';
+    modal.dataset.mode = 'login';
+  } else {
+    // 初回パスワード設定
+    document.getElementById('pwTitle').textContent = '初回ログイン：パスワード設定';
+    document.getElementById('pwDesc').textContent = '4桁の数字パスワードを設定してください（次回以降このパスワードでログインします）';
+    document.getElementById('pwConfirmWrap').style.display = 'block';
+    modal.dataset.mode = 'set';
+  }
+  modal.classList.add('show');
+  setTimeout(() => document.getElementById('pwInput1').focus(), 100);
+}
+
+function closePasswordModal() {
+  const modal = document.getElementById('pwModal');
+  modal.classList.remove('show');
+  document.getElementById('pwInput1').value = '';
+  document.getElementById('pwInput2').value = '';
+  document.getElementById('pwError').textContent = '';
+}
+
+async function submitPasswordModal() {
+  const modal = document.getElementById('pwModal');
+  const userId = modal.dataset.userId;
+  const mode = modal.dataset.mode;
+  const pw1 = document.getElementById('pwInput1').value || '';
+  const errorEl = document.getElementById('pwError');
+  const submitBtn = document.getElementById('pwSubmitBtn');
+
+  errorEl.textContent = '';
+
+  if (!/^\d{4}$/.test(pw1)) {
+    errorEl.textContent = '4桁の数字を入力してください';
+    return;
+  }
+
+  if (mode === 'set') {
+    const pw2 = document.getElementById('pwInput2').value || '';
+    if (pw1 !== pw2) {
+      errorEl.textContent = 'パスワードが一致しません';
+      return;
+    }
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = '送信中…';
+  try {
+    const res = await fetch('/api/user-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, action: mode, password: pw1 }),
+    });
+    const json = await res.json();
+    if (!res.ok || !json.ok) {
+      const msg = (json && json.error) || 'エラーが発生しました';
+      if (msg === 'wrong password') errorEl.textContent = 'パスワードが違います';
+      else if (msg === 'password not set') errorEl.textContent = 'パスワードが未設定です。管理者にリセット依頼を';
+      else if (msg === 'password already set') errorEl.textContent = 'すでに設定済みです。ログインしてください';
+      else if (msg === 'invalid password format') errorEl.textContent = '4桁の数字で入力してください';
+      else if (msg === 'user not found') errorEl.textContent = 'ユーザーが見つかりません';
+      else errorEl.textContent = `エラー: ${msg}`;
+      return;
+    }
+    // 成功：ログイン状態にする
+    setCurrentUserId(userId);
+    closePasswordModal();
+    await fetchRemoteData();
+    renderAll();
+  } catch (e) {
+    errorEl.textContent = 'ネットワークエラー';
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '決定';
+  }
+}
+
+function setupPasswordModal() {
+  document.getElementById('pwCloseBtn').addEventListener('click', closePasswordModal);
+  document.getElementById('pwSubmitBtn').addEventListener('click', submitPasswordModal);
+  // Enter キーで送信
+  ['pwInput1', 'pwInput2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        // 入力が4桁かつ set モードなら2つ目にフォーカス、そうでなければ送信
+        const mode = document.getElementById('pwModal').dataset.mode;
+        if (mode === 'set' && id === 'pwInput1' && /^\d{4}$/.test(el.value)) {
+          document.getElementById('pwInput2').focus();
+        } else {
+          submitPasswordModal();
+        }
+      }
+    });
+    // 数字以外を除去
+    el.addEventListener('input', () => {
+      el.value = el.value.replace(/\D/g, '').slice(0, 4);
+    });
+  });
+  // 背景クリックで閉じる
+  document.getElementById('pwModal').addEventListener('click', (e) => {
+    if (e.target.id === 'pwModal') closePasswordModal();
   });
 }
 
@@ -2216,6 +2694,14 @@ function renderGachaDashboardHTML(data, me) {
   const candyCards = types.map(t => {
     const pulls = pullsAvailable(me, t);
     const canPull = pulls > 0;
+    const multi = Math.max(0, parseInt(t.multiPullCount || 0, 10) || 0);
+    const multiCost = (t.cost || 0) * multi;
+    const canMulti = multi >= 2 && avail >= multiCost;
+    // 天井
+    const pityCount = Math.max(0, parseInt(t.pityCount || 0, 10) || 0);
+    const pityValid = pityCount > 0 && t.pityPrize && t.pityPrize.name;
+    const userPity = (me.pityCounts && me.pityCounts[t.id]) || 0;
+    const pityRemaining = pityValid ? Math.max(1, pityCount - userPity) : 0;
     const candyImg = (t.candyIconType === 'image' && t.candyIcon)
       ? `<img src="${escapeHtml(t.candyIcon)}" alt="">`
       : escapeHtml(t.candyIcon || '🍬');
@@ -2223,11 +2709,17 @@ function renderGachaDashboardHTML(data, me) {
       <div class="candy-card${canPull ? '' : ' disabled'}" style="--accent:${escapeHtml(t.accent || '#e8638a')}">
         <div class="candy-icon">${candyImg}</div>
         <div class="candy-name">${escapeHtml(t.name)}</div>
-        <div class="candy-cost">${fmt(t.cost)}<span class="unit">SPOON</span> / 1回</div>
+        <div class="candy-cost">${fmt(t.cost)}<span class="unit">PT</span> / 1回</div>
         <div class="candy-avail">あと <strong>${pulls}</strong> 回引ける</div>
-        <button class="candy-pull-btn" data-type-id="${escapeHtml(t.id)}"${canPull ? '' : ' disabled'}>
-          ${canPull ? '🎰 1回引く' : 'Spoon不足'}
+        ${pityValid ? `<div class="candy-pity" title="${escapeHtml(t.pityPrize.name)} 確定">🏆 天井まで <strong>${pityRemaining}</strong> 回</div>` : ''}
+        <button class="candy-pull-btn" data-type-id="${escapeHtml(t.id)}" data-count="1"${canPull ? '' : ' disabled'}>
+          ${canPull ? '🎰 1回引く' : 'pt不足'}
         </button>
+        ${multi >= 2 ? `
+          <button class="candy-pull-btn candy-pull-btn-multi" data-type-id="${escapeHtml(t.id)}" data-count="${multi}"${canMulti ? '' : ' disabled'}>
+            ${canMulti ? `🎲 ${multi}連で引く <span class="multi-cost">${fmt(multiCost)}pt</span>` : `${multi}連 ${fmt(multiCost)}pt 不足`}
+          </button>
+        ` : ''}
       </div>
     `;
   }).join('');
@@ -2245,12 +2737,12 @@ function renderGachaDashboardHTML(data, me) {
     <div class="gacha-dashboard">
       <div class="gacha-stat-grid">
         <div class="gacha-stat highlight">
-          <div class="label">使える Spoon</div>
-          <div class="value">${fmtCap(avail)}<span class="unit">SPOON</span></div>
+          <div class="label">使える pt</div>
+          <div class="value">${fmtCap(avail)}<span class="unit">PT</span></div>
         </div>
         <div class="gacha-stat">
-          <div class="label">累計 Spoon</div>
-          <div class="value">${fmtCap(me.totalSpoon || 0)}<span class="unit">SPOON</span></div>
+          <div class="label">累計 pt</div>
+          <div class="value">${fmtCap(me.totalSpoon || 0)}<span class="unit">PT</span></div>
         </div>
         <div class="gacha-stat">
           <div class="label">引いた回数</div>
@@ -2288,39 +2780,111 @@ function setupGachaDashboard(data, me) {
     if (btn.disabled) return;
     btn.addEventListener('click', () => {
       const typeId = btn.dataset.typeId;
-      doGachaPull(me.id, typeId);
+      const count = Math.max(1, parseInt(btn.dataset.count || '1', 10) || 1);
+      doGachaPull(me.id, typeId, count);
     });
   });
 }
 
 // ガチャ実行は /api/pull 経由（抽選はサーバ側、ユーザーは結果のみ受け取る）
-async function doGachaPull(userId, gachaTypeId) {
-  const btn = document.querySelector(`.candy-pull-btn[data-type-id="${gachaTypeId}"]`);
-  const origText = btn ? btn.textContent : '';
+async function doGachaPull(userId, gachaTypeId, count) {
+  const c = Math.max(1, Math.floor(Number(count) || 1));
+  const btn = document.querySelector(`.candy-pull-btn[data-type-id="${gachaTypeId}"][data-count="${c}"]`);
+  const origHtml = btn ? btn.innerHTML : '';
   if (btn) { btn.disabled = true; btn.textContent = '抽選中…'; }
   try {
     const res = await fetch('/api/pull', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, gachaTypeId }),
+      body: JSON.stringify({ userId, gachaTypeId, count: c }),
     });
     const json = await res.json();
     if (!res.ok || !json.ok) {
       const msg = (json && json.error) || '抽選に失敗しました';
-      if (msg === 'not enough spoon') alert('Spoon が足りません。');
+      if (msg === 'not enough pt') alert('pt が足りません。');
       else if (msg === 'user not found') { alert('ユーザーが見つかりません。'); setCurrentUserId(null); }
+      else if (msg === 'invalid count') alert('連数指定が不正です。');
+      else if (msg === 'multi-pull not enabled') alert('このガチャでは連ガチャが無効化されています。');
       else alert('エラー: ' + msg);
       await fetchRemoteData();
       renderAll();
       return;
     }
     await fetchRemoteData();
-    showGachaResult(json.prize);
+    const prizes = Array.isArray(json.prizes) ? json.prizes : [json.prize];
+    if (prizes.length > 1) {
+      showMultiGachaResult(prizes, json.totalCost || (prizes.length * 0));
+    } else {
+      showGachaResult(prizes[0]);
+    }
     renderAll();
   } catch (e) {
     alert('通信エラー：' + (e.message || e));
-    if (btn) { btn.disabled = false; btn.textContent = origText; }
+    if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
   }
+}
+
+// 連ガチャ結果モーダル
+const RARITY_RANK = { N: 0, R: 1, SR: 2, SSR: 3, UR: 4 };
+function highestRarity(prizes) {
+  let top = 'N';
+  for (const p of prizes) {
+    const r = String(p.rarity || 'N').toUpperCase();
+    if ((RARITY_RANK[r] || 0) > (RARITY_RANK[top] || 0)) top = r;
+  }
+  return top;
+}
+function showMultiGachaResult(prizes, totalCost) {
+  const top = highestRarity(prizes);
+  if (FLASHY_RARITIES.has(top)) {
+    playPreReveal(top, () => revealMultiGachaModal(prizes, totalCost));
+  } else {
+    revealMultiGachaModal(prizes, totalCost);
+  }
+}
+function revealMultiGachaModal(prizes, totalCost) {
+  const titleEl = document.getElementById('gachaMultiTitle');
+  const summaryEl = document.getElementById('gachaMultiSummary');
+  const listEl = document.getElementById('gachaMultiList');
+
+  titleEl.textContent = `${prizes.length}連ガチャ結果`;
+
+  // レアリティ別集計
+  const counts = { N: 0, R: 0, SR: 0, SSR: 0, UR: 0 };
+  for (const p of prizes) {
+    const r = String(p.rarity || 'N').toUpperCase();
+    counts[r] = (counts[r] || 0) + 1;
+  }
+  const summaryHtml = ['UR','SSR','SR','R','N']
+    .filter(r => counts[r] > 0)
+    .map(r => `<span class="gm-summary-chip rarity-${r.toLowerCase()}">${r}×${counts[r]}</span>`)
+    .join('');
+  summaryEl.innerHTML = `${summaryHtml}<span class="gm-summary-cost">消費 ${fmt(totalCost || 0)}pt</span>`;
+
+  listEl.innerHTML = prizes.map((p, i) => {
+    const rarity = String(p.rarity || 'N').toUpperCase();
+    const iconHtml = (p.iconType === 'image' && p.icon)
+      ? `<img src="${escapeHtml(p.icon)}" alt="">`
+      : escapeHtml(p.icon || '🎁');
+    return `
+      <div class="gm-item rarity-${rarity.toLowerCase()}${p.isPity ? ' is-pity' : ''}" style="--reveal-delay:${Math.min(i, 12) * 60}ms">
+        ${p.isPity ? '<div class="gm-pity-badge">🏆 天井</div>' : ''}
+        <div class="gm-rarity">${rarity}</div>
+        <div class="gm-icon">${iconHtml}</div>
+        <div class="gm-name">${escapeHtml(p.name)}</div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('gachaMultiModal').classList.add('show');
+}
+function setupGachaMultiModal() {
+  document.getElementById('gachaMultiCloseBtn').addEventListener('click', () => {
+    document.getElementById('gachaMultiModal').classList.remove('show');
+  });
+  document.getElementById('gachaMultiModal').addEventListener('click', (e) => {
+    if (e.target.id === 'gachaMultiModal') e.target.classList.remove('show');
+  });
 }
 
 // プレリビール演出が稼働するレアリティ
@@ -2342,11 +2906,12 @@ function revealGachaModal(prize) {
   const stage = document.getElementById('gachaStage');
   const card = document.getElementById('gachaPrizeCard');
   const rarityCls = `rarity-${(prize.rarity || 'N').toLowerCase()}`;
+  const pityCls = prize.isPity ? ' is-pity' : '';
   // レアリティ class を再付与（gacha-* と pulse-ring 等の子要素も var(--rare) を継承）
-  stage.className = `gacha-stage ${rarityCls}`;
-  card.className = `gacha-prize-card ${rarityCls}`;
+  stage.className = `gacha-stage ${rarityCls}${pityCls}`;
+  card.className = `gacha-prize-card ${rarityCls}${pityCls}`;
   // 子要素のリングは class が外れて再描画されるよう、HTML を一度差し替えてアニメをリセット
-  document.getElementById('gachaRarity').textContent = prize.rarity || 'N';
+  document.getElementById('gachaRarity').textContent = (prize.isPity ? '🏆 天井 ' : '') + (prize.rarity || 'N');
   const iconEl = document.getElementById('gachaPrizeIcon');
   if (prize.iconType === 'image' && prize.icon) {
     iconEl.innerHTML = `<img src="${escapeHtml(prize.icon)}" alt="">`;
@@ -2387,7 +2952,9 @@ function setupGachaModal() {
 
 function renderHero(data) {
   // イベント名
-  document.getElementById('heroEventName').textContent = data.settings.eventName || '出世大競争';
+  document.getElementById('heroEventName').textContent = data.settings.eventName || 'イベント';
+  const heroEnEl = document.getElementById('heroEventEn');
+  if (heroEnEl) heroEnEl.textContent = data.settings.eventNameEn || 'Event';
   // ガチャ説明（任意・空なら非表示）
   const descEl = document.getElementById('gachaDesc');
   if (descEl) {
@@ -2446,6 +3013,7 @@ function buildActivityFeed(data) {
         prizeIcon: g.prizeIcon || '🎁',
         prizeIconType: g.prizeIconType || 'emoji',
         gachaTypeName: g.gachaTypeName || '',
+        isPity: !!g.isPity,
       });
     }
   }
@@ -2469,9 +3037,9 @@ function renderTimeline(data) {
         <div class="timeline-time">${relativeTime(e.timestamp)}</div>
         <div class="timeline-icon">${renderUserIcon(e.user)}</div>
         <div class="timeline-msg">
-          <span class="label-donate">+SPOON</span>
+          <span class="label-donate">+PT</span>
           <span class="name">${escapeHtml(e.user.name)}</span> さんへ
-          <span class="amount">+${fmtCap(e.amount)}</span> Spoon
+          <span class="amount">+${fmtCap(e.amount)}</span> pt
           ${e.note ? `<span class="note">（${escapeHtml(e.note)}）</span>` : ''}
         </div>
       `;
@@ -2484,7 +3052,7 @@ function renderTimeline(data) {
         <div class="timeline-time">${relativeTime(e.timestamp)}</div>
         <div class="timeline-icon timeline-prize-icon">${prizeIconHtml}</div>
         <div class="timeline-msg">
-          <span class="label-gacha rarity-${(e.rarity || 'N').toLowerCase()}">🎰 ${escapeHtml(e.rarity || 'N')}</span>
+          <span class="label-gacha rarity-${(e.rarity || 'N').toLowerCase()}">${e.isPity ? '🏆 天井 ' : '🎰 '}${escapeHtml(e.rarity || 'N')}</span>
           <span class="name">${escapeHtml(e.user.name)}</span> さんが
           ${e.gachaTypeName ? `<span class="from-type">[${escapeHtml(e.gachaTypeName)}]</span> ` : ''}
           <span class="prize-name">${escapeHtml(e.prizeName)}</span> を獲得！
@@ -2535,7 +3103,7 @@ function renderGachaPrizes(data) {
         <div class="prize-type-icon">${candyImg}</div>
         <div class="prize-type-meta">
           <div class="prize-type-name">${escapeHtml(t.name)}</div>
-          <div class="prize-type-cost">${fmt(t.cost)} Spoon / 1回</div>
+          <div class="prize-type-cost">${fmt(t.cost)} pt / 1回</div>
         </div>
       </div>
       <div class="prize-type-list">${items}</div>
@@ -2587,7 +3155,7 @@ function renderRanking(data) {
   const top10 = sorted.slice(0, 10);
 
   if (top10.length === 0) {
-    list.innerHTML = `<div class="empty-msg">まだランキングに表示できる社員がいません</div>`;
+    list.innerHTML = `<div class="empty-msg">まだランキングに表示できる${escapeHtml(data.settings.userLabel || 'ユーザー')}がいません</div>`;
     return;
   }
 
@@ -2620,11 +3188,11 @@ function renderRanking(data) {
         <div class="rank-info">
           <div class="rank-name">${escapeHtml(u.name)}</div>
           <div class="rank-gacha">
-            🍬 残 <span class="gacha-count">${fmtCap(avail)}</span> Spoon
+            🍬 残 <span class="gacha-count">${fmtCap(avail)}</span> pt
           </div>
         </div>
-        <div class="rank-gap">${gap > 0 ? `あと <span class="gap-num">${fmtCap(gap + 1)}</span> Spoonで ${overallIdx}位` : '——'}</div>
-        <div class="rank-spoon">${fmtCap(u.totalSpoon || 0)}<span class="unit">SPOON</span></div>
+        <div class="rank-gap">${gap > 0 ? `あと <span class="gap-num">${fmtCap(gap + 1)}</span> ptで ${overallIdx}位` : '——'}</div>
+        <div class="rank-spoon">${fmtCap(u.totalSpoon || 0)}<span class="unit">PT</span></div>
       `;
       list.appendChild(row);
     }
@@ -2650,9 +3218,9 @@ function buildPodium(top3) {
       <div class="podium-position-en">No. ${String(item.pos).padStart(2,'0')}</div>
       <div class="podium-icon">${renderUserIcon(u)}</div>
       <div class="podium-name">${escapeHtml(u.name)}</div>
-      <div class="podium-spoon">${fmtCap(u.totalSpoon || 0)}<span class="unit">SPOON</span></div>
+      <div class="podium-spoon">${fmtCap(u.totalSpoon || 0)}<span class="unit">PT</span></div>
       <div class="podium-gacha">
-        🍬 残 <strong>${fmtCap(avail)}</strong> Spoon
+        🍬 残 <strong>${fmtCap(avail)}</strong> pt
       </div>
       <div class="podium-base">
         <span class="small">PODIUM</span>${item.pos}
@@ -2667,8 +3235,32 @@ function buildPodium(top3) {
 // ============================================================
 // メイン描画ループ
 // ============================================================
+function renderSiteText(data) {
+  const s = data.settings || {};
+  const setText = (id, val) => {
+    const el = document.getElementById(id);
+    if (el && typeof val === 'string' && val.length > 0) el.textContent = val;
+  };
+  // ページタイトル
+  if (s.siteName) document.title = s.siteName;
+  // ロゴ・フッター
+  setText('headerLogo', s.logoText);
+  setText('footerLogo', s.logoText);
+  setText('footerText', s.footerText);
+  // セクションタイトル
+  setText('rankingSectionTitle', s.rankingTitle);
+  setText('rankingSectionTitleEn', s.rankingTitleEn);
+  setText('gachaSectionTitle', s.gachaTitle);
+  setText('gachaSectionTitleEn', s.gachaTitleEn);
+  setText('feedSectionTitle', s.feedTitle);
+  setText('feedSectionTitleEn', s.feedTitleEn);
+  setText('prizeSectionTitle', s.prizeTitle);
+  setText('prizeSectionTitleEn', s.prizeTitleEn);
+}
+
 function renderAll() {
   const data = loadData();
+  renderSiteText(data);
   renderUserSession(data);
   renderHero(data);
   renderCountdown(data);
@@ -2731,6 +3323,8 @@ function setupSync() {
 setupHeader();
 setupCursor();
 setupGachaModal();
+setupGachaMultiModal();
+setupPasswordModal();
 // 初回はリモートからデータ取得後に描画
 fetchRemoteData().then(() => {
   renderAll();
