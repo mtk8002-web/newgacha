@@ -2061,12 +2061,23 @@ function openHistoryModal(userId) {
   if (gachas.length === 0) {
     html += `<div class="empty-row" style="padding:1rem 0;text-align:center;color:rgba(255,255,255,0.4);font-size:0.78rem">未抽選</div>`;
   } else {
+    const types = (data.settings && data.settings.gachaTypes) || [];
+    const resolveIcon = (g) => {
+      if (g.prizeIcon) return renderRewardIcon(g.prizeIcon);
+      const t = types.find(x => x.id === g.gachaTypeId);
+      if (t) {
+        if (g.isPity && t.pityPrize) return renderRewardIcon(t.pityPrize.icon || '🏆');
+        const p = (t.prizes || []).find(x => x.id === g.prizeId);
+        if (p) return renderRewardIcon(p.icon || '🎁');
+      }
+      return '🎁';
+    };
     html += gachas.map(g => `
       <div class="history-item history-gacha">
         <div class="history-time">${timeStr(g.timestamp)}</div>
         <div class="history-note">
           <span class="rarity-chip rarity-${g.rarity || 'N'}">${g.rarity || 'N'}</span>
-          <span style="margin-left:0.4rem">${renderRewardIcon(g.prizeIcon)} ${escapeHtml(g.prizeName || '')}</span>
+          <span style="margin-left:0.4rem">${resolveIcon(g)} ${escapeHtml(g.prizeName || '')}${g.isPity ? ' <span style="color:var(--gold);font-size:0.65rem;margin-left:0.3rem">🏆 天井</span>' : ''}</span>
           <span style="display:block;font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:0.1rem">${escapeHtml(g.gachaTypeName || '')}</span>
         </div>
         <div class="history-amount" style="color:var(--pink)">-${fmt(g.cost || 0)}</div>

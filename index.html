@@ -2464,6 +2464,24 @@ function renderRewardIcon(value) {
   return escapeHtml(value || '🎁');
 }
 
+// 履歴エントリの景品アイコンを解決：
+// 容量肥大対策で prizeIcon が空のケースは gachaTypes から prizeId/天井プレフィックス で再取得する
+function resolveHistoryPrizeIconHtml(h, gachaTypes) {
+  if (h && h.prizeIcon) {
+    return renderRewardIcon(h.prizeIcon);
+  }
+  const types = gachaTypes || [];
+  const t = types.find(x => x.id === h.gachaTypeId);
+  if (t) {
+    if (h.isPity && t.pityPrize) {
+      return renderRewardIcon(t.pityPrize.icon || '🏆');
+    }
+    const p = (t.prizes || []).find(x => x.id === h.prizeId);
+    if (p) return renderRewardIcon(p.icon || '🎁');
+  }
+  return escapeHtml('🎁');
+}
+
 // ============================================================
 // 描画
 // ============================================================
@@ -2778,7 +2796,7 @@ function renderGachaDashboardHTML(data, me) {
           : recent.map(h => `
             <div class="gacha-history-item rarity-${(h.rarity || 'N').toLowerCase()}">
               <div class="rarity-tag">${escapeHtml(h.rarity || 'N')}</div>
-              <div class="pi">${(h.prizeIconType === 'image' && h.prizeIcon) ? `<img src="${escapeHtml(h.prizeIcon)}" alt="">` : escapeHtml(h.prizeIcon || '🎁')}</div>
+              <div class="pi">${resolveHistoryPrizeIconHtml(h, data.settings && data.settings.gachaTypes)}</div>
               <div class="pname">
                 ${escapeHtml(h.prizeName)}
                 ${h.gachaTypeName ? `<span class="from-type">${escapeHtml(h.gachaTypeName)}</span>` : ''}
@@ -3027,8 +3045,10 @@ function buildActivityFeed(data) {
         user: u,
         prizeName: g.prizeName,
         rarity: g.rarity || 'N',
-        prizeIcon: g.prizeIcon || '🎁',
+        prizeIcon: g.prizeIcon || '',
         prizeIconType: g.prizeIconType || 'emoji',
+        gachaTypeId: g.gachaTypeId,
+        prizeId: g.prizeId,
         gachaTypeName: g.gachaTypeName || '',
         isPity: !!g.isPity,
       });
@@ -3062,9 +3082,7 @@ function renderTimeline(data) {
       `;
     } else if (e.type === 'gacha') {
       div.classList.add(`rarity-${(e.rarity || 'N').toLowerCase()}`);
-      const prizeIconHtml = (e.prizeIconType === 'image' && e.prizeIcon)
-        ? `<img src="${escapeHtml(e.prizeIcon)}" alt="">`
-        : escapeHtml(e.prizeIcon || '🎁');
+      const prizeIconHtml = resolveHistoryPrizeIconHtml(e, data.settings && data.settings.gachaTypes);
       div.innerHTML = `
         <div class="timeline-time">${relativeTime(e.timestamp)}</div>
         <div class="timeline-icon timeline-prize-icon">${prizeIconHtml}</div>
