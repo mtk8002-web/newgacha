@@ -944,6 +944,340 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
   .reward-text { grid-row: 2; grid-column: 2 / span 2; font-size: 0.78rem; }
 }
 
+/* ===== トレード掲示板 ===== */
+.trade-section {
+  background: linear-gradient(180deg, var(--bg-pink) 0%, var(--bg-warm) 100%);
+  padding: 6rem 0;
+}
+.trade-panel {
+  max-width: 760px; margin: 0 auto;
+}
+.trade-header-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+  margin-bottom: 1rem; flex-wrap: wrap;
+}
+.trade-header-bar .trade-tabs {
+  display: flex; gap: 0.4rem;
+  background: rgba(255,255,255,0.55);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px;
+}
+.trade-tab {
+  font-family: var(--font-en); font-weight: 700; font-size: 0.62rem;
+  letter-spacing: 0.14em; color: var(--text-muted);
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  background: transparent; border: none; cursor: pointer;
+  transition: all 0.2s;
+}
+.trade-tab:hover { color: var(--pink); }
+.trade-tab.active { background: var(--pink); color: var(--white); }
+.trade-create-btn {
+  font-family: var(--font-jp); font-weight: 700; font-size: 0.8rem;
+  padding: 0.55rem 1.1rem;
+  background: var(--pink); color: var(--white);
+  border: none; border-radius: 999px;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  transition: all 0.2s;
+}
+.trade-create-btn:hover { background: var(--pink-deep); }
+.trade-create-btn:disabled { background: var(--text-soft); cursor: not-allowed; box-shadow: none; }
+.trade-list { display: flex; flex-direction: column; gap: 0.7rem; }
+.trade-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.8rem;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+}
+.trade-card.mine { border-color: var(--pink); }
+.trade-card.completed { opacity: 0.6; background: var(--bg-warm); }
+.trade-card.cancelled { opacity: 0.45; background: var(--bg-warm); }
+.trade-card .tc-owner {
+  display: flex; flex-direction: column; align-items: center;
+  min-width: 70px; gap: 0.25rem;
+}
+.tc-owner-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--pink-bg);
+  border: 1.5px solid var(--pink);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  overflow: hidden;
+}
+.tc-owner-icon img { width: 100%; height: 100%; object-fit: cover; }
+.tc-owner-name { font-size: 0.65rem; font-weight: 600; color: var(--text-muted); text-align: center; max-width: 70px; overflow: hidden; text-overflow: ellipsis; }
+.tc-prize-area {
+  display: flex; align-items: center; gap: 0.7rem;
+  min-width: 0;
+}
+.tc-prize-icon {
+  width: 48px; height: 48px; border-radius: 8px;
+  background: var(--bg-warm); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.7rem;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.tc-prize-icon img { width: 100%; height: 100%; object-fit: cover; }
+.tc-prize-meta { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 0.15rem; }
+.tc-prize-name { font-weight: 700; font-size: 0.92rem; color: var(--text); }
+.tc-prize-sub { font-size: 0.66rem; color: var(--text-muted); display: flex; gap: 0.4rem; align-items: center; }
+.tc-rarity-chip {
+  display: inline-block;
+  font-family: var(--font-en); font-weight: 800;
+  font-size: 0.55rem; letter-spacing: 0.1em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: var(--text-soft); color: #fff;
+}
+.tc-rarity-chip.rarity-r   { background: #2f7fae; }
+.tc-rarity-chip.rarity-sr  { background: var(--pink); }
+.tc-rarity-chip.rarity-ssr { background: var(--gold-deep); }
+.tc-rarity-chip.rarity-ur  { background: linear-gradient(90deg, var(--pink-deep), var(--gold-deep)); }
+.tc-comment {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 0.15rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.tc-actions {
+  display: flex; flex-direction: column; gap: 0.35rem; align-items: stretch;
+  min-width: 110px;
+}
+.tc-action-btn {
+  font-size: 0.72rem; font-weight: 700;
+  padding: 0.5rem 0.7rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--pink);
+  background: var(--pink); color: var(--white);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.tc-action-btn:hover { background: var(--pink-deep); }
+.tc-action-btn.outlined {
+  background: transparent; color: var(--pink);
+}
+.tc-action-btn.outlined:hover { background: var(--pink); color: var(--white); }
+.tc-action-btn.ghost {
+  background: transparent; color: var(--text-muted); border-color: var(--border);
+}
+.tc-action-btn.ghost:hover { color: var(--pink); border-color: var(--pink); }
+.tc-status-chip {
+  font-size: 0.6rem; font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: var(--bg-warm); color: var(--text-muted);
+  text-align: center;
+  white-space: nowrap;
+}
+.tc-status-chip.status-completed { background: var(--gold-bg); color: var(--gold-deep); }
+.tc-status-chip.status-cancelled { background: var(--bg-warm); color: var(--text-soft); }
+.tc-offer-count {
+  font-size: 0.65rem; color: var(--pink-deep); font-weight: 700;
+  text-align: center;
+}
+.trade-empty { text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.85rem; }
+.trade-login-prompt {
+  text-align: center; padding: 1.4rem 1rem;
+  background: var(--card); border: 1px dashed var(--border); border-radius: 10px;
+  color: var(--text-muted); font-size: 0.85rem;
+}
+
+/* トレード共通モーダル */
+.trade-modal {
+  position: fixed; inset: 0; z-index: 1200;
+  display: none;
+  align-items: center; justify-content: center;
+  background: rgba(31, 27, 22, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 1rem;
+}
+.trade-modal.show { display: flex; animation: gachaFadeIn 0.25s; }
+.trade-modal-inner {
+  position: relative;
+  width: 100%; max-width: 540px;
+  max-height: 90vh;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.6rem 1.4rem 1.2rem;
+  box-shadow: var(--shadow-soft);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.trade-close {
+  position: absolute; top: 0.7rem; right: 0.7rem;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-muted); font-size: 1rem;
+  cursor: pointer;
+}
+.trade-close:hover { color: var(--pink); border-color: var(--pink); }
+.trade-modal-title {
+  font-size: 1rem; font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+.trade-modal-desc {
+  font-size: 0.78rem; color: var(--text-muted);
+  margin-bottom: 0.7rem; line-height: 1.6;
+}
+.trade-modal-target {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--bg-warm);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 0.7rem;
+}
+.trade-modal-target .tc-prize-icon { width: 40px; height: 40px; font-size: 1.3rem; }
+.trade-modal-target .tc-prize-name { font-size: 0.85rem; }
+.trade-inventory-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+  gap: 0.5rem;
+  overflow-y: auto;
+  padding: 0.3rem;
+  margin: 0 -0.3rem;
+  max-height: 360px;
+  flex: 1;
+}
+.tinv-item {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 0.55rem 0.35rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.18s;
+  position: relative;
+}
+.tinv-item:hover { border-color: var(--pink-soft); transform: translateY(-1px); }
+.tinv-item.selected {
+  border-color: var(--pink); background: var(--pink-bg);
+  box-shadow: 0 4px 12px rgba(214,85,122,0.18);
+}
+.tinv-item.disabled { opacity: 0.5; cursor: not-allowed; }
+.tinv-rarity {
+  display: inline-block;
+  font-family: var(--font-en); font-weight: 800;
+  font-size: 0.55rem; letter-spacing: 0.08em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: var(--text-soft); color: #fff;
+  margin-bottom: 0.3rem;
+}
+.tinv-item.rarity-r   .tinv-rarity { background: #2f7fae; }
+.tinv-item.rarity-sr  .tinv-rarity { background: var(--pink); }
+.tinv-item.rarity-ssr .tinv-rarity { background: var(--gold-deep); }
+.tinv-item.rarity-ur  .tinv-rarity { background: linear-gradient(90deg, var(--pink-deep), var(--gold-deep)); }
+.tinv-icon {
+  width: 38px; height: 38px;
+  margin: 0 auto 0.3rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  background: var(--bg);
+  border-radius: 50%;
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+.tinv-icon img { width: 100%; height: 100%; object-fit: cover; }
+.tinv-name {
+  font-size: 0.66rem; line-height: 1.25;
+  font-weight: 600; color: var(--text);
+  word-break: break-word;
+}
+.tinv-pity-mark {
+  position: absolute; top: 2px; right: 2px;
+  font-size: 0.55rem;
+  background: var(--gold-bg); color: var(--gold-deep);
+  border-radius: 999px;
+  padding: 0.05rem 0.3rem;
+  font-weight: 700;
+}
+.tinv-empty { grid-column: 1 / -1; text-align: center; padding: 1.4rem; color: var(--text-muted); font-size: 0.78rem; }
+.trade-modal-comment-wrap { margin-top: 0.7rem; }
+.trade-comment-input {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  font-family: inherit; font-size: 0.82rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  resize: vertical;
+  outline: none;
+}
+.trade-comment-input:focus { border-color: var(--pink); box-shadow: 0 0 0 2px var(--pink-bg); }
+.trade-modal-error {
+  font-size: 0.75rem; color: var(--danger);
+  min-height: 1rem;
+  margin: 0.5rem 0 0;
+  text-align: center;
+}
+.trade-modal-submit {
+  margin-top: 0.7rem;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background: var(--pink);
+  color: var(--white);
+  border: none; border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+.trade-modal-submit:hover { background: var(--pink-deep); }
+.trade-modal-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* オファー一覧モーダル */
+.trade-offers-list {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  overflow-y: auto; max-height: 60vh;
+  padding: 0.3rem 0;
+}
+.trade-offer-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.7rem;
+  align-items: center;
+  padding: 0.65rem 0.8rem;
+  background: var(--bg-warm);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.trade-offer-row.status-accepted { background: var(--gold-bg); border-color: #e3c98a; }
+.trade-offer-row.status-rejected,
+.trade-offer-row.status-withdrawn,
+.trade-offer-row.status-invalidated { opacity: 0.55; }
+.trade-offer-row .tc-prize-icon { width: 38px; height: 38px; font-size: 1.2rem; }
+.tro-meta-text { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+.tro-meta-sub { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.15rem; display: flex; gap: 0.4rem; align-items: center; }
+.tro-actions { display: flex; flex-direction: column; gap: 0.3rem; }
+.tro-actions .tc-action-btn { padding: 0.35rem 0.65rem; font-size: 0.65rem; min-width: 70px; }
+
+@media (max-width: 640px) {
+  .trade-card { grid-template-columns: auto 1fr; }
+  .trade-card .tc-actions { grid-column: 1 / -1; flex-direction: row; }
+  .tc-action-btn { flex: 1; }
+  .trade-modal-inner { padding: 1.3rem 1rem 1rem; max-height: 95vh; }
+  .trade-inventory-list { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
+  .tinv-icon { width: 34px; height: 34px; font-size: 1.2rem; }
+}
+
 /* ===== 実況フィード（タイムライン） ===== */
 .timeline-section {
   background: linear-gradient(180deg, var(--bg-warm) 0%, var(--bg) 100%);
@@ -2155,6 +2489,7 @@ footer {
     <a href="#hero">HOME</a>
     <a href="#ranking">RANKING</a>
     <a href="#gacha">GACHA</a>
+    <a href="#trade">TRADE</a>
     <a href="#timeline">FEED</a>
     <a href="#rewards">PRIZES</a>
   </nav>
@@ -2268,6 +2603,43 @@ footer {
   <div class="gpr-pulse gpr-pulse-3"></div>
   <div class="gpr-rarity" id="gpRarityText"></div>
   <div class="gpr-flash"></div>
+</div>
+
+<!-- ===== トレード掲示板 ===== -->
+<section class="trade-section" id="trade">
+  <div class="container">
+    <div class="section-label">Trade</div>
+    <div class="section-title-en" id="tradeSectionTitleEn">Trade Board</div>
+    <h2 class="section-title" id="tradeSectionTitle">トレード掲示板</h2>
+    <div class="trade-panel" id="tradePanel"></div>
+  </div>
+</section>
+
+<!-- トレード：景品選択モーダル（出品・オファー共通） -->
+<div class="trade-modal" id="tradeModal">
+  <div class="trade-modal-inner">
+    <button class="trade-close" id="tradeCloseBtn" type="button" aria-label="閉じる">×</button>
+    <h3 class="trade-modal-title" id="tradeModalTitle">出品する景品を選ぶ</h3>
+    <p class="trade-modal-desc" id="tradeModalDesc"></p>
+    <div class="trade-modal-target" id="tradeModalTarget"></div>
+    <div class="trade-inventory-list" id="tradeInventoryList"></div>
+    <div class="trade-modal-comment-wrap" id="tradeModalCommentWrap" style="display:none">
+      <label class="label-text" for="tradeComment">コメント（任意）</label>
+      <textarea class="trade-comment-input" id="tradeComment" rows="2" maxlength="200" placeholder="欲しい景品やコメントなど"></textarea>
+    </div>
+    <div class="trade-modal-error" id="tradeModalError"></div>
+    <button class="trade-modal-submit" id="tradeModalSubmit" type="button">決定</button>
+  </div>
+</div>
+
+<!-- トレード：オファー一覧モーダル（出品者が承認する画面） -->
+<div class="trade-modal" id="tradeOffersModal">
+  <div class="trade-modal-inner">
+    <button class="trade-close" id="tradeOffersCloseBtn" type="button" aria-label="閉じる">×</button>
+    <h3 class="trade-modal-title">オファー一覧</h3>
+    <div class="trade-modal-target" id="tradeOffersTarget"></div>
+    <div class="trade-offers-list" id="tradeOffersList"></div>
+  </div>
 </div>
 
 <!-- ===== 実況フィード（タイムライン） ===== -->
@@ -3320,7 +3692,528 @@ function renderAll() {
   renderRanking(data);
   renderTimeline(data);
   renderGacha(data);
+  renderTrade(data);
   renderGachaPrizes(data);
+}
+
+// ============================================================
+// トレード掲示板
+// ============================================================
+// 現在のタブ：'open' | 'mine' | 'offers'
+let currentTradeTab = 'open';
+// 共通モーダルの状態
+const tradeModalState = {
+  mode: null,      // 'list' | 'offer'
+  tradeId: null,
+  selectedInstanceId: null,
+};
+
+// inventory item から現在のガチャ設定を引いて表示用オブジェクトを返す
+function resolveInventoryItem(item, gachaTypes) {
+  const t = (gachaTypes || []).find(x => x.id === item.gachaTypeId);
+  if (t) {
+    if (item.prizeId === `pity-${t.id}` && t.pityPrize) {
+      return {
+        name: t.pityPrize.name, rarity: t.pityPrize.rarity || 'UR',
+        icon: t.pityPrize.icon || '🏆', iconType: t.pityPrize.iconType || 'emoji',
+        gachaTypeName: t.name,
+      };
+    }
+    const p = (t.prizes || []).find(x => x.id === item.prizeId);
+    if (p) {
+      return {
+        name: p.name, rarity: p.rarity || 'N',
+        icon: p.icon || '🎁', iconType: p.iconType || 'emoji',
+        gachaTypeName: t.name,
+      };
+    }
+  }
+  return { name: '(削除済み)', rarity: 'N', icon: '🎁', iconType: 'emoji', gachaTypeName: '' };
+}
+
+// snapshot から icon HTML
+function renderPrizeIconHtml(iconValue) {
+  if (typeof iconValue === 'string' && iconValue.startsWith('data:image')) {
+    return `<img src="${escapeHtml(iconValue)}" alt="">`;
+  }
+  return escapeHtml(iconValue || '🎁');
+}
+
+// トレード関連アイテム（ownerItem / offer.item）の表示用情報を解決：
+// - 名前・レアリティ・ガチャ名は snapshot を優先（過去状態の保存）
+// - アイコンは常に現在の gachaTypes から resolve（容量肥大防止のため snapshot には保存しない）
+function resolveTradeItemDisplay(item, gachaTypes) {
+  const snap = (item && item.snapshot) || {};
+  const resolved = resolveInventoryItem(item || {}, gachaTypes);
+  return {
+    name: snap.prizeName || resolved.name,
+    rarity: snap.rarity || resolved.rarity,
+    iconHtml: renderPrizeIconHtml(resolved.icon),
+    gachaTypeName: snap.gachaTypeName || resolved.gachaTypeName,
+  };
+}
+
+// トレード掲示板上のユーザーアバター表示：現在の users から resolve（trade 内 ownerIcon は base64 ストリップ後のフォールバック）
+function resolveTradeUserIconHtml(userId, fallbackIcon, fallbackIconType, data) {
+  const user = (data && Array.isArray(data.users)) ? data.users.find(u => u.id === userId) : null;
+  if (user) return renderUserIcon(user);
+  if (fallbackIcon) {
+    if (fallbackIconType === 'image' && typeof fallbackIcon === 'string' && fallbackIcon.startsWith('data:image')) {
+      return `<img src="${escapeHtml(fallbackIcon)}" alt="">`;
+    }
+    return escapeHtml(fallbackIcon);
+  }
+  return '👤';
+}
+
+function renderTrade(data) {
+  const panel = document.getElementById('tradePanel');
+  if (!panel) return;
+  const me = getCurrentUser(data);
+  if (!me) {
+    panel.innerHTML = `<div class="trade-login-prompt">ログインするとトレード掲示板を利用できます。<br>上の GACHA セクションから名前を選んでログインしてください。</div>`;
+    return;
+  }
+  const trades = Array.isArray(data.trades) ? data.trades : [];
+  const myInventory = Array.isArray(me.inventory) ? me.inventory : [];
+
+  // タブによる絞り込み
+  let visibleTrades = [];
+  if (currentTradeTab === 'open') {
+    visibleTrades = trades.filter(t => t.status === 'open');
+  } else if (currentTradeTab === 'mine') {
+    visibleTrades = trades.filter(t => t.ownerId === me.id);
+  } else if (currentTradeTab === 'offers') {
+    visibleTrades = trades.filter(t => Array.isArray(t.offers) && t.offers.some(o => o.offererId === me.id));
+  }
+  // 新しい順
+  visibleTrades = visibleTrades.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+  const tabBtn = (key, label) =>
+    `<button class="trade-tab${currentTradeTab === key ? ' active' : ''}" data-trade-tab="${key}">${escapeHtml(label)}</button>`;
+
+  const canCreate = myInventory.length > 0;
+
+  let html = `
+    <div class="trade-header-bar">
+      <div class="trade-tabs">
+        ${tabBtn('open', '出品一覧')}
+        ${tabBtn('mine', '自分の出品')}
+        ${tabBtn('offers', '自分のオファー')}
+      </div>
+      <button class="trade-create-btn" id="tradeCreateBtn"${canCreate ? '' : ' disabled'}>＋ 出品する</button>
+    </div>
+    <div class="trade-list" id="tradeList"></div>
+  `;
+  panel.innerHTML = html;
+
+  const listEl = document.getElementById('tradeList');
+  if (visibleTrades.length === 0) {
+    const emptyMsg = currentTradeTab === 'open'
+      ? '出品中のトレードはありません'
+      : currentTradeTab === 'mine'
+        ? 'あなたの出品はまだありません'
+        : 'あなたが出したオファーはありません';
+    listEl.innerHTML = `<div class="trade-empty">${escapeHtml(emptyMsg)}</div>`;
+  } else {
+    listEl.innerHTML = visibleTrades.map(t => renderTradeCard(t, me, data)).join('');
+  }
+
+  // タブ切り替え
+  panel.querySelectorAll('[data-trade-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentTradeTab = btn.dataset.tradeTab;
+      renderTrade(data);
+    });
+  });
+
+  // 出品ボタン
+  const createBtn = document.getElementById('tradeCreateBtn');
+  if (createBtn) {
+    createBtn.addEventListener('click', () => {
+      if (!canCreate) return;
+      openTradeCreateModal();
+    });
+  }
+
+  // 各カードのアクションボタン
+  panel.querySelectorAll('[data-trade-act]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const act = btn.dataset.tradeAct;
+      const tradeId = btn.dataset.tradeId;
+      const offerId = btn.dataset.offerId;
+      if (act === 'cancel') confirmAndTrade('cancel', { tradeId }, '出品を取り下げますか？');
+      else if (act === 'offer') openTradeOfferModal(tradeId);
+      else if (act === 'view-offers') openTradeOffersModal(tradeId);
+      else if (act === 'withdraw') confirmAndTrade('withdraw', { tradeId, offerId }, 'オファーを取り下げますか？');
+    });
+  });
+}
+
+function renderTradeCard(t, me, data) {
+  const types = (data.settings && data.settings.gachaTypes) || [];
+  const display = resolveTradeItemDisplay(t.ownerItem || {}, types);
+  const isMine = t.ownerId === me.id;
+  const myOffer = isMine ? null : (t.offers || []).find(o => o.offererId === me.id && o.status === 'pending');
+  const pendingOffers = (t.offers || []).filter(o => o.status === 'pending').length;
+  const ownerIcon = resolveTradeUserIconHtml(t.ownerId, t.ownerIcon, t.ownerIconType, data);
+  const rarity = String(display.rarity || 'N').toLowerCase();
+  const cardCls = ['trade-card'];
+  if (isMine) cardCls.push('mine');
+  if (t.status === 'completed') cardCls.push('completed');
+  if (t.status === 'cancelled') cardCls.push('cancelled');
+
+  let actionsHtml = '';
+  if (t.status === 'open') {
+    if (isMine) {
+      actionsHtml = `
+        <button class="tc-action-btn" data-trade-act="view-offers" data-trade-id="${escapeHtml(t.id)}">オファー${pendingOffers}件</button>
+        <button class="tc-action-btn ghost" data-trade-act="cancel" data-trade-id="${escapeHtml(t.id)}">取り下げ</button>
+      `;
+    } else if (myOffer) {
+      actionsHtml = `
+        <span class="tc-status-chip" style="background:var(--pink-bg);color:var(--pink-deep)">オファー中</span>
+        <button class="tc-action-btn ghost" data-trade-act="withdraw" data-trade-id="${escapeHtml(t.id)}" data-offer-id="${escapeHtml(myOffer.id)}">取り下げ</button>
+      `;
+    } else {
+      actionsHtml = `
+        <button class="tc-action-btn outlined" data-trade-act="offer" data-trade-id="${escapeHtml(t.id)}">オファー</button>
+        ${pendingOffers > 0 ? `<div class="tc-offer-count">他${pendingOffers}件オファー中</div>` : ''}
+      `;
+    }
+  } else if (t.status === 'completed') {
+    actionsHtml = `<span class="tc-status-chip status-completed">成立済み</span>`;
+  } else if (t.status === 'cancelled') {
+    actionsHtml = `<span class="tc-status-chip status-cancelled">取り下げ</span>`;
+  }
+
+  return `
+    <div class="${cardCls.join(' ')}">
+      <div class="tc-owner">
+        <div class="tc-owner-icon">${ownerIcon}</div>
+        <div class="tc-owner-name">${escapeHtml(t.ownerName || '')}</div>
+      </div>
+      <div class="tc-prize-area">
+        <div class="tc-prize-icon">${display.iconHtml}</div>
+        <div class="tc-prize-meta">
+          <div class="tc-prize-name">${escapeHtml(display.name || '')}</div>
+          <div class="tc-prize-sub">
+            <span class="tc-rarity-chip rarity-${rarity}">${escapeHtml(display.rarity || 'N')}</span>
+            <span>${escapeHtml(display.gachaTypeName || '')}</span>
+          </div>
+          ${t.comment ? `<div class="tc-comment">${escapeHtml(t.comment)}</div>` : ''}
+        </div>
+      </div>
+      <div class="tc-actions">${actionsHtml}</div>
+    </div>
+  `;
+}
+
+// ============================================================
+// トレード共通モーダル（出品・オファー）
+// ============================================================
+function openTradeCreateModal() {
+  tradeModalState.mode = 'list';
+  tradeModalState.tradeId = null;
+  tradeModalState.selectedInstanceId = null;
+  const data = loadData();
+  const me = getCurrentUser(data);
+  if (!me) return;
+  document.getElementById('tradeModalTitle').textContent = '出品する景品を選ぶ';
+  document.getElementById('tradeModalDesc').textContent = 'トレードに出す景品を1つ選んでください。';
+  document.getElementById('tradeModalTarget').innerHTML = '';
+  document.getElementById('tradeModalTarget').style.display = 'none';
+  document.getElementById('tradeModalCommentWrap').style.display = 'block';
+  document.getElementById('tradeComment').value = '';
+  document.getElementById('tradeModalError').textContent = '';
+  renderTradeInventoryList(me, data, /*excludeListedInstances*/ true);
+  document.getElementById('tradeModal').classList.add('show');
+}
+
+function openTradeOfferModal(tradeId) {
+  const data = loadData();
+  const me = getCurrentUser(data);
+  if (!me) return;
+  const trade = (data.trades || []).find(t => t.id === tradeId);
+  if (!trade) { alert('トレードが見つかりません'); return; }
+  tradeModalState.mode = 'offer';
+  tradeModalState.tradeId = tradeId;
+  tradeModalState.selectedInstanceId = null;
+  document.getElementById('tradeModalTitle').textContent = 'オファーする景品を選ぶ';
+  document.getElementById('tradeModalDesc').textContent = `${trade.ownerName || ''}さんに渡す景品を選んでください。`;
+  const types = (data.settings && data.settings.gachaTypes) || [];
+  const display = resolveTradeItemDisplay(trade.ownerItem || {}, types);
+  document.getElementById('tradeModalTarget').innerHTML = `
+    <div class="tc-prize-icon">${display.iconHtml}</div>
+    <div class="tc-prize-meta">
+      <div class="tc-prize-name">${escapeHtml(display.name)} を交換希望</div>
+      <div class="tc-prize-sub">
+        <span class="tc-rarity-chip rarity-${String(display.rarity || 'N').toLowerCase()}">${escapeHtml(display.rarity || 'N')}</span>
+        <span>by ${escapeHtml(trade.ownerName || '')}</span>
+      </div>
+    </div>
+  `;
+  document.getElementById('tradeModalTarget').style.display = 'flex';
+  document.getElementById('tradeModalCommentWrap').style.display = 'none';
+  document.getElementById('tradeModalError').textContent = '';
+  renderTradeInventoryList(me, data, /*excludeListedInstances*/ true);
+  document.getElementById('tradeModal').classList.add('show');
+}
+
+function renderTradeInventoryList(me, data, excludeListed) {
+  const listEl = document.getElementById('tradeInventoryList');
+  const types = (data.settings && data.settings.gachaTypes) || [];
+  const trades = Array.isArray(data.trades) ? data.trades : [];
+  // 既に出品中のインスタンスIDを除外
+  const listedIds = new Set();
+  if (excludeListed) {
+    for (const t of trades) {
+      if (t.status === 'open' && t.ownerId === me.id && t.ownerItem) listedIds.add(t.ownerItem.instanceId);
+      // 既に他のトレードに pending でオファー中のインスタンスも除外
+      if (t.status === 'open' && Array.isArray(t.offers)) {
+        for (const o of t.offers) {
+          if (o.offererId === me.id && o.status === 'pending' && o.item) {
+            listedIds.add(o.item.instanceId);
+          }
+        }
+      }
+    }
+  }
+  const items = (me.inventory || []).slice().sort((a, b) => (b.acquiredAt || 0) - (a.acquiredAt || 0));
+  if (items.length === 0) {
+    listEl.innerHTML = `<div class="tinv-empty">所持している景品がありません。先にガチャを引いてください。</div>`;
+    return;
+  }
+  listEl.innerHTML = items.map(item => {
+    const info = resolveInventoryItem(item, types);
+    const rarity = String(info.rarity || 'N').toLowerCase();
+    const disabled = listedIds.has(item.instanceId);
+    return `
+      <button type="button" class="tinv-item rarity-${rarity}${disabled ? ' disabled' : ''}" data-instance-id="${escapeHtml(item.instanceId)}"${disabled ? ' disabled title="出品中・オファー中"' : ''}>
+        ${item.isPity ? '<span class="tinv-pity-mark">🏆</span>' : ''}
+        <div class="tinv-rarity">${escapeHtml(info.rarity || 'N')}</div>
+        <div class="tinv-icon">${renderPrizeIconHtml(info.icon)}</div>
+        <div class="tinv-name">${escapeHtml(info.name)}</div>
+      </button>
+    `;
+  }).join('');
+  // 選択処理
+  listEl.querySelectorAll('.tinv-item:not(.disabled)').forEach(btn => {
+    btn.addEventListener('click', () => {
+      tradeModalState.selectedInstanceId = btn.dataset.instanceId;
+      listEl.querySelectorAll('.tinv-item').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+  });
+}
+
+async function submitTradeModal() {
+  const errorEl = document.getElementById('tradeModalError');
+  const submitBtn = document.getElementById('tradeModalSubmit');
+  errorEl.textContent = '';
+  if (!tradeModalState.selectedInstanceId) {
+    errorEl.textContent = '景品を選んでください';
+    return;
+  }
+  const data = loadData();
+  const me = getCurrentUser(data);
+  if (!me) { errorEl.textContent = 'ログインしてください'; return; }
+
+  let body;
+  if (tradeModalState.mode === 'list') {
+    body = {
+      action: 'list',
+      userId: me.id,
+      instanceId: tradeModalState.selectedInstanceId,
+      comment: document.getElementById('tradeComment').value || '',
+    };
+  } else if (tradeModalState.mode === 'offer') {
+    body = {
+      action: 'offer',
+      userId: me.id,
+      tradeId: tradeModalState.tradeId,
+      instanceId: tradeModalState.selectedInstanceId,
+    };
+  } else {
+    errorEl.textContent = '不正な操作';
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = '送信中…';
+  const result = await callTradeApi(body);
+  submitBtn.disabled = false;
+  submitBtn.textContent = '決定';
+  if (!result.ok) {
+    errorEl.textContent = result.message;
+    return;
+  }
+  closeTradeModal();
+  await fetchRemoteData();
+  renderAll();
+}
+
+function closeTradeModal() {
+  document.getElementById('tradeModal').classList.remove('show');
+}
+
+// ============================================================
+// オファー一覧モーダル（出品者用）
+// ============================================================
+function openTradeOffersModal(tradeId) {
+  const data = loadData();
+  const trade = (data.trades || []).find(t => t.id === tradeId);
+  if (!trade) return;
+  const types = (data.settings && data.settings.gachaTypes) || [];
+  const display = resolveTradeItemDisplay(trade.ownerItem || {}, types);
+  document.getElementById('tradeOffersTarget').innerHTML = `
+    <div class="tc-prize-icon">${display.iconHtml}</div>
+    <div class="tc-prize-meta">
+      <div class="tc-prize-name">あなたの出品: ${escapeHtml(display.name)}</div>
+      <div class="tc-prize-sub">
+        <span class="tc-rarity-chip rarity-${String(display.rarity || 'N').toLowerCase()}">${escapeHtml(display.rarity || 'N')}</span>
+        ${trade.comment ? `<span class="tc-comment" style="font-style:normal">${escapeHtml(trade.comment)}</span>` : ''}
+      </div>
+    </div>
+  `;
+  document.getElementById('tradeOffersTarget').style.display = 'flex';
+  renderTradeOffersList(trade, data);
+  document.getElementById('tradeOffersModal').classList.add('show');
+  document.getElementById('tradeOffersModal').dataset.tradeId = tradeId;
+}
+
+function renderTradeOffersList(trade, data) {
+  const listEl = document.getElementById('tradeOffersList');
+  const offers = Array.isArray(trade.offers) ? trade.offers : [];
+  if (offers.length === 0) {
+    listEl.innerHTML = `<div class="trade-empty">まだオファーがありません</div>`;
+    return;
+  }
+  // pending を先頭に
+  const order = ['pending', 'accepted', 'rejected', 'withdrawn', 'invalidated'];
+  const sorted = offers.slice().sort((a, b) => order.indexOf(a.status) - order.indexOf(b.status));
+  const types = (data.settings && data.settings.gachaTypes) || [];
+  listEl.innerHTML = sorted.map(o => {
+    const display = resolveTradeItemDisplay(o.item || {}, types);
+    const rarity = String(display.rarity || 'N').toLowerCase();
+    const offererIcon = resolveTradeUserIconHtml(o.offererId, o.offererIcon, o.offererIconType, data);
+    const statusLabel = {
+      pending: '待機中',
+      accepted: '承認済み',
+      rejected: '却下',
+      withdrawn: '取り下げ',
+      invalidated: '無効化',
+    }[o.status] || o.status;
+    let actionHtml = '';
+    if (o.status === 'pending' && trade.status === 'open') {
+      actionHtml = `<button class="tc-action-btn" data-offers-act="accept" data-offer-id="${escapeHtml(o.id)}">承認</button>`;
+    } else {
+      actionHtml = `<span class="tc-status-chip${o.status === 'accepted' ? ' status-completed' : ''}">${escapeHtml(statusLabel)}</span>`;
+    }
+    return `
+      <div class="trade-offer-row status-${escapeHtml(o.status)}">
+        <div class="tc-owner-icon" style="width:34px;height:34px;font-size:0.85rem">${offererIcon}</div>
+        <div>
+          <div class="tro-meta-text">${escapeHtml(o.offererName || '')} さんから</div>
+          <div class="tro-meta-sub">
+            <span class="tc-prize-icon" style="width:28px;height:28px;font-size:0.95rem;background:var(--bg);border-radius:6px">${display.iconHtml}</span>
+            <span>${escapeHtml(display.name)}</span>
+            <span class="tc-rarity-chip rarity-${rarity}">${escapeHtml(display.rarity || 'N')}</span>
+          </div>
+        </div>
+        <div class="tro-actions">${actionHtml}</div>
+      </div>
+    `;
+  }).join('');
+  // 承認ボタン
+  listEl.querySelectorAll('[data-offers-act="accept"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('このオファーを承認して交換を成立させますか？')) return;
+      const me = getCurrentUser(loadData());
+      if (!me) return;
+      btn.disabled = true; btn.textContent = '処理中…';
+      const result = await callTradeApi({
+        action: 'accept',
+        userId: me.id,
+        tradeId: trade.id,
+        offerId: btn.dataset.offerId,
+      });
+      if (!result.ok) { alert(result.message); btn.disabled = false; btn.textContent = '承認'; return; }
+      closeTradeOffersModal();
+      await fetchRemoteData();
+      renderAll();
+    });
+  });
+}
+
+function closeTradeOffersModal() {
+  document.getElementById('tradeOffersModal').classList.remove('show');
+}
+
+// ============================================================
+// API ヘルパー（503リトライ込み）
+// ============================================================
+async function callTradeApi(body) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch('/api/trade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (res.status === 503 && json && json.error === 'busy, retry') {
+        if (attempt < 3) { await new Promise(r => setTimeout(r, 400 * attempt)); continue; }
+        return { ok: false, message: 'サーバー混雑中です。少し時間を置いてから再度お試しください。' };
+      }
+      if (!res.ok || !json.ok) {
+        const errMap = {
+          'user not found': 'ユーザーが見つかりません',
+          'instance not in inventory': 'その景品は所持していません',
+          'already listed': 'その景品は既に出品中です',
+          'already offered': '既にこの出品にオファーしています',
+          'trade not found': 'トレードが見つかりません',
+          'trade not open': 'このトレードは終了しています',
+          'cannot offer on own trade': '自分の出品にはオファーできません',
+          'not owner': '出品者本人ではありません',
+          'not your offer': 'あなたのオファーではありません',
+          'offer not found': 'オファーが見つかりません',
+          'offer not pending': 'このオファーは既に処理済みです',
+          'owner item missing': '出品者がこの景品を所持しなくなったためトレードを取り下げました',
+          'offerer item missing': 'オファー者がこの景品を所持しなくなったためオファーを無効化しました',
+        };
+        const msg = (json && json.error) || 'エラーが発生しました';
+        return { ok: false, message: errMap[msg] || ('エラー: ' + msg) };
+      }
+      return { ok: true, data: json };
+    } catch (e) {
+      return { ok: false, message: '通信エラー: ' + (e.message || e) };
+    }
+  }
+  return { ok: false, message: '混雑中です。しばらく待ってから再度お試しください。' };
+}
+
+async function confirmAndTrade(action, params, confirmMsg) {
+  if (confirmMsg && !confirm(confirmMsg)) return;
+  const me = getCurrentUser(loadData());
+  if (!me) return;
+  const result = await callTradeApi({ action, userId: me.id, ...params });
+  if (!result.ok) { alert(result.message); return; }
+  await fetchRemoteData();
+  renderAll();
+}
+
+function setupTradeModals() {
+  document.getElementById('tradeCloseBtn').addEventListener('click', closeTradeModal);
+  document.getElementById('tradeModal').addEventListener('click', (e) => {
+    if (e.target.id === 'tradeModal') closeTradeModal();
+  });
+  document.getElementById('tradeModalSubmit').addEventListener('click', submitTradeModal);
+
+  document.getElementById('tradeOffersCloseBtn').addEventListener('click', closeTradeOffersModal);
+  document.getElementById('tradeOffersModal').addEventListener('click', (e) => {
+    if (e.target.id === 'tradeOffersModal') closeTradeOffersModal();
+  });
 }
 
 // ============================================================
@@ -3378,6 +4271,7 @@ setupCursor();
 setupGachaModal();
 setupGachaMultiModal();
 setupPasswordModal();
+setupTradeModals();
 // 初回はリモートからデータ取得後に描画
 fetchRemoteData().then(() => {
   renderAll();

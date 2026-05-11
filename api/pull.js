@@ -11,6 +11,7 @@
 // 並行実行による spentSpoon / gachaHistory の競合を防ぐため、Redis 分散ロックで GET-MODIFY-SET を直列化。
 import { Redis } from '@upstash/redis';
 import { withDataLock } from '../lib/lock.js';
+import { ensureUserInventory, makeInstanceId, sanitizeAllTradeIcons } from '../lib/inventory.js';
 
 const KEY = 'mtk_app_data';
 const redis = Redis.fromEnv();
@@ -90,6 +91,9 @@ async function processPull({ userId, gachaTypeId, count }) {
     return { status: 400, body: { ok: false, error: 'not enough pt' } };
   }
 
+  // 在庫を初期化（旧データから移行・初回のみ）
+  ensureUserInventory(user);
+
   // 天井設定
   const pityThreshold = Math.max(0, Math.floor(Number(type.pityCount) || 0));
   const pityEnabled = pityThreshold > 0 && isValidPityPrize(type.pityPrize);
@@ -120,9 +124,10 @@ async function processPull({ userId, gachaTypeId, count }) {
     prizes.push({ ...prize, isPity });
   }
 
-  // ユーザーに記録（pt 消費 + 履歴追記 + 天井カウンタ更新）
+  // ユーザーに記録（pt 消費 + 履歴追記 + 在庫追加 + 天井カウンタ更新）
   user.spentSpoon = (user.spentSpoon || 0) + totalCost;
   user.gachaHistory = user.gachaHistory || [];
+  user.inventory = user.inventory || [];
   user.pityCounts[type.id] = pityCounter;
   const now = Date.now();
   for (const p of prizes) {
@@ -139,10 +144,20 @@ async function processPull({ userId, gachaTypeId, count }) {
       isPity: !!p.isPity,
       timestamp: now,
     });
+    // 在庫に追加（トレード対象になる実体）
+    user.inventory.push({
+      instanceId: makeInstanceId(),
+      prizeId: p.id,
+      gachaTypeId: type.id,
+      acquiredAt: now,
+      isPity: !!p.isPity,
+    });
   }
 
   // 既存履歴の base64 画像も同時に掃除（10MB制限対策の一回限りマイグレーション）
   sanitizeAllGachaHistory(data);
+  // 旧トレードに残った base64 もこのタイミングで掃除
+  sanitizeAllTradeIcons(data);
 
   await redis.set(KEY, data);
   return {

@@ -3,6 +3,7 @@
 // POST : 共有データを上書き（Bearer ADMIN_TOKEN 必須）
 import { Redis } from '@upstash/redis';
 import { withDataLock } from '../lib/lock.js';
+import { ensureAllInventories, sanitizeAllTradeIcons } from '../lib/inventory.js';
 
 const KEY = 'mtk_app_data';
 const redis = Redis.fromEnv();
@@ -97,6 +98,9 @@ function getDefaultData() {
 // 設定済みかどうかだけ hasPassword フラグで公開する
 function sanitizeForClient(data) {
   if (!data || !Array.isArray(data.users)) return data;
+  // 旧データで inventory が未初期化のユーザー向けに、決定的 instanceId で在庫を構築
+  ensureAllInventories(data);
+  if (!Array.isArray(data.trades)) data.trades = [];
   return {
     ...data,
     users: data.users.map(u => {
@@ -162,6 +166,10 @@ export default async function handler(req, res) {
               if (Array.isArray(old.gachaHistory)) {
                 u.gachaHistory = old.gachaHistory;
               }
+              // inventory も pull/trade が真実の源。admin の編集で巻き戻さない。
+              if (Array.isArray(old.inventory)) {
+                u.inventory = old.inventory;
+              }
             }
             delete u.hasPassword;
           }
@@ -170,6 +178,19 @@ export default async function handler(req, res) {
         }
         // 履歴の base64 画像を保存前に削除（10MB制限対策）
         sanitizeAllGachaHistory(body);
+        // admin が trades を書き戻すことはないので、サーバー側 trades を保護。
+        // ただし「全データリセット」（users=[]）の場合は trades も一緒に消す（stale参照の防止）。
+        const isFullReset = Array.isArray(body.users) && body.users.length === 0
+          && existing && Array.isArray(existing.users) && existing.users.length > 0;
+        if (isFullReset) {
+          body.trades = [];
+        } else if (existing && Array.isArray(existing.trades)) {
+          body.trades = existing.trades;
+        } else if (!Array.isArray(body.trades)) {
+          body.trades = [];
+        }
+        // 旧データに base64 アイコンが残っていれば掃除
+        sanitizeAllTradeIcons(body);
         await redis.set(KEY, body);
       });
       if (lockResult.busy) {
