@@ -944,6 +944,271 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
   .reward-text { grid-row: 2; grid-column: 2 / span 2; font-size: 0.78rem; }
 }
 
+/* ===== ギャラリー（所持景品） ===== */
+.gallery-section {
+  background: linear-gradient(180deg, var(--bg-warm) 0%, var(--bg-pink) 100%);
+  padding: 6rem 0;
+}
+.gallery-panel { max-width: 960px; margin: 0 auto; }
+.gallery-stats {
+  display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;
+  margin-bottom: 1.4rem;
+  padding: 1rem 1.2rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+}
+.gallery-stat {
+  display: flex; flex-direction: column; align-items: center;
+  min-width: 84px;
+  padding-right: 0.8rem;
+  border-right: 1px solid var(--border-soft);
+}
+.gallery-stat:last-of-type { border-right: 0; }
+.gs-label { font-family: var(--font-en); font-size: 0.58rem; letter-spacing: 0.22em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.2rem; }
+.gs-value { font-family: var(--font-en); font-weight: 800; font-size: 1.6rem; color: var(--pink-deep); line-height: 1; }
+.gs-unit { font-size: 0.6rem; letter-spacing: 0.15em; color: var(--pink); margin-left: 0.25rem; font-weight: 600; }
+.gallery-stat-rarity {
+  display: flex; gap: 0.4rem; flex-wrap: wrap;
+  align-items: center;
+  flex: 1;
+  justify-content: flex-end;
+}
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.8rem;
+}
+.gallery-card {
+  position: relative;
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem 0.6rem 0.85rem;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  font-family: inherit;
+}
+.gallery-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-soft);
+  border-color: var(--pink);
+}
+.gallery-card.rarity-r  { border-color: #b6cee0; }
+.gallery-card.rarity-sr {
+  border-color: #f0c6d3; background: linear-gradient(180deg, var(--card) 0%, var(--pink-bg) 100%);
+}
+.gallery-card.rarity-ssr {
+  border-color: #e3c98a; background: linear-gradient(180deg, var(--card) 0%, var(--gold-bg) 100%);
+  box-shadow: 0 2px 12px rgba(184,146,63,0.15);
+}
+.gallery-card.rarity-ur {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--card), var(--card)) padding-box,
+    linear-gradient(135deg, var(--pink-deep), var(--gold-deep), var(--pink-deep), var(--gold-bright)) border-box;
+  box-shadow: 0 4px 20px rgba(184,146,63,0.32);
+}
+.gc-rarity {
+  display: inline-block;
+  font-family: var(--font-en); font-weight: 800;
+  font-size: 0.62rem; letter-spacing: 0.12em;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: var(--text-soft); color: #fff;
+  margin-bottom: 0.3rem;
+}
+.gallery-card.rarity-r   .gc-rarity { background: #2f7fae; }
+.gallery-card.rarity-sr  .gc-rarity { background: var(--pink); }
+.gallery-card.rarity-ssr .gc-rarity { background: var(--gold-deep); }
+.gallery-card.rarity-ur  .gc-rarity { background: linear-gradient(90deg, var(--pink-deep), var(--gold-deep)); }
+.gc-count {
+  position: absolute; top: 8px; right: 8px;
+  font-family: var(--font-en); font-weight: 800;
+  font-size: 0.78rem;
+  color: #fff;
+  background: var(--pink);
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(214,85,122,0.4);
+  letter-spacing: 0.04em;
+}
+.gc-pity-flag {
+  position: absolute; top: 8px; left: 8px;
+  font-size: 0.7rem;
+  background: var(--gold-bg);
+  color: var(--gold-deep);
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  font-weight: 700;
+  border: 1px solid #e3c98a;
+}
+.gc-icon {
+  width: 72px; height: 72px;
+  margin: 0.6rem auto 0.7rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.4rem;
+  background: var(--bg);
+  border-radius: 50%;
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+.gallery-card.rarity-ssr .gc-icon,
+.gallery-card.rarity-ur .gc-icon { box-shadow: 0 0 12px rgba(184,146,63,0.25) inset; }
+.gc-icon img { width: 100%; height: 100%; object-fit: cover; }
+.gc-name {
+  font-size: 0.82rem; font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+  margin-bottom: 0.25rem;
+  word-break: break-word;
+}
+.gc-type {
+  font-size: 0.62rem; color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+.gallery-empty {
+  text-align: center; padding: 2.4rem 1rem;
+  color: var(--text-muted); font-size: 0.88rem;
+  background: var(--card);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+}
+.gallery-login-prompt {
+  text-align: center; padding: 1.4rem 1rem;
+  background: var(--card);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  color: var(--text-muted); font-size: 0.85rem;
+}
+
+/* 詳細モーダル */
+.gallery-detail-modal {
+  position: fixed; inset: 0; z-index: 1200;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(31,27,22,0.55);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  padding: 1rem;
+}
+.gallery-detail-modal.show { display: flex; animation: gachaFadeIn 0.25s; }
+.gallery-detail-inner {
+  position: relative;
+  width: 100%; max-width: 460px;
+  max-height: 88vh;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.4rem 1.4rem 1.2rem;
+  box-shadow: var(--shadow-soft);
+  display: flex; flex-direction: column;
+  text-align: center;
+}
+.gallery-detail-close {
+  position: absolute; top: 0.7rem; right: 0.7rem;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-muted); font-size: 1rem; cursor: pointer;
+}
+.gallery-detail-close:hover { color: var(--pink); border-color: var(--pink); }
+.gd-rarity {
+  display: inline-block;
+  font-family: var(--font-en); font-weight: 800;
+  font-size: 0.72rem; letter-spacing: 0.12em;
+  padding: 0.22rem 0.8rem;
+  border-radius: 999px;
+  background: var(--text-soft); color: #fff;
+  margin: 0 auto 0.6rem;
+}
+.gd-rarity.rarity-r   { background: #2f7fae; }
+.gd-rarity.rarity-sr  { background: var(--pink); }
+.gd-rarity.rarity-ssr { background: var(--gold-deep); }
+.gd-rarity.rarity-ur  { background: linear-gradient(90deg, var(--pink-deep), var(--gold-deep)); }
+.gd-icon {
+  width: 108px; height: 108px;
+  margin: 0 auto 0.8rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3.8rem;
+  background: var(--bg);
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  overflow: hidden;
+}
+.gd-icon img { width: 100%; height: 100%; object-fit: cover; }
+.gd-name {
+  font-size: 1.15rem; font-weight: 700; color: var(--text);
+  margin-bottom: 0.3rem;
+}
+.gd-meta {
+  font-size: 0.74rem; color: var(--text-muted);
+  margin-bottom: 0.7rem;
+}
+.gd-desc {
+  font-size: 0.82rem; color: var(--text);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--bg-warm);
+  border-radius: 8px;
+}
+.gd-desc:empty { display: none; }
+.gd-instances-title {
+  font-family: var(--font-en);
+  font-size: 0.62rem; letter-spacing: 0.22em; color: var(--text-muted);
+  margin-bottom: 0.45rem; text-transform: uppercase;
+}
+.gd-instances {
+  display: flex; flex-direction: column; gap: 0.4rem;
+  max-height: 220px; overflow-y: auto;
+  padding-right: 4px;
+  text-align: left;
+}
+.gd-instance {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.55rem 0.7rem;
+  background: var(--bg-warm);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.gd-instance-info { display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0; }
+.gd-instance-date { font-size: 0.74rem; color: var(--text); font-weight: 500; }
+.gd-instance-pity { font-size: 0.58rem; color: var(--gold-deep); font-weight: 800; padding: 0.1rem 0.4rem; background: var(--gold-bg); border-radius: 999px; }
+.gd-trade-btn {
+  font-size: 0.7rem; font-weight: 700;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--pink);
+  background: transparent; color: var(--pink);
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.gd-trade-btn:hover { background: var(--pink); color: var(--white); }
+.gd-trade-btn:disabled { opacity: 0.4; cursor: not-allowed; border-color: var(--border); color: var(--text-muted); background: transparent; }
+.gd-instance-status {
+  font-size: 0.62rem; color: var(--text-muted);
+  padding: 0.2rem 0.55rem;
+  background: var(--bg);
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+@media (max-width: 640px) {
+  .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 0.55rem; }
+  .gallery-card { padding: 0.75rem 0.4rem 0.6rem; }
+  .gc-icon { width: 58px; height: 58px; font-size: 2rem; }
+  .gc-name { font-size: 0.72rem; }
+  .gc-count { font-size: 0.7rem; padding: 0.12rem 0.45rem; top: 5px; right: 5px; }
+  .gallery-stats { gap: 0.6rem; padding: 0.8rem; }
+  .gallery-stat { min-width: 64px; padding-right: 0.6rem; }
+  .gs-value { font-size: 1.3rem; }
+  .gallery-stat-rarity { width: 100%; justify-content: flex-start; padding-top: 0.5rem; border-top: 1px solid var(--border-soft); }
+  .gallery-detail-inner { padding: 1.2rem 1rem 1rem; max-height: 92vh; }
+  .gd-icon { width: 88px; height: 88px; font-size: 3rem; }
+  .gd-name { font-size: 1rem; }
+}
+
 /* ===== トレード掲示板 ===== */
 .trade-section {
   background: linear-gradient(180deg, var(--bg-pink) 0%, var(--bg-warm) 100%);
@@ -2489,6 +2754,7 @@ footer {
     <a href="#hero">HOME</a>
     <a href="#ranking">RANKING</a>
     <a href="#gacha">GACHA</a>
+    <a href="#gallery">GALLERY</a>
     <a href="#trade">TRADE</a>
     <a href="#timeline">FEED</a>
     <a href="#rewards">PRIZES</a>
@@ -2603,6 +2869,30 @@ footer {
   <div class="gpr-pulse gpr-pulse-3"></div>
   <div class="gpr-rarity" id="gpRarityText"></div>
   <div class="gpr-flash"></div>
+</div>
+
+<!-- ===== ギャラリー（所持景品） ===== -->
+<section class="gallery-section" id="gallery">
+  <div class="container">
+    <div class="section-label">Gallery</div>
+    <div class="section-title-en" id="gallerySectionTitleEn">My Collection</div>
+    <h2 class="section-title" id="gallerySectionTitle">ギャラリー</h2>
+    <div class="gallery-panel" id="galleryPanel"></div>
+  </div>
+</section>
+
+<!-- ギャラリー景品詳細モーダル -->
+<div class="gallery-detail-modal" id="galleryDetailModal">
+  <div class="gallery-detail-inner">
+    <button class="gallery-detail-close" id="galleryDetailCloseBtn" type="button" aria-label="閉じる">×</button>
+    <div class="gd-rarity" id="galleryDetailRarity">N</div>
+    <div class="gd-icon" id="galleryDetailIcon"></div>
+    <div class="gd-name" id="galleryDetailName"></div>
+    <div class="gd-meta" id="galleryDetailMeta"></div>
+    <div class="gd-desc" id="galleryDetailDesc"></div>
+    <div class="gd-instances-title">取得履歴</div>
+    <div class="gd-instances" id="galleryDetailInstances"></div>
+  </div>
 </div>
 
 <!-- ===== トレード掲示板 ===== -->
@@ -3692,6 +3982,7 @@ function renderAll() {
   renderRanking(data);
   renderTimeline(data);
   renderGacha(data);
+  renderGallery(data);
   renderTrade(data);
   renderGachaPrizes(data);
 }
@@ -4217,6 +4508,213 @@ function setupTradeModals() {
 }
 
 // ============================================================
+// ギャラリー（所持景品）
+// ============================================================
+const RARITY_ORDER = { UR: 0, SSR: 1, SR: 2, R: 3, N: 4 };
+
+function renderGallery(data) {
+  const panel = document.getElementById('galleryPanel');
+  if (!panel) return;
+  const me = getCurrentUser(data);
+  if (!me) {
+    panel.innerHTML = `<div class="gallery-login-prompt">ログインするとあなたの所持景品一覧が表示されます。<br>GACHA セクションから名前を選んでログインしてください。</div>`;
+    return;
+  }
+  const types = (data.settings && data.settings.gachaTypes) || [];
+  const inventory = Array.isArray(me.inventory) ? me.inventory : [];
+
+  // 景品ごとに集約（gachaTypeId + prizeId をキーに）
+  const groups = new Map();
+  for (const item of inventory) {
+    const key = `${item.gachaTypeId}::${item.prizeId}`;
+    if (!groups.has(key)) {
+      const display = resolveInventoryItem(item, types);
+      groups.set(key, {
+        key, gachaTypeId: item.gachaTypeId, prizeId: item.prizeId,
+        display, instances: [], anyPity: false,
+      });
+    }
+    const g = groups.get(key);
+    g.instances.push(item);
+    if (item.isPity) g.anyPity = true;
+  }
+
+  // レアリティ降順 → 個数降順 → 名前順
+  const sortedGroups = Array.from(groups.values()).sort((a, b) => {
+    const ra = RARITY_ORDER[String(a.display.rarity).toUpperCase()] ?? 99;
+    const rb = RARITY_ORDER[String(b.display.rarity).toUpperCase()] ?? 99;
+    if (ra !== rb) return ra - rb;
+    if (b.instances.length !== a.instances.length) return b.instances.length - a.instances.length;
+    return String(a.display.name).localeCompare(String(b.display.name), 'ja');
+  });
+
+  // 統計
+  const totalItems = inventory.length;
+  const uniqueCount = sortedGroups.length;
+  const rarityCounts = { UR: 0, SSR: 0, SR: 0, R: 0, N: 0 };
+  for (const g of sortedGroups) {
+    const r = String(g.display.rarity || 'N').toUpperCase();
+    if (rarityCounts[r] !== undefined) rarityCounts[r] += g.instances.length;
+  }
+
+  if (totalItems === 0) {
+    panel.innerHTML = `<div class="gallery-empty">まだ景品を持っていません。<br>ガチャを引いてコレクションを集めましょう！</div>`;
+    return;
+  }
+
+  const rarityChipsHtml = ['UR', 'SSR', 'SR', 'R', 'N']
+    .filter(r => rarityCounts[r] > 0)
+    .map(r => `<span class="rarity-summary rarity-${r.toLowerCase()}"><span class="rt">${r}</span>×${rarityCounts[r]}</span>`)
+    .join('');
+
+  const cardsHtml = sortedGroups.map(g => {
+    const rarityCls = String(g.display.rarity || 'N').toLowerCase();
+    return `
+      <button class="gallery-card rarity-${rarityCls}" data-gallery-key="${escapeHtml(g.key)}">
+        ${g.anyPity ? '<span class="gc-pity-flag">🏆</span>' : ''}
+        ${g.instances.length > 1 ? `<span class="gc-count">×${g.instances.length}</span>` : ''}
+        <div class="gc-rarity">${escapeHtml(g.display.rarity || 'N')}</div>
+        <div class="gc-icon">${renderPrizeIconHtml(g.display.icon)}</div>
+        <div class="gc-name">${escapeHtml(g.display.name)}</div>
+        <div class="gc-type">${escapeHtml(g.display.gachaTypeName || '')}</div>
+      </button>
+    `;
+  }).join('');
+
+  panel.innerHTML = `
+    <div class="gallery-stats">
+      <div class="gallery-stat">
+        <div class="gs-label">Total</div>
+        <div class="gs-value">${totalItems}<span class="gs-unit">点</span></div>
+      </div>
+      <div class="gallery-stat">
+        <div class="gs-label">Unique</div>
+        <div class="gs-value">${uniqueCount}<span class="gs-unit">種</span></div>
+      </div>
+      <div class="gallery-stat-rarity">${rarityChipsHtml}</div>
+    </div>
+    <div class="gallery-grid">${cardsHtml}</div>
+  `;
+
+  panel.querySelectorAll('[data-gallery-key]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const [gachaTypeId, prizeId] = btn.dataset.galleryKey.split('::');
+      openGalleryDetail(gachaTypeId, prizeId);
+    });
+  });
+}
+
+function openGalleryDetail(gachaTypeId, prizeId) {
+  const data = loadData();
+  const me = getCurrentUser(data);
+  if (!me) return;
+  const types = (data.settings && data.settings.gachaTypes) || [];
+  const t = types.find(x => x.id === gachaTypeId);
+  const instances = (me.inventory || []).filter(it => it.gachaTypeId === gachaTypeId && it.prizeId === prizeId);
+  if (instances.length === 0) return;
+
+  const display = resolveInventoryItem(instances[0], types);
+
+  // 景品の description を取得
+  let description = '';
+  if (t) {
+    if (prizeId === `pity-${t.id}` && t.pityPrize) description = t.pityPrize.description || '';
+    else {
+      const p = (t.prizes || []).find(x => x.id === prizeId);
+      if (p) description = p.description || '';
+    }
+  }
+
+  // インスタンスごとに「現在出品中／オファー中／空き」を判定
+  const trades = Array.isArray(data.trades) ? data.trades : [];
+  const statusByInstance = new Map();
+  for (const tr of trades) {
+    if (tr.status !== 'open') continue;
+    if (tr.ownerId === me.id && tr.ownerItem) {
+      statusByInstance.set(tr.ownerItem.instanceId, 'listed');
+    }
+    if (Array.isArray(tr.offers)) {
+      for (const o of tr.offers) {
+        if (o.offererId === me.id && o.status === 'pending' && o.item) {
+          statusByInstance.set(o.item.instanceId, 'offered');
+        }
+      }
+    }
+  }
+
+  const rarityCls = String(display.rarity || 'N').toLowerCase();
+  document.getElementById('galleryDetailIcon').innerHTML = renderPrizeIconHtml(display.icon);
+  document.getElementById('galleryDetailName').textContent = display.name;
+  const rarityEl = document.getElementById('galleryDetailRarity');
+  rarityEl.textContent = display.rarity || 'N';
+  rarityEl.className = `gd-rarity rarity-${rarityCls}`;
+  document.getElementById('galleryDetailMeta').textContent = `${display.gachaTypeName || ''} ／ 所持 ${instances.length} 点`;
+  document.getElementById('galleryDetailDesc').textContent = description;
+
+  const listEl = document.getElementById('galleryDetailInstances');
+  const sorted = instances.slice().sort((a, b) => (b.acquiredAt || 0) - (a.acquiredAt || 0));
+  listEl.innerHTML = sorted.map(inst => {
+    const st = statusByInstance.get(inst.instanceId);
+    let actionHtml;
+    if (st === 'listed') {
+      actionHtml = `<span class="gd-instance-status">出品中</span>`;
+    } else if (st === 'offered') {
+      actionHtml = `<span class="gd-instance-status">オファー中</span>`;
+    } else {
+      actionHtml = `<button class="gd-trade-btn" data-instance-id="${escapeHtml(inst.instanceId)}">トレードに出す</button>`;
+    }
+    return `
+      <div class="gd-instance">
+        <div class="gd-instance-info">
+          <span class="gd-instance-date">${escapeHtml(formatDateTime(inst.acquiredAt || 0))}</span>
+          ${inst.isPity ? '<span class="gd-instance-pity">🏆 天井</span>' : ''}
+        </div>
+        ${actionHtml}
+      </div>
+    `;
+  }).join('');
+
+  // 個別の「トレードに出す」ボタン
+  listEl.querySelectorAll('[data-instance-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const instanceId = btn.dataset.instanceId;
+      closeGalleryDetail();
+      openTradeCreateModal();
+      // 出品モーダルが開いた直後にこのインスタンスを選択状態にする
+      setTimeout(() => {
+        const sel = document.querySelector(`.tinv-item[data-instance-id="${instanceId}"]`);
+        if (sel && !sel.classList.contains('disabled')) sel.click();
+      }, 80);
+    });
+  });
+
+  document.getElementById('galleryDetailModal').classList.add('show');
+}
+
+function closeGalleryDetail() {
+  document.getElementById('galleryDetailModal').classList.remove('show');
+}
+
+function setupGalleryModal() {
+  document.getElementById('galleryDetailCloseBtn').addEventListener('click', closeGalleryDetail);
+  document.getElementById('galleryDetailModal').addEventListener('click', (e) => {
+    if (e.target.id === 'galleryDetailModal') closeGalleryDetail();
+  });
+}
+
+function formatDateTime(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  if (isNaN(d.getTime())) return '—';
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${y}/${m}/${day} ${hh}:${mm}`;
+}
+
+// ============================================================
 // イベント
 // ============================================================
 function setupHeader() {
@@ -4272,6 +4770,7 @@ setupGachaModal();
 setupGachaMultiModal();
 setupPasswordModal();
 setupTradeModals();
+setupGalleryModal();
 // 初回はリモートからデータ取得後に描画
 fetchRemoteData().then(() => {
   renderAll();
