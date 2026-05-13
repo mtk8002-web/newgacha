@@ -10,12 +10,14 @@ import {
   ensureUserInventory,
   sanitizeAllTradeIcons,
   getRarityForInstance,
+  effectiveRarity,
 } from '../lib/inventory.js';
 
 const KEY = 'mtk_app_data';
 const redis = Redis.fromEnv();
 
 const DEFAULT_RATES = { N: 10, R: 25, SR: 50, SSR: 100, UR: 500 };
+const DEFAULT_LIMIT_BREAK_MAX = 4;
 
 function pickRate(rates, rarity) {
   const r = String(rarity || 'N').toUpperCase();
@@ -82,10 +84,16 @@ async function processSalvage(body, data) {
   }
 
   // レアリティ別カウントと合計ポイントを計算
+  // 限界突破 ★max に到達している景品グループはレアリティを1段階昇格してレートを計算する
+  const limitBreaks = (user.limitBreaks && typeof user.limitBreaks === 'object') ? user.limitBreaks : {};
+  const lbMax = Math.max(1, Math.floor(Number(data.settings && data.settings.limitBreakMax) || DEFAULT_LIMIT_BREAK_MAX));
   const breakdown = { N: 0, R: 0, SR: 0, SSR: 0, UR: 0 };
   let totalPoint = 0;
   for (const item of targets) {
-    const rarity = getRarityForInstance(item, types, user.gachaHistory);
+    const base = getRarityForInstance(item, types, user.gachaHistory);
+    const key = `${item.gachaTypeId}::${item.prizeId}`;
+    const lbLevel = Math.max(0, Math.floor(Number(limitBreaks[key]) || 0));
+    const rarity = effectiveRarity(base, lbLevel, lbMax);
     const r = (breakdown[rarity] !== undefined) ? rarity : 'N';
     breakdown[r] = (breakdown[r] || 0) + 1;
     totalPoint += pickRate(rates, r);
@@ -95,7 +103,12 @@ async function processSalvage(body, data) {
   const removeIds = new Set(targets.map(t => t.instanceId));
   user.inventory = user.inventory.filter(it => !removeIds.has(it.instanceId));
 
-  user.gachaPoint = Math.max(0, Math.floor(Number(user.gachaPoint) || 0)) + totalPoint;
+  // 分解報酬は通常 pt に合算する。
+  // 実装方針：totalSpoon は admin 由来の値で /api/data POST から保護されていないため、
+  //          代わりに「pull が真実の源」として保護済みの spentSpoon を減算して
+  //          availableSpoon = totalSpoon - spentSpoon を増やす（消費pt の払い戻しに相当）。
+  //          spentSpoon は負値になり得るが availableSpoon は Math.max(0, ...) でクランプ済み。
+  user.spentSpoon = (Math.floor(Number(user.spentSpoon) || 0)) - totalPoint;
 
   // 履歴に分解記録（任意）
   if (!Array.isArray(user.salvageHistory)) user.salvageHistory = [];
@@ -116,7 +129,9 @@ async function processSalvage(body, data) {
       ok: true,
       totalPoint,
       breakdown,
-      newGachaPoint: user.gachaPoint,
+      spentSpoon: user.spentSpoon,
+      // クライアントの古い参照向けの後方互換：使える pt 値を返す
+      availableSpoon: Math.max(0, (Number(user.totalSpoon) || 0) - user.spentSpoon),
     },
     save: true,
   };

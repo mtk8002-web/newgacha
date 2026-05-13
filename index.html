@@ -1343,6 +1343,18 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
   font-weight: 800;
   box-shadow: 0 2px 6px rgba(184,146,63,0.5);
 }
+/* ★max 到達でレアリティ昇格を示す矢印（カード／詳細モーダル共通） */
+.gc-rarity-up, .gd-rarity-up {
+  margin-left: 0.25em;
+  font-size: 0.85em;
+  font-weight: 800;
+  color: #ffe28a;
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+  letter-spacing: 0.04em;
+}
+.gallery-card.is-promoted {
+  box-shadow: 0 0 0 1px rgba(255, 215, 0, 0.45), 0 6px 18px rgba(255, 165, 0, 0.18);
+}
 
 /* 詳細モーダルの限界突破セクション */
 .gd-section {
@@ -5068,6 +5080,22 @@ function setupTradeModals() {
 const RARITY_ORDER = { UR: 0, SSR: 1, SR: 2, R: 3, N: 4 };
 const DEFAULT_SALVAGE_RATES = { N: 10, R: 25, SR: 50, SSR: 100, UR: 500 };
 
+// レアリティ1段階昇格（N→R→SR→SSR→UR、UR は据え置き）
+const RARITY_RANK_ORDER = ['N', 'R', 'SR', 'SSR', 'UR'];
+function promoteRarity(rarity) {
+  const r = String(rarity || 'N').toUpperCase();
+  const idx = RARITY_RANK_ORDER.indexOf(r);
+  if (idx < 0) return 'N';
+  if (idx >= RARITY_RANK_ORDER.length - 1) return r;
+  return RARITY_RANK_ORDER[idx + 1];
+}
+// 限界突破 ★max に達していれば1段階昇格
+function effectiveRarity(baseRarity, lbLevel, lbMax) {
+  const level = Math.max(0, Math.floor(Number(lbLevel) || 0));
+  const max = Math.max(1, Math.floor(Number(lbMax) || 1));
+  return level >= max ? promoteRarity(baseRarity) : String(baseRarity || 'N').toUpperCase();
+}
+
 // 分解モードの状態
 let salvageMode = false;
 const salvageSelected = new Set();
@@ -5123,16 +5151,22 @@ function renderGallery(data) {
     }
   }
 
-  // 景品ごとに集約
+  // 景品ごとに集約（★max 到達なら effectiveRarity で昇格させた値を表示用に持つ）
   const groups = new Map();
   for (const item of inventory) {
     const key = `${item.gachaTypeId}::${item.prizeId}`;
     if (!groups.has(key)) {
       const display = resolveInventoryItem(item, types);
+      const lbLevel = Math.max(0, parseInt(limitBreaks[key] || 0, 10) || 0);
+      const baseRarity = String(display.rarity || 'N').toUpperCase();
+      const effRarity = effectiveRarity(baseRarity, lbLevel, limitBreakMax);
       groups.set(key, {
         key, gachaTypeId: item.gachaTypeId, prizeId: item.prizeId,
         display, instances: [], anyPity: false,
-        lbLevel: Math.max(0, parseInt(limitBreaks[key] || 0, 10) || 0),
+        lbLevel,
+        baseRarity,
+        effRarity,
+        promoted: effRarity !== baseRarity,
       });
     }
     const g = groups.get(key);
@@ -5141,19 +5175,19 @@ function renderGallery(data) {
   }
 
   const sortedGroups = Array.from(groups.values()).sort((a, b) => {
-    const ra = RARITY_ORDER[String(a.display.rarity).toUpperCase()] ?? 99;
-    const rb = RARITY_ORDER[String(b.display.rarity).toUpperCase()] ?? 99;
+    const ra = RARITY_ORDER[a.effRarity] ?? 99;
+    const rb = RARITY_ORDER[b.effRarity] ?? 99;
     if (ra !== rb) return ra - rb;
     if (b.instances.length !== a.instances.length) return b.instances.length - a.instances.length;
     return String(a.display.name).localeCompare(String(b.display.name), 'ja');
   });
 
-  // 統計
+  // 統計（昇格後のレアリティでカウント）
   const totalItems = inventory.length;
   const uniqueCount = sortedGroups.length;
   const rarityCounts = { UR: 0, SSR: 0, SR: 0, R: 0, N: 0 };
   for (const g of sortedGroups) {
-    const r = String(g.display.rarity || 'N').toUpperCase();
+    const r = g.effRarity;
     if (rarityCounts[r] !== undefined) rarityCounts[r] += g.instances.length;
   }
 
@@ -5172,7 +5206,7 @@ function renderGallery(data) {
     .map(r => `<span class="rarity-summary rarity-${r.toLowerCase()}"><span class="rt">${r}</span>×${rarityCounts[r]}</span>`)
     .join('');
 
-  // 選択中の合計ガチャpt見積もり
+  // 選択中の合計ガチャpt見積もり（★max 到達景品はレアリティを昇格させてレートを引く）
   let selPoint = 0;
   let selCount = 0;
   for (const id of salvageSelected) {
@@ -5180,25 +5214,31 @@ function renderGallery(data) {
     if (!it) continue;
     if (lockedIds.has(id)) continue;
     selCount++;
-    const rarity = resolveItemRarity(it, types, me.gachaHistory);
+    const base = resolveItemRarity(it, types, me.gachaHistory);
+    const key = `${it.gachaTypeId}::${it.prizeId}`;
+    const lbLevel = Math.max(0, parseInt(limitBreaks[key] || 0, 10) || 0);
+    const rarity = effectiveRarity(base, lbLevel, limitBreakMax);
     selPoint += getSalvageRate(rarity, data.settings);
   }
 
   const cardsHtml = sortedGroups.map(g => {
-    const rarityCls = String(g.display.rarity || 'N').toLowerCase();
+    const rarityCls = g.effRarity.toLowerCase();
     const isMax = g.lbLevel >= limitBreakMax;
     const lbBadge = g.lbLevel >= 1
       ? `<span class="gc-lb-badge${isMax ? ' is-max' : ''}">${isMax ? `MAX` : `★×${g.lbLevel}`}</span>`
       : '';
     const isIconPrize = iconPrizeKey === g.key;
+    const rarityDisplay = g.promoted
+      ? `${escapeHtml(g.baseRarity)}<span class="gc-rarity-up">↑${escapeHtml(g.effRarity)}</span>`
+      : escapeHtml(g.effRarity);
     return `
-      <button class="gallery-card rarity-${rarityCls}" data-gallery-key="${escapeHtml(g.key)}">
+      <button class="gallery-card rarity-${rarityCls}${g.promoted ? ' is-promoted' : ''}" data-gallery-key="${escapeHtml(g.key)}">
         ${lbBadge}
         ${g.anyPity ? '<span class="gc-pity-flag">🏆</span>' : ''}
         ${g.instances.length > 1 ? `<span class="gc-count">×${g.instances.length}</span>` : ''}
         ${isIconPrize ? '<span class="gc-icon-prize-mark">⭐</span>' : ''}
         ${salvageMode ? '<span class="gc-salvage-check">✓</span>' : ''}
-        <div class="gc-rarity">${escapeHtml(g.display.rarity || 'N')}</div>
+        <div class="gc-rarity">${rarityDisplay}</div>
         <div class="gc-icon">${renderPrizeIconHtml(g.display.icon)}</div>
         <div class="gc-name">${escapeHtml(g.display.name)}</div>
         <div class="gc-type">${escapeHtml(g.display.gachaTypeName || '')}</div>
@@ -5215,7 +5255,7 @@ function renderGallery(data) {
       <div class="salvage-action-bar">
         <div class="sa-info">
           <div class="sa-count">SELECTED ${selCount} ITEMS</div>
-          <div class="sa-value">+${fmt(selPoint)}<span class="sa-unit">ガチャpt</span></div>
+          <div class="sa-value">+${fmt(selPoint)}<span class="sa-unit">pt</span></div>
         </div>
         <button class="sa-cancel" id="salvageCancelBtn">選択解除</button>
         <button class="sa-btn" id="salvageSubmitBtn"${selCount === 0 ? ' disabled' : ''}>分解する</button>
@@ -5308,8 +5348,11 @@ function openGalleryDetail(gachaTypeId, prizeId) {
   const lbMax = Math.max(1, parseInt((data.settings && data.settings.limitBreakMax) || 4, 10) || 4);
   const lbLevel = Math.max(0, parseInt((me.limitBreaks || {})[prizeKey] || 0, 10) || 0);
   const isIconPrize = me.iconPrize && me.iconPrize.gachaTypeId === gachaTypeId && me.iconPrize.prizeId === prizeId;
-  const itemRarity = resolveItemRarity(instances[0], types, me.gachaHistory);
-  const salvageRate = getSalvageRate(itemRarity, data.settings);
+  const baseItemRarity = resolveItemRarity(instances[0], types, me.gachaHistory);
+  // ★max 到達なら 1 段階昇格させたレアリティを表示・分解レートに使う
+  const effItemRarity = effectiveRarity(baseItemRarity, lbLevel, lbMax);
+  const promoted = effItemRarity !== baseItemRarity;
+  const salvageRate = getSalvageRate(effItemRarity, data.settings);
 
   // 景品の description を取得
   let description = '';
@@ -5336,12 +5379,14 @@ function openGalleryDetail(gachaTypeId, prizeId) {
     }
   }
 
-  const rarityCls = String(display.rarity || 'N').toLowerCase();
+  const rarityCls = effItemRarity.toLowerCase();
   document.getElementById('galleryDetailIcon').innerHTML = renderPrizeIconHtml(display.icon);
   document.getElementById('galleryDetailName').textContent = display.name;
   const rarityEl = document.getElementById('galleryDetailRarity');
-  rarityEl.textContent = display.rarity || 'N';
-  rarityEl.className = `gd-rarity rarity-${rarityCls}`;
+  rarityEl.innerHTML = promoted
+    ? `${escapeHtml(baseItemRarity)}<span class="gd-rarity-up"> ↑${escapeHtml(effItemRarity)}</span>`
+    : escapeHtml(effItemRarity);
+  rarityEl.className = `gd-rarity rarity-${rarityCls}${promoted ? ' is-promoted' : ''}`;
   document.getElementById('galleryDetailMeta').textContent = `${display.gachaTypeName || ''} ／ 所持 ${instances.length} 点`;
   document.getElementById('galleryDetailDesc').textContent = description;
 
@@ -5367,7 +5412,10 @@ function openGalleryDetail(gachaTypeId, prizeId) {
     <div class="gd-section-title">Limit Break / 限界突破</div>
     <div class="gd-lb-stars">${lbStars}<span class="gd-lb-level">${lbLevel} / ${lbMax}</span></div>
     <button class="gd-lb-btn" id="gdLimitBreakBtn"${canLb ? '' : ' disabled'}>${escapeHtml(lbBtnLabel)}</button>
-    <div class="gd-lb-hint">同じ景品を1個消費して段階を1上げます</div>
+    <div class="gd-lb-hint">
+      同じ景品を1個消費して段階を1上げます<br>
+      ★${lbMax}（MAX）到達でレアリティが1ランク上昇します${promoted ? `（現在 <strong>${escapeHtml(baseItemRarity)} → ${escapeHtml(effItemRarity)}</strong> に昇格中）` : ''}
+    </div>
   `;
   descEl.insertAdjacentElement('afterend', lbSection);
 
@@ -5394,7 +5442,7 @@ function openGalleryDetail(gachaTypeId, prizeId) {
     } else {
       actionHtml = `
         <button class="gd-trade-btn" data-trade-instance-id="${escapeHtml(inst.instanceId)}">トレードに出す</button>
-        <button class="gd-salvage-btn" data-salvage-instance-id="${escapeHtml(inst.instanceId)}" title="分解して${fmt(salvageRate)} ガチャptを獲得">🛠 分解</button>
+        <button class="gd-salvage-btn" data-salvage-instance-id="${escapeHtml(inst.instanceId)}" title="分解して${fmt(salvageRate)} pt を獲得">🛠 分解</button>
       `;
     }
     return `
@@ -5425,14 +5473,14 @@ function openGalleryDetail(gachaTypeId, prizeId) {
   listEl.querySelectorAll('[data-salvage-instance-id]').forEach(btn => {
     btn.addEventListener('click', async () => {
       const instanceId = btn.dataset.salvageInstanceId;
-      if (!confirm(`この1個（${display.name}）を分解して ${fmt(salvageRate)} ガチャpt を獲得します。よろしいですか？`)) return;
+      if (!confirm(`この1個（${display.name}）を分解して ${fmt(salvageRate)} pt を獲得します。よろしいですか？`)) return;
       btn.disabled = true; btn.textContent = '処理中…';
       const result = await callJsonApi('/api/salvage', { userId: me.id, instanceIds: [instanceId] });
       if (!result.ok) { alert(salvageErrorMessage(result)); btn.disabled = false; btn.textContent = '🛠 分解'; return; }
       closeGalleryDetail();
       await fetchRemoteData();
       renderAll();
-      showToastLite(`+${fmt(result.data.totalPoint)} ガチャpt`);
+      showToastLite(`+${fmt(result.data.totalPoint)} pt`);
     });
   });
 
@@ -5490,6 +5538,8 @@ function openSalvageConfirm(data) {
     }
   }
 
+  const lbMax = Math.max(1, parseInt((data.settings && data.settings.limitBreakMax) || 4, 10) || 4);
+  const limitBreaks = (me.limitBreaks && typeof me.limitBreaks === 'object') ? me.limitBreaks : {};
   const breakdown = { UR: 0, SSR: 0, SR: 0, R: 0, N: 0 };
   let total = 0;
   const validIds = [];
@@ -5497,7 +5547,10 @@ function openSalvageConfirm(data) {
     const it = (me.inventory || []).find(x => x.instanceId === id);
     if (!it || lockedIds.has(id)) continue;
     validIds.push(id);
-    const r = resolveItemRarity(it, types, me.gachaHistory);
+    const base = resolveItemRarity(it, types, me.gachaHistory);
+    const key = `${it.gachaTypeId}::${it.prizeId}`;
+    const lbLevel = Math.max(0, parseInt(limitBreaks[key] || 0, 10) || 0);
+    const r = effectiveRarity(base, lbLevel, lbMax);
     if (breakdown[r] !== undefined) breakdown[r]++;
     total += getSalvageRate(r, data.settings);
   }
@@ -5510,7 +5563,7 @@ function openSalvageConfirm(data) {
     .filter(r => breakdown[r] > 0)
     .map(r => `<span class="sb-row"><span class="tc-rarity-chip rarity-${r.toLowerCase()}">${r}</span> ×${breakdown[r]}</span>`)
     .join('');
-  document.getElementById('salvageTotal').innerHTML = `+${fmt(total)}<span class="sa-unit">ガチャpt</span>`;
+  document.getElementById('salvageTotal').innerHTML = `+${fmt(total)}<span class="sa-unit">pt</span>`;
   document.getElementById('salvageConfirmModal').classList.add('show');
   document.getElementById('salvageConfirmModal').dataset.ids = JSON.stringify(validIds);
 }
@@ -5537,7 +5590,7 @@ async function submitSalvageConfirm() {
   salvageMode = false;
   await fetchRemoteData();
   renderAll();
-  showToastLite(`+${fmt(result.data.totalPoint)} ガチャpt`);
+  showToastLite(`+${fmt(result.data.totalPoint)} pt`);
 }
 
 function setupSalvageConfirmModal() {
