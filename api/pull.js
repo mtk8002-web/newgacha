@@ -61,7 +61,7 @@ function sanitizeAllGachaHistory(data) {
 
 // ロック内で実行される本体ロジック。
 // 戻り値：{ status: number, body: object }
-async function processPull({ userId, gachaTypeId, count }) {
+async function processPull({ userId, gachaTypeId, count, useGachaPoint }) {
   const data = await redis.get(KEY);
   if (!data || !Array.isArray(data.users)) {
     return { status: 404, body: { ok: false, error: 'no data' } };
@@ -89,12 +89,22 @@ async function processPull({ userId, gachaTypeId, count }) {
   }
 
   const totalCost = cost * requestedCount;
-  if (availableSpoon(user) < totalCost) {
-    return { status: 400, body: { ok: false, error: 'not enough pt' } };
-  }
 
-  // 在庫を初期化（旧データから移行・初回のみ）
+  // 在庫を初期化（旧データから移行・初回のみ）+ gachaPoint なども補完
   ensureUserInventory(user);
+
+  // 支払い：通常 pt か ガチャ pt のどちらか（混合なし）
+  const payWithGachaPoint = !!useGachaPoint;
+  if (payWithGachaPoint) {
+    const gp = Math.max(0, Math.floor(Number(user.gachaPoint) || 0));
+    if (gp < totalCost) {
+      return { status: 400, body: { ok: false, error: 'not enough gacha point' } };
+    }
+  } else {
+    if (availableSpoon(user) < totalCost) {
+      return { status: 400, body: { ok: false, error: 'not enough pt' } };
+    }
+  }
 
   // 天井設定
   const pityThreshold = Math.max(0, Math.floor(Number(type.pityCount) || 0));
@@ -126,8 +136,12 @@ async function processPull({ userId, gachaTypeId, count }) {
     prizes.push({ ...prize, isPity });
   }
 
-  // ユーザーに記録（pt 消費 + 履歴追記 + 在庫追加 + 天井カウンタ更新）
-  user.spentSpoon = (user.spentSpoon || 0) + totalCost;
+  // ユーザーに記録（pt 消費 or ガチャpt 消費 + 履歴追記 + 在庫追加 + 天井カウンタ更新）
+  if (payWithGachaPoint) {
+    user.gachaPoint = Math.max(0, Math.floor(Number(user.gachaPoint) || 0)) - totalCost;
+  } else {
+    user.spentSpoon = (user.spentSpoon || 0) + totalCost;
+  }
   user.gachaHistory = user.gachaHistory || [];
   user.inventory = user.inventory || [];
   user.pityCounts[type.id] = pityCounter;
@@ -144,6 +158,7 @@ async function processPull({ userId, gachaTypeId, count }) {
       prizeIcon: thinIcon(p.icon),
       prizeIconType: p.iconType || 'emoji',
       isPity: !!p.isPity,
+      paidWith: payWithGachaPoint ? 'gachaPoint' : 'pt',
       timestamp: now,
     });
     // 在庫に追加（トレード対象になる実体）
@@ -171,6 +186,8 @@ async function processPull({ userId, gachaTypeId, count }) {
       count: requestedCount,
       totalCost,
       spentSpoon: user.spentSpoon,
+      gachaPoint: user.gachaPoint,
+      paidWith: payWithGachaPoint ? 'gachaPoint' : 'pt',
       pityCounter,
     },
   };
@@ -183,12 +200,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { userId, gachaTypeId, count } = req.body || {};
+    const { userId, gachaTypeId, count, useGachaPoint } = req.body || {};
     if (!userId)      return res.status(400).json({ ok: false, error: 'userId required' });
     if (!gachaTypeId) return res.status(400).json({ ok: false, error: 'gachaTypeId required' });
 
     // 分散ロックで GET-MODIFY-SET を直列化（同時実行による spentSpoon / gachaHistory の競合を防止）
-    const lockResult = await withDataLock(redis, () => processPull({ userId, gachaTypeId, count }));
+    const lockResult = await withDataLock(redis, () => processPull({ userId, gachaTypeId, count, useGachaPoint: !!useGachaPoint }));
     if (lockResult.busy) {
       return res.status(503).json({ ok: false, error: 'busy, retry' });
     }

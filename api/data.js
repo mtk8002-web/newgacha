@@ -36,6 +36,10 @@ function getDefaultData() {
       prizeTitleEn: 'Prize Catalog',
       // 表記
       userLabel: 'ユーザー',
+      // 分解（salvage）レアリティ別ガチャpt獲得レート
+      salvageRates: { N: 10, R: 25, SR: 50, SSR: 100, UR: 500 },
+      // 限界突破の最大段階（0..max の合計 max+1 段階）
+      limitBreakMax: 4,
       // ガチャは複数種類を持てる。各タイプが独立した景品プールとコスト
       gachaTypes: [
         {
@@ -172,6 +176,16 @@ export default async function handler(req, res) {
               // inventory も pull/trade が真実の源。admin の編集で巻き戻さない。
               if (Array.isArray(old.inventory)) {
                 u.inventory = old.inventory;
+              }
+              // gachaPoint / limitBreaks / iconPrize も pull/salvage/limit-break/user-prefs が真実の源
+              if (typeof old.gachaPoint === 'number') {
+                u.gachaPoint = old.gachaPoint;
+              }
+              if (old.limitBreaks && typeof old.limitBreaks === 'object') {
+                u.limitBreaks = old.limitBreaks;
+              }
+              if (old.iconPrize !== undefined) {
+                u.iconPrize = old.iconPrize;
               }
             }
             delete u.hasPassword;

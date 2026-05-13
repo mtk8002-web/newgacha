@@ -1217,6 +1217,291 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
   color: var(--text-muted); font-size: 0.85rem;
 }
 
+/* ===== 分解モード・ガチャpt・限界突破・アイコン設定 ===== */
+.gallery-toolbar {
+  display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;
+  margin-bottom: 1rem;
+}
+.gallery-toolbar .gp-badge {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.45rem 0.85rem;
+  background: linear-gradient(135deg, #4a7ba8 0%, #2f5a82 100%);
+  color: #fff; font-weight: 700;
+  border-radius: 999px;
+  font-family: var(--font-en);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  box-shadow: 0 3px 10px rgba(47,90,130,0.3);
+}
+.gallery-toolbar .gp-badge .gp-num {
+  font-size: 0.9rem; font-weight: 800;
+}
+.salvage-toggle {
+  margin-left: auto;
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.78rem; font-weight: 700;
+  background: transparent;
+  color: #6b7280;
+  border: 1.5px solid #c8ccd1;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.salvage-toggle:hover { color: #4a6373; border-color: #6b8898; }
+.salvage-toggle.active {
+  background: linear-gradient(180deg, #6b8898 0%, #4a6373 100%);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 3px 10px rgba(74,99,115,0.3);
+}
+.salvage-action-bar {
+  position: sticky; top: 80px; z-index: 10;
+  display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;
+  padding: 0.9rem 1.1rem;
+  background: linear-gradient(135deg, rgba(74,99,115,0.96) 0%, rgba(107,136,152,0.96) 100%);
+  color: #fff;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  box-shadow: 0 8px 22px rgba(74,99,115,0.4);
+}
+.salvage-action-bar .sa-info { flex: 1; min-width: 0; }
+.salvage-action-bar .sa-count { font-family: var(--font-en); font-size: 0.7rem; letter-spacing: 0.18em; opacity: 0.85; }
+.salvage-action-bar .sa-value { font-family: var(--font-en); font-weight: 800; font-size: 1.4rem; line-height: 1; margin-top: 0.15rem; }
+.salvage-action-bar .sa-value .sa-unit { font-size: 0.7rem; opacity: 0.85; margin-left: 0.3rem; letter-spacing: 0.1em; }
+.salvage-action-bar .sa-btn {
+  padding: 0.6rem 1.2rem;
+  font-weight: 700; font-size: 0.85rem;
+  background: #fff; color: #4a6373;
+  border: none; border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+  transition: all 0.18s;
+}
+.salvage-action-bar .sa-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(0,0,0,0.22);
+}
+.salvage-action-bar .sa-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.salvage-action-bar .sa-cancel {
+  background: transparent; color: #fff;
+  border: 1.5px solid rgba(255,255,255,0.4);
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+.salvage-action-bar .sa-cancel:hover { background: rgba(255,255,255,0.1); border-color: #fff; }
+
+/* ギャラリーカード：選択状態・限界突破バッジ・アイコン設定マーカー */
+.gallery-grid.salvage-mode .gallery-card {
+  cursor: pointer;
+}
+.gallery-card.salvage-selected {
+  border-color: #6b8898 !important;
+  background: linear-gradient(180deg, #eaf1f5 0%, #d6e1ea 100%) !important;
+  box-shadow: 0 0 0 3px rgba(107,136,152,0.4), 0 4px 14px rgba(74,99,115,0.3) !important;
+  transform: scale(0.97);
+}
+.gallery-card .gc-salvage-check {
+  position: absolute; top: 6px; right: 6px;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  border: 2px solid #c8ccd1;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem;
+  color: transparent;
+}
+.gallery-card.salvage-selected .gc-salvage-check {
+  background: #4a6373;
+  border-color: #4a6373;
+  color: #fff;
+}
+.gc-lb-badge {
+  position: absolute; top: 6px; left: 6px;
+  display: inline-flex; align-items: center;
+  font-family: var(--font-en); font-weight: 800;
+  font-size: 0.68rem; letter-spacing: 0.05em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f9d976 0%, #cfb070 50%, #b8923f 100%);
+  color: #5e4a1a;
+  box-shadow: 0 2px 6px rgba(184,146,63,0.4);
+}
+.gc-lb-badge.is-max {
+  background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+  color: #fff;
+}
+.gc-icon-prize-mark {
+  position: absolute; bottom: 8px; right: 8px;
+  font-size: 0.85rem;
+  background: var(--gold-shiny);
+  color: #fff;
+  padding: 0.15rem 0.4rem;
+  border-radius: 999px;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(184,146,63,0.5);
+}
+
+/* 詳細モーダルの限界突破セクション */
+.gd-section {
+  margin: 0.9rem 0 0;
+  padding: 0.8rem 0.9rem;
+  background: var(--bg-warm);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-align: left;
+}
+.gd-section-title {
+  font-family: var(--font-en); font-size: 0.6rem;
+  letter-spacing: 0.2em; color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+.gd-lb-stars {
+  display: flex; align-items: center; gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+.gd-lb-star {
+  font-size: 1.4rem;
+  filter: grayscale(80%);
+  opacity: 0.4;
+}
+.gd-lb-star.filled {
+  filter: none;
+  opacity: 1;
+  text-shadow: 0 0 6px rgba(184,146,63,0.6);
+}
+.gd-lb-level {
+  margin-left: auto;
+  font-family: var(--font-en); font-weight: 800; font-size: 1.1rem;
+  color: var(--gold-deep);
+}
+.gd-lb-btn {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  font-weight: 700; font-size: 0.85rem;
+  background: var(--gold-shiny);
+  color: #fff;
+  border: none; border-radius: 10px;
+  cursor: pointer;
+  text-shadow: 0 1px 2px rgba(94,74,26,0.5);
+  box-shadow: 0 4px 12px rgba(184,146,63,0.35);
+  transition: filter 0.18s;
+}
+.gd-lb-btn:hover:not(:disabled) { filter: brightness(1.08); }
+.gd-lb-btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+.gd-lb-hint {
+  margin-top: 0.4rem;
+  font-size: 0.7rem; color: var(--text-muted);
+  text-align: center;
+}
+
+/* アイコン設定ボタン */
+.gd-icon-prize-btn {
+  width: 100%;
+  margin-top: 0.6rem;
+  padding: 0.55rem 1rem;
+  font-weight: 700; font-size: 0.78rem;
+  background: transparent;
+  color: var(--pink-deep);
+  border: 1.5px solid var(--pink);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.gd-icon-prize-btn:hover { background: var(--pink); color: #fff; }
+.gd-icon-prize-btn.active {
+  background: var(--gold-shiny);
+  color: #fff;
+  border-color: transparent;
+  text-shadow: 0 1px 2px rgba(94,74,26,0.5);
+}
+
+/* 個別インスタンス分解ボタン */
+.gd-salvage-btn {
+  font-size: 0.65rem; font-weight: 700;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  border: 1.5px solid #c8ccd1;
+  background: transparent; color: #6b7280;
+  cursor: pointer;
+  transition: all 0.18s;
+  margin-left: 0.3rem;
+  white-space: nowrap;
+}
+.gd-salvage-btn:hover { background: #6b8898; color: #fff; border-color: #6b8898; }
+
+/* ガチャダッシュボード：ガチャpt統計 */
+.gacha-stat.gp-stat {
+  background: linear-gradient(135deg, rgba(74,123,168,0.08), rgba(47,90,130,0.04));
+  border-color: rgba(74,123,168,0.3);
+}
+.gacha-stat.gp-stat .label { color: #3b5566; }
+.gacha-stat.gp-stat .value { color: #2f5a82; }
+.gacha-stat.gp-stat .value .unit { color: #4a7ba8; }
+
+/* キャンディカード：ガチャptボタン */
+.candy-pull-btn-gp {
+  margin-top: 0.45rem;
+  background: linear-gradient(180deg, #4a7ba8 0%, #2f5a82 100%);
+  color: #fff;
+  border: none;
+  font-size: 0.75rem;
+  padding: 0.62rem 0.8rem;
+  letter-spacing: 0.06em;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  box-shadow:
+    0 4px 12px rgba(47,90,130,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.candy-pull-btn-gp:hover:not(:disabled) {
+  filter: brightness(1.1);
+  box-shadow:
+    0 8px 20px rgba(47,90,130,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.4);
+}
+.candy-pull-btn-gp:disabled {
+  background: var(--text-soft);
+  text-shadow: none;
+  opacity: 0.5;
+}
+.candy-pull-btn-gp .gp-unit {
+  font-size: 0.6rem;
+  opacity: 0.85;
+  margin-left: 0.25rem;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+/* 分解確認モーダル */
+.salvage-confirm-icon {
+  font-size: 2.4rem;
+  margin: 0 auto 0.6rem;
+  filter: drop-shadow(0 2px 6px rgba(74,99,115,0.35));
+}
+.salvage-breakdown {
+  display: flex; gap: 0.4rem; flex-wrap: wrap; justify-content: center;
+  margin-bottom: 0.7rem;
+}
+.salvage-breakdown .sb-row {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.3rem 0.65rem;
+  background: var(--bg-warm);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.76rem;
+}
+.salvage-total {
+  font-family: var(--font-en); font-weight: 800;
+  font-size: 1.8rem;
+  color: #2f5a82;
+  text-align: center;
+  padding: 0.4rem 0;
+}
+.salvage-total .sa-unit { font-size: 0.7rem; color: #4a7ba8; letter-spacing: 0.1em; margin-left: 0.35rem; }
+
 /* 詳細モーダル */
 .gallery-detail-modal {
   position: fixed; inset: 0; z-index: 1200;
@@ -3091,6 +3376,21 @@ footer {
   </div>
 </section>
 
+<!-- 分解確認モーダル -->
+<div class="gallery-detail-modal" id="salvageConfirmModal">
+  <div class="gallery-detail-inner" style="max-width:420px">
+    <button class="gallery-detail-close" id="salvageConfirmCloseBtn" type="button" aria-label="閉じる">×</button>
+    <div class="gd-rarity" style="background:linear-gradient(90deg,#5d7a8d,#3b5566);">SALVAGE</div>
+    <div class="salvage-confirm-icon">🛠</div>
+    <div class="gd-name" id="salvageConfirmTitle">分解の確認</div>
+    <div class="gd-meta" id="salvageConfirmMeta"></div>
+    <div class="salvage-breakdown" id="salvageBreakdown"></div>
+    <div class="salvage-total" id="salvageTotal"></div>
+    <div class="gd-meta" style="margin-top:0.6rem;color:var(--danger);font-size:0.72rem">※ 分解した景品は元に戻せません</div>
+    <button class="trade-modal-submit" id="salvageConfirmSubmit" type="button" style="background:linear-gradient(180deg,#6b8898 0%,#4a6373 100%)">分解する</button>
+  </div>
+</div>
+
 <!-- ギャラリー景品詳細モーダル -->
 <div class="gallery-detail-modal" id="galleryDetailModal">
   <div class="gallery-detail-inner">
@@ -3323,10 +3623,32 @@ function escapeHtml(s) {
 }
 
 function renderUserIcon(user, size) {
-  if (user.iconType === 'image' && user.icon) {
+  // iconPrize が設定されていて景品が現存していれば、それをアイコンとして使う
+  if (user && user.iconPrize && user.iconPrize.gachaTypeId && user.iconPrize.prizeId) {
+    const data = (typeof loadData === 'function') ? loadData() : null;
+    const types = (data && data.settings && data.settings.gachaTypes) || [];
+    const t = types.find(x => x.id === user.iconPrize.gachaTypeId);
+    if (t) {
+      let icon = null;
+      if (user.iconPrize.prizeId === `pity-${t.id}` && t.pityPrize) {
+        icon = t.pityPrize.icon || '🏆';
+      } else {
+        const p = (t.prizes || []).find(x => x.id === user.iconPrize.prizeId);
+        if (p) icon = p.icon || '🎁';
+      }
+      if (icon) {
+        if (typeof icon === 'string' && icon.startsWith('data:image')) {
+          return `<img src="${escapeHtml(icon)}" alt="">`;
+        }
+        return escapeHtml(icon);
+      }
+    }
+    // 景品が削除されている場合は通常のアイコンへフォールバック
+  }
+  if (user && user.iconType === 'image' && user.icon) {
     return `<img src="${escapeHtml(user.icon)}" alt="">`;
   }
-  return escapeHtml(user.icon || '👤');
+  return escapeHtml((user && user.icon) || '👤');
 }
 // 報酬アイコン：data:image で始まるなら画像、それ以外は絵文字テキストとして描画
 function renderRewardIcon(value) {
@@ -3594,6 +3916,7 @@ function setupPasswordModal() {
 
 function renderGachaDashboardHTML(data, me) {
   const avail = availableSpoon(me);
+  const gachaPoint = Math.max(0, parseInt(me.gachaPoint || 0, 10) || 0);
   // 公開ページでは hidden=true のガチャは表示しない
   const types = (data.settings.gachaTypes || []).filter(t => !t.hidden);
   const recent = (me.gachaHistory || []).slice().sort((a, b) => b.timestamp - a.timestamp).slice(0, 8);
@@ -3605,6 +3928,10 @@ function renderGachaDashboardHTML(data, me) {
     const multi = Math.max(0, parseInt(t.multiPullCount || 0, 10) || 0);
     const multiCost = (t.cost || 0) * multi;
     const canMulti = multi >= 2 && avail >= multiCost;
+    // ガチャpt 支払い可否
+    const cost = parseInt(t.cost || 0, 10) || 0;
+    const canPullGp = cost > 0 && gachaPoint >= cost;
+    const canMultiGp = multi >= 2 && gachaPoint >= multiCost;
     // 天井
     const pityCount = Math.max(0, parseInt(t.pityCount || 0, 10) || 0);
     const pityValid = pityCount > 0 && t.pityPrize && t.pityPrize.name;
@@ -3620,12 +3947,20 @@ function renderGachaDashboardHTML(data, me) {
         <div class="candy-cost">${fmt(t.cost)}<span class="unit">PT</span> / 1回</div>
         <div class="candy-avail">あと <strong>${pulls}</strong> 回引ける</div>
         ${pityValid ? `<div class="candy-pity" title="${escapeHtml(t.pityPrize.name)} 確定">🏆 天井まで <strong>${pityRemaining}</strong> 回</div>` : ''}
-        <button class="candy-pull-btn" data-type-id="${escapeHtml(t.id)}" data-count="1"${canPull ? '' : ' disabled'}>
+        <button class="candy-pull-btn" data-type-id="${escapeHtml(t.id)}" data-count="1" data-pay="pt"${canPull ? '' : ' disabled'}>
           ${canPull ? '🎰 1回引く' : 'pt不足'}
         </button>
         ${multi >= 2 ? `
-          <button class="candy-pull-btn candy-pull-btn-multi" data-type-id="${escapeHtml(t.id)}" data-count="${multi}"${canMulti ? '' : ' disabled'}>
+          <button class="candy-pull-btn candy-pull-btn-multi" data-type-id="${escapeHtml(t.id)}" data-count="${multi}" data-pay="pt"${canMulti ? '' : ' disabled'}>
             ${canMulti ? `🎲 ${multi}連で引く <span class="multi-cost">${fmt(multiCost)}pt</span>` : `${multi}連 ${fmt(multiCost)}pt 不足`}
+          </button>
+        ` : ''}
+        <button class="candy-pull-btn candy-pull-btn-gp" data-type-id="${escapeHtml(t.id)}" data-count="1" data-pay="gachaPoint"${canPullGp ? '' : ' disabled'}>
+          ${canPullGp ? `🎫 1回引く <span class="gp-unit">${fmt(cost)}ガチャpt</span>` : `ガチャpt不足 (${fmt(cost)})`}
+        </button>
+        ${multi >= 2 ? `
+          <button class="candy-pull-btn candy-pull-btn-gp candy-pull-btn-multi" data-type-id="${escapeHtml(t.id)}" data-count="${multi}" data-pay="gachaPoint"${canMultiGp ? '' : ' disabled'}>
+            ${canMultiGp ? `🎫 ${multi}連で引く <span class="gp-unit">${fmt(multiCost)}ガチャpt</span>` : `${multi}連 ${fmt(multiCost)}ガチャpt 不足`}
           </button>
         ` : ''}
       </div>
@@ -3647,6 +3982,10 @@ function renderGachaDashboardHTML(data, me) {
         <div class="gacha-stat highlight">
           <div class="label">使える pt</div>
           <div class="value">${fmtCap(avail)}<span class="unit">PT</span></div>
+        </div>
+        <div class="gacha-stat gp-stat">
+          <div class="label">ガチャ pt</div>
+          <div class="value">${fmtCap(gachaPoint)}<span class="unit">GP</span></div>
         </div>
         <div class="gacha-stat">
           <div class="label">累計 pt</div>
@@ -3672,7 +4011,7 @@ function renderGachaDashboardHTML(data, me) {
               <div class="pi">${resolveHistoryPrizeIconHtml(h, data.settings && data.settings.gachaTypes)}</div>
               <div class="pname">
                 ${escapeHtml(h.prizeName)}
-                ${h.gachaTypeName ? `<span class="from-type">${escapeHtml(h.gachaTypeName)}</span>` : ''}
+                ${h.gachaTypeName ? `<span class="from-type">${escapeHtml(h.gachaTypeName)}${h.paidWith === 'gachaPoint' ? ' 🎫' : ''}</span>` : ''}
               </div>
               <div class="ptime">${relativeTime(h.timestamp)}</div>
             </div>
@@ -3689,15 +4028,17 @@ function setupGachaDashboard(data, me) {
     btn.addEventListener('click', () => {
       const typeId = btn.dataset.typeId;
       const count = Math.max(1, parseInt(btn.dataset.count || '1', 10) || 1);
-      doGachaPull(me.id, typeId, count);
+      const useGachaPoint = btn.dataset.pay === 'gachaPoint';
+      doGachaPull(me.id, typeId, count, useGachaPoint);
     });
   });
 }
 
 // ガチャ実行は /api/pull 経由（抽選はサーバ側、ユーザーは結果のみ受け取る）
-async function doGachaPull(userId, gachaTypeId, count) {
+async function doGachaPull(userId, gachaTypeId, count, useGachaPoint) {
   const c = Math.max(1, Math.floor(Number(count) || 1));
-  const btn = document.querySelector(`.candy-pull-btn[data-type-id="${gachaTypeId}"][data-count="${c}"]`);
+  const pay = useGachaPoint ? 'gachaPoint' : 'pt';
+  const btn = document.querySelector(`.candy-pull-btn[data-type-id="${gachaTypeId}"][data-count="${c}"][data-pay="${pay}"]`);
   const origHtml = btn ? btn.innerHTML : '';
   if (btn) { btn.disabled = true; btn.textContent = '抽選中…'; }
   // サーバー側ロックでビジー時は最大3回までリトライ
@@ -3709,7 +4050,7 @@ async function doGachaPull(userId, gachaTypeId, count) {
       const res = await fetch('/api/pull', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, gachaTypeId, count: c }),
+        body: JSON.stringify({ userId, gachaTypeId, count: c, useGachaPoint: !!useGachaPoint }),
       });
       const json = await res.json().catch(() => ({}));
       // 503 busy → 少し待って再試行
@@ -3726,6 +4067,7 @@ async function doGachaPull(userId, gachaTypeId, count) {
       if (!res.ok || !json.ok) {
         const msg = (json && json.error) || '抽選に失敗しました';
         if (msg === 'not enough pt') alert('pt が足りません。');
+        else if (msg === 'not enough gacha point') alert('ガチャpt が足りません。');
         else if (msg === 'user not found') { alert('ユーザーが見つかりません。'); setCurrentUserId(null); }
         else if (msg === 'invalid count') alert('連数指定が不正です。');
         else if (msg === 'multi-pull not enabled') alert('このガチャでは連ガチャが無効化されています。');
@@ -4724,6 +5066,35 @@ function setupTradeModals() {
 // ギャラリー（所持景品）
 // ============================================================
 const RARITY_ORDER = { UR: 0, SSR: 1, SR: 2, R: 3, N: 4 };
+const DEFAULT_SALVAGE_RATES = { N: 10, R: 25, SR: 50, SSR: 100, UR: 500 };
+
+// 分解モードの状態
+let salvageMode = false;
+const salvageSelected = new Set();
+
+function getSalvageRate(rarity, settings) {
+  const r = String(rarity || 'N').toUpperCase();
+  const rates = (settings && settings.salvageRates) || DEFAULT_SALVAGE_RATES;
+  const v = rates[r];
+  if (typeof v === 'number' && v >= 0) return Math.floor(v);
+  const d = DEFAULT_SALVAGE_RATES[r];
+  return typeof d === 'number' ? d : 0;
+}
+
+// 履歴から rarity を引く（gachaTypes に景品が無い場合のフォールバック）
+function rarityFromHistory(item, gachaHistory) {
+  if (!Array.isArray(gachaHistory)) return 'N';
+  for (let i = gachaHistory.length - 1; i >= 0; i--) {
+    const h = gachaHistory[i];
+    if (h && h.prizeId === item.prizeId && h.rarity) return String(h.rarity).toUpperCase();
+  }
+  return 'N';
+}
+function resolveItemRarity(item, gachaTypes, gachaHistory) {
+  const info = resolveInventoryItem(item, gachaTypes);
+  if (info && info.name !== '(削除済み)') return String(info.rarity || 'N').toUpperCase();
+  return rarityFromHistory(item, gachaHistory);
+}
 
 function renderGallery(data) {
   const panel = document.getElementById('galleryPanel');
@@ -4731,12 +5102,28 @@ function renderGallery(data) {
   const me = getCurrentUser(data);
   if (!me) {
     panel.innerHTML = `<div class="gallery-login-prompt">ログインするとあなたの所持景品一覧が表示されます。<br>GACHA セクションから名前を選んでログインしてください。</div>`;
+    salvageMode = false; salvageSelected.clear();
     return;
   }
   const types = (data.settings && data.settings.gachaTypes) || [];
   const inventory = Array.isArray(me.inventory) ? me.inventory : [];
+  const limitBreaks = (me.limitBreaks && typeof me.limitBreaks === 'object') ? me.limitBreaks : {};
+  const limitBreakMax = Math.max(1, parseInt((data.settings && data.settings.limitBreakMax) || 4, 10) || 4);
+  const iconPrizeKey = (me.iconPrize && me.iconPrize.gachaTypeId && me.iconPrize.prizeId)
+    ? `${me.iconPrize.gachaTypeId}::${me.iconPrize.prizeId}` : null;
+  const gachaPoint = Math.max(0, parseInt(me.gachaPoint || 0, 10) || 0);
 
-  // 景品ごとに集約（gachaTypeId + prizeId をキーに）
+  // 出品中・オファー中の instance を除外集合
+  const lockedIds = new Set();
+  for (const tr of (data.trades || [])) {
+    if (tr.status !== 'open') continue;
+    if (tr.ownerId === me.id && tr.ownerItem) lockedIds.add(tr.ownerItem.instanceId);
+    for (const o of (tr.offers || [])) {
+      if (o.offererId === me.id && o.status === 'pending' && o.item) lockedIds.add(o.item.instanceId);
+    }
+  }
+
+  // 景品ごとに集約
   const groups = new Map();
   for (const item of inventory) {
     const key = `${item.gachaTypeId}::${item.prizeId}`;
@@ -4745,6 +5132,7 @@ function renderGallery(data) {
       groups.set(key, {
         key, gachaTypeId: item.gachaTypeId, prizeId: item.prizeId,
         display, instances: [], anyPity: false,
+        lbLevel: Math.max(0, parseInt(limitBreaks[key] || 0, 10) || 0),
       });
     }
     const g = groups.get(key);
@@ -4752,7 +5140,6 @@ function renderGallery(data) {
     if (item.isPity) g.anyPity = true;
   }
 
-  // レアリティ降順 → 個数降順 → 名前順
   const sortedGroups = Array.from(groups.values()).sort((a, b) => {
     const ra = RARITY_ORDER[String(a.display.rarity).toUpperCase()] ?? 99;
     const rb = RARITY_ORDER[String(b.display.rarity).toUpperCase()] ?? 99;
@@ -4771,7 +5158,12 @@ function renderGallery(data) {
   }
 
   if (totalItems === 0) {
-    panel.innerHTML = `<div class="gallery-empty">まだ景品を持っていません。<br>ガチャを引いてコレクションを集めましょう！</div>`;
+    panel.innerHTML = `
+      <div class="gallery-toolbar">
+        <span class="gp-badge">🎫 ガチャpt <span class="gp-num">${fmt(gachaPoint)}</span></span>
+      </div>
+      <div class="gallery-empty">まだ景品を持っていません。<br>ガチャを引いてコレクションを集めましょう！</div>`;
+    salvageMode = false; salvageSelected.clear();
     return;
   }
 
@@ -4780,12 +5172,32 @@ function renderGallery(data) {
     .map(r => `<span class="rarity-summary rarity-${r.toLowerCase()}"><span class="rt">${r}</span>×${rarityCounts[r]}</span>`)
     .join('');
 
+  // 選択中の合計ガチャpt見積もり
+  let selPoint = 0;
+  let selCount = 0;
+  for (const id of salvageSelected) {
+    const it = inventory.find(x => x.instanceId === id);
+    if (!it) continue;
+    if (lockedIds.has(id)) continue;
+    selCount++;
+    const rarity = resolveItemRarity(it, types, me.gachaHistory);
+    selPoint += getSalvageRate(rarity, data.settings);
+  }
+
   const cardsHtml = sortedGroups.map(g => {
     const rarityCls = String(g.display.rarity || 'N').toLowerCase();
+    const isMax = g.lbLevel >= limitBreakMax;
+    const lbBadge = g.lbLevel >= 1
+      ? `<span class="gc-lb-badge${isMax ? ' is-max' : ''}">${isMax ? `MAX` : `★×${g.lbLevel}`}</span>`
+      : '';
+    const isIconPrize = iconPrizeKey === g.key;
     return `
       <button class="gallery-card rarity-${rarityCls}" data-gallery-key="${escapeHtml(g.key)}">
+        ${lbBadge}
         ${g.anyPity ? '<span class="gc-pity-flag">🏆</span>' : ''}
         ${g.instances.length > 1 ? `<span class="gc-count">×${g.instances.length}</span>` : ''}
+        ${isIconPrize ? '<span class="gc-icon-prize-mark">⭐</span>' : ''}
+        ${salvageMode ? '<span class="gc-salvage-check">✓</span>' : ''}
         <div class="gc-rarity">${escapeHtml(g.display.rarity || 'N')}</div>
         <div class="gc-icon">${renderPrizeIconHtml(g.display.icon)}</div>
         <div class="gc-name">${escapeHtml(g.display.name)}</div>
@@ -4795,6 +5207,20 @@ function renderGallery(data) {
   }).join('');
 
   panel.innerHTML = `
+    <div class="gallery-toolbar">
+      <span class="gp-badge">🎫 ガチャpt <span class="gp-num">${fmt(gachaPoint)}</span></span>
+      <button type="button" class="salvage-toggle${salvageMode ? ' active' : ''}" id="salvageToggleBtn">🛠 ${salvageMode ? '分解モード ON' : '分解モード'}</button>
+    </div>
+    ${salvageMode ? `
+      <div class="salvage-action-bar">
+        <div class="sa-info">
+          <div class="sa-count">SELECTED ${selCount} ITEMS</div>
+          <div class="sa-value">+${fmt(selPoint)}<span class="sa-unit">ガチャpt</span></div>
+        </div>
+        <button class="sa-cancel" id="salvageCancelBtn">選択解除</button>
+        <button class="sa-btn" id="salvageSubmitBtn"${selCount === 0 ? ' disabled' : ''}>分解する</button>
+      </div>
+    ` : ''}
     <div class="gallery-stats">
       <div class="gallery-stat">
         <div class="gs-label">Total</div>
@@ -4806,13 +5232,64 @@ function renderGallery(data) {
       </div>
       <div class="gallery-stat-rarity">${rarityChipsHtml}</div>
     </div>
-    <div class="gallery-grid">${cardsHtml}</div>
+    <div class="gallery-grid${salvageMode ? ' salvage-mode' : ''}">${cardsHtml}</div>
   `;
 
+  // 選択中カードに視覚状態を反映（グループ単位ではなくinstance単位の選択だが、グループ単位でハイライト）
+  // どれか1つでも salvageSelected に入っていれば、そのグループのカードを selected 表示
+  if (salvageMode) {
+    panel.querySelectorAll('.gallery-card').forEach(card => {
+      const key = card.dataset.galleryKey;
+      const g = groups.get(key);
+      if (g && g.instances.some(it => salvageSelected.has(it.instanceId))) {
+        card.classList.add('salvage-selected');
+      }
+    });
+  }
+
+  // 分解トグル
+  const toggleBtn = document.getElementById('salvageToggleBtn');
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      salvageMode = !salvageMode;
+      if (!salvageMode) salvageSelected.clear();
+      renderGallery(loadData());
+    });
+  }
+  const cancelBtn = document.getElementById('salvageCancelBtn');
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      salvageSelected.clear();
+      renderGallery(loadData());
+    });
+  }
+  const submitBtn = document.getElementById('salvageSubmitBtn');
+  if (submitBtn) {
+    submitBtn.addEventListener('click', () => openSalvageConfirm(loadData()));
+  }
+
+  // カードクリック：通常モードは詳細モーダル、分解モードは選択切り替え
   panel.querySelectorAll('[data-gallery-key]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const [gachaTypeId, prizeId] = btn.dataset.galleryKey.split('::');
-      openGalleryDetail(gachaTypeId, prizeId);
+      const key = btn.dataset.galleryKey;
+      if (salvageMode) {
+        const g = groups.get(key);
+        if (!g) return;
+        // このグループのインスタンスを切り替え（既に選択されてるインスタンスがあれば全解除、なければ未ロックの最初を1個選択）
+        const ownIds = g.instances.map(i => i.instanceId);
+        const anySelected = ownIds.some(id => salvageSelected.has(id));
+        if (anySelected) {
+          for (const id of ownIds) salvageSelected.delete(id);
+        } else {
+          // ロックされてない instance を1つ追加（残りは詳細モーダルから個別追加）
+          const free = g.instances.find(i => !lockedIds.has(i.instanceId));
+          if (free) salvageSelected.add(free.instanceId);
+        }
+        renderGallery(loadData());
+      } else {
+        const [gachaTypeId, prizeId] = key.split('::');
+        openGalleryDetail(gachaTypeId, prizeId);
+      }
     });
   });
 }
@@ -4827,6 +5304,12 @@ function openGalleryDetail(gachaTypeId, prizeId) {
   if (instances.length === 0) return;
 
   const display = resolveInventoryItem(instances[0], types);
+  const prizeKey = `${gachaTypeId}::${prizeId}`;
+  const lbMax = Math.max(1, parseInt((data.settings && data.settings.limitBreakMax) || 4, 10) || 4);
+  const lbLevel = Math.max(0, parseInt((me.limitBreaks || {})[prizeKey] || 0, 10) || 0);
+  const isIconPrize = me.iconPrize && me.iconPrize.gachaTypeId === gachaTypeId && me.iconPrize.prizeId === prizeId;
+  const itemRarity = resolveItemRarity(instances[0], types, me.gachaHistory);
+  const salvageRate = getSalvageRate(itemRarity, data.settings);
 
   // 景品の description を取得
   let description = '';
@@ -4843,9 +5326,7 @@ function openGalleryDetail(gachaTypeId, prizeId) {
   const statusByInstance = new Map();
   for (const tr of trades) {
     if (tr.status !== 'open') continue;
-    if (tr.ownerId === me.id && tr.ownerItem) {
-      statusByInstance.set(tr.ownerItem.instanceId, 'listed');
-    }
+    if (tr.ownerId === me.id && tr.ownerItem) statusByInstance.set(tr.ownerItem.instanceId, 'listed');
     if (Array.isArray(tr.offers)) {
       for (const o of tr.offers) {
         if (o.offererId === me.id && o.status === 'pending' && o.item) {
@@ -4864,6 +5345,43 @@ function openGalleryDetail(gachaTypeId, prizeId) {
   document.getElementById('galleryDetailMeta').textContent = `${display.gachaTypeName || ''} ／ 所持 ${instances.length} 点`;
   document.getElementById('galleryDetailDesc').textContent = description;
 
+  // 限界突破セクション + アイコン設定セクションを description の下に動的挿入
+  const descEl = document.getElementById('galleryDetailDesc');
+  const oldSections = document.querySelectorAll('#galleryDetailModal .gd-section-dynamic');
+  oldSections.forEach(el => el.remove());
+
+  const lbStars = Array.from({ length: lbMax }, (_, i) =>
+    `<span class="gd-lb-star${i < lbLevel ? ' filled' : ''}">★</span>`
+  ).join('');
+  const dupCount = instances.length;
+  const canLb = lbLevel < lbMax && dupCount >= 2;
+  const lbBtnLabel = lbLevel >= lbMax
+    ? 'MAX 到達済み'
+    : dupCount < 2
+      ? '同じ景品を2個以上必要'
+      : `限界突破する（${dupCount - 1}個まで突破可能）`;
+
+  const lbSection = document.createElement('div');
+  lbSection.className = 'gd-section gd-section-dynamic';
+  lbSection.innerHTML = `
+    <div class="gd-section-title">Limit Break / 限界突破</div>
+    <div class="gd-lb-stars">${lbStars}<span class="gd-lb-level">${lbLevel} / ${lbMax}</span></div>
+    <button class="gd-lb-btn" id="gdLimitBreakBtn"${canLb ? '' : ' disabled'}>${escapeHtml(lbBtnLabel)}</button>
+    <div class="gd-lb-hint">同じ景品を1個消費して段階を1上げます</div>
+  `;
+  descEl.insertAdjacentElement('afterend', lbSection);
+
+  // アイコン設定セクション
+  const iconSection = document.createElement('div');
+  iconSection.className = 'gd-section-dynamic';
+  iconSection.innerHTML = `
+    <button class="gd-icon-prize-btn${isIconPrize ? ' active' : ''}" id="gdIconPrizeBtn">
+      ${isIconPrize ? '⭐ アイコンを解除' : '⭐ この景品をアイコンに設定'}
+    </button>
+  `;
+  lbSection.insertAdjacentElement('afterend', iconSection);
+
+  // インスタンスリスト
   const listEl = document.getElementById('galleryDetailInstances');
   const sorted = instances.slice().sort((a, b) => (b.acquiredAt || 0) - (a.acquiredAt || 0));
   listEl.innerHTML = sorted.map(inst => {
@@ -4874,7 +5392,10 @@ function openGalleryDetail(gachaTypeId, prizeId) {
     } else if (st === 'offered') {
       actionHtml = `<span class="gd-instance-status">オファー中</span>`;
     } else {
-      actionHtml = `<button class="gd-trade-btn" data-instance-id="${escapeHtml(inst.instanceId)}">トレードに出す</button>`;
+      actionHtml = `
+        <button class="gd-trade-btn" data-trade-instance-id="${escapeHtml(inst.instanceId)}">トレードに出す</button>
+        <button class="gd-salvage-btn" data-salvage-instance-id="${escapeHtml(inst.instanceId)}" title="分解して${fmt(salvageRate)} ガチャptを獲得">🛠 分解</button>
+      `;
     }
     return `
       <div class="gd-instance">
@@ -4882,18 +5403,17 @@ function openGalleryDetail(gachaTypeId, prizeId) {
           <span class="gd-instance-date">${escapeHtml(formatDateTime(inst.acquiredAt || 0))}</span>
           ${inst.isPity ? '<span class="gd-instance-pity">🏆 天井</span>' : ''}
         </div>
-        ${actionHtml}
+        <div style="display:flex;align-items:center;gap:0.2rem;flex-wrap:wrap;justify-content:flex-end">${actionHtml}</div>
       </div>
     `;
   }).join('');
 
-  // 個別の「トレードに出す」ボタン
-  listEl.querySelectorAll('[data-instance-id]').forEach(btn => {
+  // トレードに出すボタン
+  listEl.querySelectorAll('[data-trade-instance-id]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const instanceId = btn.dataset.instanceId;
+      const instanceId = btn.dataset.tradeInstanceId;
       closeGalleryDetail();
       openTradeCreateModal();
-      // 出品モーダルが開いた直後にこのインスタンスを選択状態にする
       setTimeout(() => {
         const sel = document.querySelector(`.tinv-item[data-instance-id="${instanceId}"]`);
         if (sel && !sel.classList.contains('disabled')) sel.click();
@@ -4901,7 +5421,200 @@ function openGalleryDetail(gachaTypeId, prizeId) {
     });
   });
 
+  // 個別分解ボタン
+  listEl.querySelectorAll('[data-salvage-instance-id]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const instanceId = btn.dataset.salvageInstanceId;
+      if (!confirm(`この1個（${display.name}）を分解して ${fmt(salvageRate)} ガチャpt を獲得します。よろしいですか？`)) return;
+      btn.disabled = true; btn.textContent = '処理中…';
+      const result = await callJsonApi('/api/salvage', { userId: me.id, instanceIds: [instanceId] });
+      if (!result.ok) { alert(salvageErrorMessage(result)); btn.disabled = false; btn.textContent = '🛠 分解'; return; }
+      closeGalleryDetail();
+      await fetchRemoteData();
+      renderAll();
+      showToastLite(`+${fmt(result.data.totalPoint)} ガチャpt`);
+    });
+  });
+
+  // 限界突破ボタン
+  const lbBtn = document.getElementById('gdLimitBreakBtn');
+  if (lbBtn && canLb) {
+    lbBtn.addEventListener('click', async () => {
+      if (!confirm(`同じ「${display.name}」を1個消費して段階を上げます。よろしいですか？`)) return;
+      // 表示用の代表 instance を渡す（消費は別のインスタンスがサーバー側で選ばれる）
+      lbBtn.disabled = true; lbBtn.textContent = '処理中…';
+      const result = await callJsonApi('/api/limit-break', { userId: me.id, instanceId: instances[0].instanceId });
+      if (!result.ok) { alert(limitBreakErrorMessage(result)); lbBtn.disabled = false; lbBtn.textContent = lbBtnLabel; return; }
+      await fetchRemoteData();
+      // 詳細モーダルを再描画
+      openGalleryDetail(gachaTypeId, prizeId);
+      renderAll();
+      showToastLite(`★×${result.data.newLevel} に突破！`);
+    });
+  }
+
+  // アイコン設定ボタン
+  const iconBtn = document.getElementById('gdIconPrizeBtn');
+  if (iconBtn) {
+    iconBtn.addEventListener('click', async () => {
+      const body = isIconPrize
+        ? { userId: me.id, action: 'clearIconPrize' }
+        : { userId: me.id, action: 'setIconPrize', gachaTypeId, prizeId };
+      iconBtn.disabled = true;
+      const result = await callJsonApi('/api/user-prefs', body);
+      if (!result.ok) { alert(userPrefsErrorMessage(result)); iconBtn.disabled = false; return; }
+      await fetchRemoteData();
+      openGalleryDetail(gachaTypeId, prizeId);
+      renderAll();
+      showToastLite(isIconPrize ? 'アイコンを解除しました' : 'アイコンを設定しました');
+    });
+  }
+
   document.getElementById('galleryDetailModal').classList.add('show');
+}
+
+// ============================================================
+// 分解確認モーダル
+// ============================================================
+function openSalvageConfirm(data) {
+  const me = getCurrentUser(data);
+  if (!me) return;
+  const types = (data.settings && data.settings.gachaTypes) || [];
+  // 出品中・オファー中の instance を除外
+  const lockedIds = new Set();
+  for (const tr of (data.trades || [])) {
+    if (tr.status !== 'open') continue;
+    if (tr.ownerId === me.id && tr.ownerItem) lockedIds.add(tr.ownerItem.instanceId);
+    for (const o of (tr.offers || [])) {
+      if (o.offererId === me.id && o.status === 'pending' && o.item) lockedIds.add(o.item.instanceId);
+    }
+  }
+
+  const breakdown = { UR: 0, SSR: 0, SR: 0, R: 0, N: 0 };
+  let total = 0;
+  const validIds = [];
+  for (const id of salvageSelected) {
+    const it = (me.inventory || []).find(x => x.instanceId === id);
+    if (!it || lockedIds.has(id)) continue;
+    validIds.push(id);
+    const r = resolveItemRarity(it, types, me.gachaHistory);
+    if (breakdown[r] !== undefined) breakdown[r]++;
+    total += getSalvageRate(r, data.settings);
+  }
+
+  if (validIds.length === 0) { alert('分解できる景品が選択されていません'); return; }
+
+  document.getElementById('salvageConfirmTitle').textContent = `${validIds.length} 個を分解`;
+  document.getElementById('salvageConfirmMeta').textContent = '選択中の景品';
+  document.getElementById('salvageBreakdown').innerHTML = ['UR', 'SSR', 'SR', 'R', 'N']
+    .filter(r => breakdown[r] > 0)
+    .map(r => `<span class="sb-row"><span class="tc-rarity-chip rarity-${r.toLowerCase()}">${r}</span> ×${breakdown[r]}</span>`)
+    .join('');
+  document.getElementById('salvageTotal').innerHTML = `+${fmt(total)}<span class="sa-unit">ガチャpt</span>`;
+  document.getElementById('salvageConfirmModal').classList.add('show');
+  document.getElementById('salvageConfirmModal').dataset.ids = JSON.stringify(validIds);
+}
+
+function closeSalvageConfirm() {
+  document.getElementById('salvageConfirmModal').classList.remove('show');
+}
+
+async function submitSalvageConfirm() {
+  const me = getCurrentUser(loadData());
+  if (!me) return;
+  const modal = document.getElementById('salvageConfirmModal');
+  let ids;
+  try { ids = JSON.parse(modal.dataset.ids || '[]'); } catch { ids = []; }
+  if (!Array.isArray(ids) || ids.length === 0) { alert('対象なし'); return; }
+
+  const submitBtn = document.getElementById('salvageConfirmSubmit');
+  submitBtn.disabled = true; submitBtn.textContent = '処理中…';
+  const result = await callJsonApi('/api/salvage', { userId: me.id, instanceIds: ids });
+  submitBtn.disabled = false; submitBtn.textContent = '分解する';
+  if (!result.ok) { alert(salvageErrorMessage(result)); return; }
+  closeSalvageConfirm();
+  salvageSelected.clear();
+  salvageMode = false;
+  await fetchRemoteData();
+  renderAll();
+  showToastLite(`+${fmt(result.data.totalPoint)} ガチャpt`);
+}
+
+function setupSalvageConfirmModal() {
+  document.getElementById('salvageConfirmCloseBtn').addEventListener('click', closeSalvageConfirm);
+  document.getElementById('salvageConfirmModal').addEventListener('click', (e) => {
+    if (e.target.id === 'salvageConfirmModal') closeSalvageConfirm();
+  });
+  document.getElementById('salvageConfirmSubmit').addEventListener('click', submitSalvageConfirm);
+}
+
+// ============================================================
+// 汎用 API 呼び出し（503 リトライ付き）
+// ============================================================
+async function callJsonApi(url, body) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (res.status === 503 && json && json.error === 'busy, retry') {
+        if (attempt < 3) { await new Promise(r => setTimeout(r, 400 * attempt)); continue; }
+        return { ok: false, error: 'busy' };
+      }
+      if (!res.ok || !json.ok) {
+        return { ok: false, error: (json && json.error) || `HTTP ${res.status}`, raw: json };
+      }
+      return { ok: true, data: json };
+    } catch (e) {
+      return { ok: false, error: 'network', message: e.message || String(e) };
+    }
+  }
+  return { ok: false, error: 'busy' };
+}
+
+function salvageErrorMessage(result) {
+  const e = result.error || '';
+  if (e === 'busy') return 'サーバー混雑中です。少し時間を置いてから再度お試しください。';
+  if (e === 'instanceIds required') return '分解する景品を選んでください';
+  if (e === 'some instances invalid') return '一部の景品が出品中、または既に存在しません。ページを更新してください';
+  if (e === 'user not found') return 'ユーザーが見つかりません';
+  if (e === 'network') return '通信エラー: ' + (result.message || '');
+  return 'エラー: ' + e;
+}
+function limitBreakErrorMessage(result) {
+  const e = result.error || '';
+  if (e === 'max reached') return '既に最大段階に達しています';
+  if (e === 'need duplicate') return '同じ景品が2個以上必要です';
+  if (e === 'material listed in trade') return '消費する景品がトレード出品中・オファー中のため、限界突破できません';
+  if (e === 'instance not in inventory') return 'この景品を所持していません';
+  if (e === 'busy') return 'サーバー混雑中です';
+  if (e === 'network') return '通信エラー: ' + (result.message || '');
+  return 'エラー: ' + e;
+}
+function userPrefsErrorMessage(result) {
+  const e = result.error || '';
+  if (e === 'not owned') return 'この景品を所持していません';
+  if (e === 'busy') return 'サーバー混雑中です';
+  if (e === 'network') return '通信エラー: ' + (result.message || '');
+  return 'エラー: ' + e;
+}
+
+// 軽量トースト（既存実装がないので最小実装）
+function showToastLite(msg) {
+  let toast = document.getElementById('publicToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'publicToast';
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(31,27,22,0.92);color:#fff;padding:0.8rem 1.4rem;border-radius:999px;font-weight:700;font-size:0.85rem;z-index:99999;opacity:0;transition:opacity 0.25s;box-shadow:0 8px 24px rgba(0,0,0,0.25);pointer-events:none';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { toast.style.opacity = '0'; }, 2400);
 }
 
 function closeGalleryDetail() {
@@ -4984,6 +5697,7 @@ setupGachaMultiModal();
 setupPasswordModal();
 setupTradeModals();
 setupGalleryModal();
+setupSalvageConfirmModal();
 // 初回はリモートからデータ取得後に描画
 fetchRemoteData().then(() => {
   renderAll();
