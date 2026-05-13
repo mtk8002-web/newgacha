@@ -73,6 +73,8 @@ async function processPull({ userId, gachaTypeId, count }) {
   const types = (data.settings && data.settings.gachaTypes) || [];
   const type = types.find(t => t.id === gachaTypeId);
   if (!type) return { status: 404, body: { ok: false, error: 'gacha type not found' } };
+  // 管理者が非表示にしたガチャは抽選不可
+  if (type.hidden) return { status: 403, body: { ok: false, error: 'gacha type hidden' } };
 
   const cost = Number(type.cost) || 0;
   if (cost <= 0) return { status: 400, body: { ok: false, error: 'invalid cost' } };

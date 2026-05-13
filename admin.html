@@ -625,6 +625,62 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
   grid-column: 1 / -1;
   display: flex; justify-content: flex-end; margin-top: 0.5rem;
 }
+/* 公開ページ非表示トグル */
+.gacha-type-field-toggle {
+  grid-column: 1 / -1;
+  margin-top: 0.5rem;
+}
+.visibility-toggle {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  cursor: pointer;
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.75);
+  user-select: none;
+}
+.visibility-toggle input { display: none; }
+.visibility-toggle-track {
+  position: relative;
+  width: 38px; height: 20px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 999px;
+  transition: background 0.2s, border-color 0.2s;
+}
+.visibility-toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  background: rgba(255,255,255,0.85);
+  border-radius: 50%;
+  transition: transform 0.2s, background 0.2s;
+}
+.visibility-toggle input:checked + .visibility-toggle-track {
+  background: rgba(214,85,122,0.55);
+  border-color: var(--pink);
+}
+.visibility-toggle input:checked + .visibility-toggle-track::after {
+  transform: translateX(18px);
+  background: #fff;
+}
+.visibility-toggle-label { letter-spacing: 0.02em; }
+/* 非表示状態のカードは薄く */
+.gacha-type-card-hidden {
+  opacity: 0.65;
+  border-left-color: var(--text-soft) !important;
+  background: rgba(255,255,255,0.015);
+}
+.gacha-hidden-badge {
+  display: inline-block;
+  font-size: 0.65rem; font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 0.25rem 0.6rem;
+  background: rgba(178,34,34,0.18);
+  color: #ff8a8a;
+  border: 1px solid rgba(178,34,34,0.5);
+  border-radius: 999px;
+  margin-bottom: 0.8rem;
+}
 .gacha-type-prizes-title {
   font-family: var(--font-en); font-size: 0.6rem; font-weight: 700;
   letter-spacing: 0.25em; color: rgba(255,255,255,0.5);
@@ -1271,7 +1327,7 @@ const RARITY_OPTIONS = ['N', 'R', 'SR', 'SSR', 'UR'];
 
 const DEFAULT_GACHA_TYPES = [
   {
-    id: 'yellow', name: 'イエローキャンディ', cost: 100, multiPullCount: 10, pityCount: 0, pityPrize: null, accent: '#f3c654',
+    id: 'yellow', name: 'イエローキャンディ', cost: 100, multiPullCount: 10, pityCount: 0, pityPrize: null, hidden: false, accent: '#f3c654',
     candyIcon: '🍬', candyIconType: 'emoji',
     prizes: [
       { id: 'y-n-1',  name: 'サンクスメッセージ', rarity: 'N',  icon: '💌', iconType: 'emoji', weight: 60, description: '管理者から感謝メッセージ' },
@@ -1280,7 +1336,7 @@ const DEFAULT_GACHA_TYPES = [
     ],
   },
   {
-    id: 'pink', name: 'ピンクキャンディ', cost: 1000, multiPullCount: 10, pityCount: 0, pityPrize: null, accent: '#e8638a',
+    id: 'pink', name: 'ピンクキャンディ', cost: 1000, multiPullCount: 10, pityCount: 0, pityPrize: null, hidden: false, accent: '#e8638a',
     candyIcon: '🍭', candyIconType: 'emoji',
     prizes: [
       { id: 'p-r-1',   name: 'ハート×1',       rarity: 'R',   icon: '💖', iconType: 'emoji', weight: 50, description: 'プレミアム景品×1個' },
@@ -1290,7 +1346,7 @@ const DEFAULT_GACHA_TYPES = [
     ],
   },
   {
-    id: 'blue', name: 'ブルーキャンディ', cost: 2000, multiPullCount: 10, pityCount: 0, pityPrize: null, accent: '#5fa8c8',
+    id: 'blue', name: 'ブルーキャンディ', cost: 2000, multiPullCount: 10, pityCount: 0, pityPrize: null, hidden: false, accent: '#5fa8c8',
     candyIcon: '🧁', candyIconType: 'emoji',
     prizes: [
       { id: 'b-sr-1',  name: 'ハート×5',        rarity: 'SR',  icon: '💖', iconType: 'emoji', weight: 50, description: 'プレミアム景品×5個' },
@@ -2167,6 +2223,8 @@ function setupSettings() {
       const cost = Math.max(1, parseInt(card.querySelector('[data-tf="cost"]').value || '0', 10) || 0);
       const multiPullInput = card.querySelector('[data-tf="multiPullCount"]');
       const multiPullCount = Math.max(0, parseInt((multiPullInput && multiPullInput.value) || '0', 10) || 0);
+      const hiddenInput = card.querySelector('[data-tf="hidden"]');
+      const hidden = !!(hiddenInput && hiddenInput.checked);
       const accent = card.querySelector('[data-tf="accent"]').value || '#e8638a';
       const candyCell = card.querySelector('.candy-icon-cell');
       const candyIcon = (candyCell && candyCell.dataset.iconValue) || '🍬';
@@ -2215,7 +2273,7 @@ function setupSettings() {
         }
       }
 
-      newTypes.push({ id, name, cost, multiPullCount, pityCount, pityPrize, accent, candyIcon, candyIconType, prizes });
+      newTypes.push({ id, name, cost, multiPullCount, pityCount, pityPrize, hidden, accent, candyIcon, candyIconType, prizes });
     });
     if (!ok) { showToast(errMsg || '入力に不備があります'); return; }
     if (newTypes.length === 0) { showToast('最低1つのガチャタイプが必要です'); return; }
@@ -2239,6 +2297,7 @@ function setupSettings() {
       name: '新しいガチャ',
       cost: 500,
       multiPullCount: 10,
+      hidden: false,
       accent: '#9b8ad6',
       candyIcon: '🍬',
       candyIconType: 'emoji',
@@ -2329,6 +2388,8 @@ function captureGachaTypesFromForm() {
     const cost = Math.max(1, parseInt(card.querySelector('[data-tf="cost"]').value || '0', 10) || 1);
     const multiPullInput = card.querySelector('[data-tf="multiPullCount"]');
     const multiPullCount = Math.max(0, parseInt((multiPullInput && multiPullInput.value) || '0', 10) || 0);
+    const hiddenInput = card.querySelector('[data-tf="hidden"]');
+    const hidden = !!(hiddenInput && hiddenInput.checked);
     const accent = card.querySelector('[data-tf="accent"]').value || '#e8638a';
     const candyCell = card.querySelector('.candy-icon-cell');
     const candyIcon = (candyCell && candyCell.dataset.iconValue) || '🍬';
@@ -2366,7 +2427,7 @@ function captureGachaTypesFromForm() {
         pityPrize = { id: `pity-${id}`, name: pName, rarity: pRarity, icon: pIconValue, iconType: pIconType, description: pDesc };
       }
     }
-    newTypes.push({ id, name, cost, multiPullCount, pityCount, pityPrize, accent, candyIcon, candyIconType, prizes });
+    newTypes.push({ id, name, cost, multiPullCount, pityCount, pityPrize, hidden, accent, candyIcon, candyIconType, prizes });
   });
   data.settings.gachaTypes = newTypes;
 }
@@ -2476,7 +2537,10 @@ function renderSettings() {
       `;
     });
 
+    const isHidden = !!t.hidden;
+    if (isHidden) card.classList.add('gacha-type-card-hidden');
     card.innerHTML = `
+      ${isHidden ? '<div class="gacha-hidden-badge">⛔ 公開ページで非表示</div>' : ''}
       <div class="gacha-type-head">
         <div class="candy-icon-cell rank-icon-cell" data-icon-value="${escapeHtml(t.candyIcon || '🍬')}">
           <button type="button" class="rank-icon-thumb${candyIsImg ? ' has-image' : ''}" data-act="upload" style="height:48px">
@@ -2502,6 +2566,13 @@ function renderSettings() {
           <div class="gacha-type-field">
             <label class="label-text">テーマカラー</label>
             <input class="input" data-tf="accent" type="color" value="${escapeHtml(t.accent || '#e8638a')}" style="height:42px;padding:0.2rem">
+          </div>
+          <div class="gacha-type-field gacha-type-field-toggle">
+            <label class="visibility-toggle">
+              <input type="checkbox" data-tf="hidden"${isHidden ? ' checked' : ''}>
+              <span class="visibility-toggle-track"></span>
+              <span class="visibility-toggle-label">公開ページで非表示にする</span>
+            </label>
           </div>
           <div class="gacha-type-actions">
             <button type="button" class="btn btn-danger btn-sm" data-act="remove-type"><span>このガチャを削除</span></button>

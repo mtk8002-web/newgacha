@@ -3179,7 +3179,7 @@ const POLL_INTERVAL_MS = 15000;  // 15秒ごとにサーバから取得（無料
 
 const DEFAULT_GACHA_TYPES = [
   {
-    id: 'yellow', name: 'イエローキャンディ', cost: 100, multiPullCount: 10, pityCount: 0, pityPrize: null, accent: '#f3c654',
+    id: 'yellow', name: 'イエローキャンディ', cost: 100, multiPullCount: 10, pityCount: 0, pityPrize: null, hidden: false, accent: '#f3c654',
     candyIcon: '🍬', candyIconType: 'emoji',
     prizes: [
       { id: 'y-n-1',  name: 'サンクスメッセージ', rarity: 'N',  icon: '💌', iconType: 'emoji', weight: 60, description: '管理者から感謝メッセージ' },
@@ -3188,7 +3188,7 @@ const DEFAULT_GACHA_TYPES = [
     ],
   },
   {
-    id: 'pink', name: 'ピンクキャンディ', cost: 1000, multiPullCount: 10, pityCount: 0, pityPrize: null, accent: '#e8638a',
+    id: 'pink', name: 'ピンクキャンディ', cost: 1000, multiPullCount: 10, pityCount: 0, pityPrize: null, hidden: false, accent: '#e8638a',
     candyIcon: '🍭', candyIconType: 'emoji',
     prizes: [
       { id: 'p-r-1',   name: 'ハート×1',       rarity: 'R',   icon: '💖', iconType: 'emoji', weight: 50, description: 'プレミアム景品×1個' },
@@ -3198,7 +3198,7 @@ const DEFAULT_GACHA_TYPES = [
     ],
   },
   {
-    id: 'blue', name: 'ブルーキャンディ', cost: 2000, multiPullCount: 10, pityCount: 0, pityPrize: null, accent: '#5fa8c8',
+    id: 'blue', name: 'ブルーキャンディ', cost: 2000, multiPullCount: 10, pityCount: 0, pityPrize: null, hidden: false, accent: '#5fa8c8',
     candyIcon: '🧁', candyIconType: 'emoji',
     prizes: [
       { id: 'b-sr-1',  name: 'ハート×5',        rarity: 'SR',  icon: '💖', iconType: 'emoji', weight: 50, description: 'プレミアム景品×5個' },
@@ -3594,7 +3594,8 @@ function setupPasswordModal() {
 
 function renderGachaDashboardHTML(data, me) {
   const avail = availableSpoon(me);
-  const types = data.settings.gachaTypes || [];
+  // 公開ページでは hidden=true のガチャは表示しない
+  const types = (data.settings.gachaTypes || []).filter(t => !t.hidden);
   const recent = (me.gachaHistory || []).slice().sort((a, b) => b.timestamp - a.timestamp).slice(0, 8);
 
   // 各キャンディのカード
@@ -3728,6 +3729,7 @@ async function doGachaPull(userId, gachaTypeId, count) {
         else if (msg === 'user not found') { alert('ユーザーが見つかりません。'); setCurrentUserId(null); }
         else if (msg === 'invalid count') alert('連数指定が不正です。');
         else if (msg === 'multi-pull not enabled') alert('このガチャでは連ガチャが無効化されています。');
+        else if (msg === 'gacha type hidden') alert('このガチャは現在非公開です。');
         else alert('エラー: ' + msg);
         await fetchRemoteData();
         renderAll();
@@ -3993,7 +3995,8 @@ function renderGachaPrizes(data) {
   const list = document.getElementById('rewardsList');
   if (!list) return;
   list.innerHTML = '';
-  const types = data.settings.gachaTypes || [];
+  // 公開ページでは hidden=true のガチャは景品一覧にも出さない
+  const types = (data.settings.gachaTypes || []).filter(t => !t.hidden);
   for (const t of types) {
     const wrap = document.createElement('div');
     wrap.className = 'prize-type-section';
