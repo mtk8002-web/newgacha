@@ -28,15 +28,22 @@
   --gold-bright: #d4ad55;
   --gold-deep: #8f7028;
   --gold-bg: #faf3e0;
+  /* 豪華絢爛：メタリックゴールド・グラデ */
+  --gold-linear: linear-gradient(135deg, #cfb070 0%, #b8923f 50%, #8a6d29 100%);
+  --gold-shiny: linear-gradient(135deg, #f9f2d1 0%, #cfb070 40%, #b8923f 50%, #8a6d29 70%, #5e4a1a 100%);
+  --gold-shiny-anim: linear-gradient(135deg, #f9f2d1 0%, #ffe9a8 20%, #cfb070 40%, #b8923f 50%, #8a6d29 70%, #f9f2d1 90%, #b8923f 100%);
   --silver: #9aa3ad;
   --silver-bright: #b6bdc6;
+  --silver-linear: linear-gradient(135deg, #d8dde3 0%, #9aa3ad 50%, #707880 100%);
   --bronze: #b06a2e;
   --bronze-bright: #c98648;
+  --bronze-linear: linear-gradient(135deg, #d99863 0%, #b06a2e 50%, #7a4516 100%);
   --danger: #b22222;
   --shadow-sm: 0 1px 2px rgba(31,27,22,0.05);
   --shadow-md: 0 6px 18px rgba(31,27,22,0.08);
   --shadow-soft: 0 8px 28px rgba(214,85,122,0.18);
   --shadow-gold: 0 8px 28px rgba(184,146,63,0.18);
+  --shadow-gold-heavy: 0 12px 40px rgba(184,146,63,0.3);
   /* 旧変数（互換用：暗系で参照していた箇所が残っていても破綻しないようマップ） */
   --navy: var(--text);
   --dark: var(--text);
@@ -65,14 +72,15 @@ body::before {
   pointer-events: none; opacity: 0.025;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-/* 微細なグリッド（さらに薄め） */
+/* 七宝（しっぽう）文様：和の格式を背景に重ねる */
 body::after {
   content: ''; position: fixed; inset: 0; z-index: 1; pointer-events: none;
   background-image:
-    linear-gradient(rgba(201,169,78,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(201,169,78,0.025) 1px, transparent 1px);
-  background-size: 80px 80px;
-  mask-image: radial-gradient(ellipse 80% 80% at 50% 20%, black 0%, transparent 100%);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%23b8923f' stroke-width='0.6'%3E%3Ccircle cx='0' cy='0' r='30'/%3E%3Ccircle cx='60' cy='0' r='30'/%3E%3Ccircle cx='0' cy='60' r='30'/%3E%3Ccircle cx='60' cy='60' r='30'/%3E%3Ccircle cx='30' cy='30' r='30'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 60px 60px;
+  opacity: 0.18;
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, black 0%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, black 0%, transparent 100%);
 }
 
 /* ===== カスタムカーソル（明背景なので mix-blend-mode は外す） ===== */
@@ -164,8 +172,36 @@ nav.top-nav a:hover { color: var(--pink); background: var(--pink-bg); }
 .hero-bg {
   position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse 60% 50% at 80% 30%, rgba(214,85,122,0.18) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 60% at 15% 80%, rgba(184,146,63,0.18) 0%, transparent 70%);
+    radial-gradient(ellipse 70% 55% at 80% 30%, rgba(214,85,122,0.22) 0%, transparent 70%),
+    radial-gradient(ellipse 55% 65% at 15% 80%, rgba(184,146,63,0.25) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 50% 110%, rgba(212,173,85,0.25) 0%, transparent 60%);
+}
+/* ヒーロー上部に薄く差し込む光芒 */
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -10%; left: 50%;
+  width: 80%; height: 60%;
+  transform: translateX(-50%);
+  background:
+    conic-gradient(from 200deg at 50% 100%,
+      transparent 0deg,
+      rgba(212,173,85,0.10) 8deg,
+      transparent 14deg,
+      transparent 30deg,
+      rgba(214,85,122,0.08) 35deg,
+      transparent 42deg,
+      transparent 60deg,
+      rgba(212,173,85,0.08) 65deg,
+      transparent 72deg,
+      transparent 100deg,
+      rgba(214,85,122,0.10) 105deg,
+      transparent 112deg);
+  filter: blur(2px);
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 60% 100% at 50% 100%, black 0%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 60% 100% at 50% 100%, black 0%, transparent 80%);
+  z-index: 0;
 }
 .hero-bg-image {
   position: absolute; inset: 0;
@@ -196,20 +232,38 @@ nav.top-nav a:hover { color: var(--pink); background: var(--pink-bg); }
 .hero-inner.loaded { opacity: 1; }
 
 .hero-label {
+  display: inline-flex; align-items: center; gap: 0.5rem;
   font-family: var(--font-en); font-size: 0.65rem; font-weight: 700;
   letter-spacing: 0.5em; color: var(--pink); margin-bottom: 0.4rem;
   text-transform: uppercase;
 }
+.hero-label::before,
+.hero-label::after {
+  content: ''; width: 22px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
 .hero-event-name {
   font-family: var(--font-jp); font-size: clamp(1.8rem, 4vw, 2.8rem);
   font-weight: 900; color: var(--text); line-height: 1.3;
-  letter-spacing: 0.05em; margin-bottom: 0.6rem;
+  letter-spacing: 0.15em; margin-bottom: 0.6rem;
+  text-shadow:
+    0 1px 2px rgba(31,27,22,0.15),
+    0 4px 18px rgba(184,146,63,0.18);
 }
 .hero-event-en {
   font-family: var(--font-serif); font-style: italic; font-weight: 300;
   font-size: clamp(2.2rem, 5vw, 3.6rem);
-  color: rgba(214,85,122,0.28); line-height: 1; margin-bottom: 1.4rem;
+  /* メタリックゴールド文字 */
+  background: var(--gold-shiny-anim);
+  background-size: 220% 220%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: rgba(184,146,63,0.55); /* フォールバック */
+  line-height: 1; margin-bottom: 1.4rem;
   letter-spacing: -0.01em;
+  filter: drop-shadow(0 2px 4px rgba(184,146,63,0.2));
+  animation: goldShine 8s linear infinite;
 }
 .countdown {
   display: flex; gap: 1rem; flex-wrap: wrap;
@@ -351,12 +405,23 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
 .section-label::before { content: ''; width: 30px; height: 1px; background: var(--pink); }
 .section-title-en {
   font-family: var(--font-serif); font-size: clamp(2.5rem, 5vw, 4rem);
-  font-weight: 300; font-style: italic; color: rgba(214,85,122,0.18);
+  font-weight: 300; font-style: italic;
+  /* メタリックゴールド文字（控えめ） */
+  background: var(--gold-linear);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: rgba(184,146,63,0.4); /* フォールバック */
+  opacity: 0.75;
   line-height: 1; margin-bottom: 0.4rem; letter-spacing: -0.01em;
+  filter: drop-shadow(0 1px 2px rgba(184,146,63,0.15));
 }
 .section-title {
   font-size: 1.7rem; font-weight: 900; line-height: 1.5;
-  margin-bottom: 2.4rem; letter-spacing: 0.06em; color: var(--text);
+  margin-bottom: 2.4rem; letter-spacing: 0.08em; color: var(--text);
+  text-shadow:
+    0 1px 2px rgba(31,27,22,0.12),
+    0 3px 10px rgba(184,146,63,0.1);
 }
 @media (max-width: 600px) { section { padding: 5rem 0; } }
 
@@ -390,13 +455,46 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
   background: currentColor; opacity: 0.7;
 }
-.podium-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.podium-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md), 0 0 24px rgba(184,146,63,0.25);
+}
 .podium-card.gold {
   color: var(--gold);
-  border-color: rgba(184,146,63,0.55);
-  background: linear-gradient(180deg, var(--gold-bg), var(--card));
+  /* メタリックゴールド枠：padding-box + border-box テクニックで角丸を保ちつつグラデ枠 */
+  border: 2.5px solid transparent;
+  background:
+    linear-gradient(180deg, var(--gold-bg), var(--card)) padding-box,
+    var(--gold-shiny-anim) border-box;
+  background-size: 100% 100%, 220% 220%;
   padding: 3rem 1.4rem 1.6rem;
-  box-shadow: var(--shadow-gold);
+  box-shadow: var(--shadow-gold-heavy);
+  animation: goldShine 6s linear infinite;
+}
+/* 金カードのトップアクセントもゴールドメタリックに */
+.podium-card.gold::before {
+  background: var(--gold-shiny);
+  height: 4px;
+  opacity: 1;
+}
+/* 1位カード背面の脈打つオーラ */
+.podium-card.gold::after {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(circle at center, rgba(212,173,85,0.45) 0%, rgba(184,146,63,0.18) 30%, transparent 65%);
+  filter: blur(20px);
+  z-index: -1;
+  pointer-events: none;
+  animation: goldAuraPulse 3.4s ease-in-out infinite;
+}
+@keyframes goldAuraPulse {
+  0%, 100% { opacity: 0.55; transform: scale(0.92); }
+  50%      { opacity: 1;    transform: scale(1.08); }
+}
+.podium-card.gold:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: var(--shadow-gold-heavy), 0 0 40px rgba(212,173,85,0.45);
 }
 .podium-card.silver {
   color: var(--silver);
@@ -456,9 +554,36 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
   margin-bottom: 0.5rem;
   line-height: 1.2;
 }
-.podium-card.gold .podium-rank { font-size: 1.85rem; color: var(--gold-deep); }
+.podium-card.gold .podium-rank {
+  font-size: 1.85rem;
+  /* メタリックゴールドの文字塗り */
+  background: var(--gold-shiny-anim);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--gold-deep); /* 非対応ブラウザ向けフォールバック */
+  filter: drop-shadow(0 1px 1px rgba(94,74,26,0.35));
+  animation: goldShine 5s linear infinite;
+}
+@keyframes goldShine {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
 .podium-card.silver .podium-rank { color: #5e6670; }
 .podium-card.bronze .podium-rank { color: #8a4d20; }
+/* podium 内のメダル絵文字を金カードでは光らせる */
+.podium-card.gold .podium-medal {
+  filter: drop-shadow(0 2px 6px rgba(212,173,85,0.6)) drop-shadow(0 0 12px rgba(184,146,63,0.4));
+}
+/* アイコン枠もメタリック化 */
+.podium-card.gold .podium-icon {
+  border: 3px solid transparent;
+  background:
+    linear-gradient(var(--bg-warm), var(--bg-warm)) padding-box,
+    var(--gold-shiny) border-box;
+  box-shadow: 0 0 30px rgba(184,146,63,0.45), inset 0 0 18px rgba(212,173,85,0.18);
+}
 .podium-rank .reward-mini {
   width: 28px; height: 28px;
   border-radius: 6px; overflow: hidden;
@@ -489,7 +614,15 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
   line-height: 1;
   text-transform: uppercase;
 }
-.podium-card.gold .podium-base { font-size: 2.2rem; }
+.podium-card.gold .podium-base {
+  font-size: 2.2rem;
+  background: var(--gold-shiny);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--gold-deep);
+  filter: drop-shadow(0 1px 1px rgba(94,74,26,0.3));
+}
 .podium-base .small {
   font-size: 0.55rem; letter-spacing: 0.3em;
   color: var(--text-soft); display: block;
@@ -1810,41 +1943,83 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
   font-family: var(--font-en); font-size: 1.1rem; color: var(--text);
 }
 .candy-pull-btn {
+  position: relative;
   width: 100%;
   font-family: var(--font-en); font-weight: 800;
   font-size: 0.85rem; letter-spacing: 0.1em;
-  padding: 0.8rem 1rem;
-  background: var(--accent);
+  padding: 0.85rem 1rem;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 100%, white 10%) 0%, var(--accent) 50%, color-mix(in srgb, var(--accent) 88%, black) 100%);
   color: #fff;
   border: none; border-radius: 999px;
-  cursor: pointer; transition: all 0.18s;
+  cursor: pointer;
+  transition: transform 0.18s, box-shadow 0.18s, filter 0.18s;
   white-space: nowrap;
+  overflow: hidden;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  box-shadow:
+    0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent),
+    inset 0 1px 0 rgba(255,255,255,0.5),
+    inset 0 -2px 0 rgba(0,0,0,0.12);
+}
+/* シマー（光の帯）：ホバーで横スウィープ */
+.candy-pull-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.55) 50%, transparent 65%);
+  transform: translateX(-120%);
+  pointer-events: none;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .candy-pull-btn:hover:not(:disabled) {
   filter: brightness(1.08);
-  transform: scale(1.02);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow:
+    0 8px 22px color-mix(in srgb, var(--accent) 45%, transparent),
+    inset 0 1px 0 rgba(255,255,255,0.6),
+    inset 0 -2px 0 rgba(0,0,0,0.15);
+}
+.candy-pull-btn:hover:not(:disabled)::before {
+  transform: translateX(120%);
+}
+.candy-pull-btn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.99);
 }
 .candy-pull-btn:disabled {
   background: var(--text-soft); cursor: not-allowed;
+  box-shadow: none;
+  text-shadow: none;
 }
-/* 連ガチャボタン（カード内2つ目） */
+/* 連ガチャボタン（カード内2つ目）：ゴールドメタリック */
 .candy-pull-btn-multi {
-  margin-top: 0.4rem;
-  background: transparent;
-  color: var(--accent);
-  border: 1.5px solid var(--accent);
+  margin-top: 0.45rem;
+  background: var(--gold-shiny);
+  background-size: 200% 200%;
+  background-position: 0% 50%;
+  color: #fff;
+  border: 1.5px solid transparent;
   font-size: 0.75rem;
-  padding: 0.6rem 0.8rem;
-  letter-spacing: 0.06em;
+  padding: 0.62rem 0.8rem;
+  letter-spacing: 0.08em;
+  text-shadow: 0 1px 2px rgba(94,74,26,0.5);
+  box-shadow:
+    0 4px 12px rgba(184,146,63,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.45);
 }
 .candy-pull-btn-multi:hover:not(:disabled) {
-  background: var(--accent);
-  color: #fff;
+  background-position: 100% 50%;
+  filter: brightness(1.08);
+  box-shadow:
+    0 8px 20px rgba(184,146,63,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.55);
 }
 .candy-pull-btn-multi:disabled {
-  background: transparent;
-  border-color: var(--border);
-  color: var(--text-soft);
+  background: var(--text-soft);
+  border-color: transparent;
+  color: var(--card);
+  text-shadow: none;
+  opacity: 0.6;
 }
 .candy-pull-btn-multi .multi-cost {
   font-size: 0.65rem;
@@ -2208,6 +2383,41 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
   text-align: center;
   box-shadow: 0 0 60px var(--rare), 0 0 120px rgba(255,255,255,0.15);
   animation: gachaCardIn 0.85s cubic-bezier(0.34,1.56,0.64,1), gachaCardShake 0.4s 0.85s ease-out;
+  overflow: hidden;
+}
+/* SSR / UR は背面に黄金/虹オーラ + メタリックボーダーを重ねる */
+.gacha-prize-card.rarity-ssr::before,
+.gacha-prize-card.rarity-ur::before {
+  content: '';
+  position: absolute; inset: -40%;
+  z-index: 0;
+  background: conic-gradient(from 0deg,
+    rgba(212,173,85,0.55), rgba(214,85,122,0.5), rgba(212,173,85,0.55),
+    rgba(255,233,168,0.6), rgba(212,173,85,0.55), rgba(214,85,122,0.5));
+  filter: blur(28px);
+  animation: gachaAuraRotate 6s linear infinite;
+  pointer-events: none;
+}
+.gacha-prize-card.rarity-ssr,
+.gacha-prize-card.rarity-ur {
+  border: 3px solid transparent;
+  background:
+    linear-gradient(var(--card), var(--card)) padding-box,
+    var(--gold-shiny-anim) border-box;
+  background-size: 100% 100%, 200% 200%;
+  animation:
+    gachaCardIn 0.85s cubic-bezier(0.34,1.56,0.64,1),
+    gachaCardShake 0.4s 0.85s ease-out,
+    goldShine 4s linear infinite;
+}
+/* 中身は重ね順を上に */
+.gacha-prize-rarity,
+.gacha-prize-icon,
+.gacha-prize-name,
+.gacha-prize-text { position: relative; z-index: 1; }
+@keyframes gachaAuraRotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 @keyframes gachaCardIn {
   0%   { opacity: 0; transform: scale(0.35) rotate(-18deg); }
