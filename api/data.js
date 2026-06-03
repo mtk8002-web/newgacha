@@ -40,6 +40,63 @@ function getDefaultData() {
       salvageRates: { N: 10, R: 25, SR: 50, SSR: 100, UR: 500 },
       // 限界突破の最大段階（0..max の合計 max+1 段階）
       limitBreakMax: 4,
+      // スロット機能の設定（運営が管理画面で編集可能）
+      slot: {
+        enabled: true,
+        cost: 100,                    // 1スピンの消費pt（ベット額）
+        payoutCurrency: 'gachaPoint', // 'gachaPoint' or 'pt'
+        autoSpinEnabled: true,
+        soundEnabled: true,
+        // 図柄マスタ
+        symbols: [
+          { id: 'seven',      name: '7',       icon: '7️⃣', iconType: 'emoji' },
+          { id: 'mushroom',   name: 'キノコ',  icon: '🍄', iconType: 'emoji' },
+          { id: 'bar',        name: 'BAR',     icon: '🅱️', iconType: 'emoji' },
+          { id: 'watermelon', name: 'スイカ',  icon: '🍉', iconType: 'emoji' },
+          { id: 'bell',       name: 'ベル',    icon: '🔔', iconType: 'emoji' },
+          { id: 'cherry',     name: 'チェリー', icon: '🍒', iconType: 'emoji' },
+          { id: 'replay',     name: 'リプレイ', icon: '🔄', iconType: 'emoji' },
+          { id: 'blank',      name: '－',      icon: '🍬', iconType: 'emoji' },
+        ],
+        // 子役。weight=出現比率、payout=払い出し量（小役のみ。BIG/REGはbonusで景品）
+        roles: [
+          { id: 'bar',        name: 'BAR',      symbolId: 'bar',        match: 'all3',  weight: 20,  payout: 500, tier: 'big'    },
+          { id: 'watermelon', name: 'スイカ',   symbolId: 'watermelon', match: 'all3',  weight: 60,  payout: 300, tier: 'big'    },
+          { id: 'bell',       name: 'ベル',     symbolId: 'bell',       match: 'all3',  weight: 150, payout: 100, tier: 'small'  },
+          { id: 'cherry',     name: 'チェリー', symbolId: 'cherry',     match: 'left1', weight: 200, payout: 40,  tier: 'small'  },
+          { id: 'replay',     name: 'リプレイ', symbolId: 'replay',     match: 'all3',  weight: 250, payout: 0,   tier: 'replay', replay: true },
+          { id: 'lose',       name: 'ハズレ',   symbolId: 'blank',      match: 'none',  weight: 320, payout: 0,   tier: 'lose'   },
+        ],
+        // ボーナス重複抽選（小役を契機に発生・景品が当たる）
+        bonus: {
+          enabled: true,
+          types: [
+            {
+              id: 'big', name: 'BIG BONUS', tellSymbolId: 'seven', color: '#d4ad55',
+              prizePool: [
+                { gachaTypeId: 'blue', prizeId: 'b-ur-1',  weight: 1  },
+                { gachaTypeId: 'blue', prizeId: 'b-ssr-2', weight: 10 },
+                { gachaTypeId: 'pink', prizeId: 'p-ssr-1', weight: 30 },
+              ],
+            },
+            {
+              id: 'reg', name: 'REG BONUS', tellSymbolId: 'mushroom', color: '#5fa8c8',
+              prizePool: [
+                { gachaTypeId: 'pink',   prizeId: 'p-sr-1', weight: 20 },
+                { gachaTypeId: 'yellow', prizeId: 'y-r-1',  weight: 30 },
+              ],
+            },
+          ],
+          // 各小役からのボーナス当選率（チャンス役は高め）
+          overlap: {
+            watermelon: { big: 0.010,   reg: 0.020   },
+            cherry:     { big: 0.005,   reg: 0.012   },
+            bell:       { big: 0.0003,  reg: 0.0006  },
+            replay:     { big: 0.0002,  reg: 0.0004  },
+            lose:       { big: 0.00015, reg: 0.0003  },
+          },
+        },
+      },
       // ガチャは複数種類を持てる。各タイプが独立した景品プールとコスト
       gachaTypes: [
         {
@@ -186,6 +243,16 @@ export default async function handler(req, res) {
               }
               if (old.iconPrize !== undefined) {
                 u.iconPrize = old.iconPrize;
+              }
+              // slot 機能のユーザー状態も /api/slot が真実の源。admin で巻き戻さない。
+              if (Array.isArray(old.slotHistory)) {
+                u.slotHistory = old.slotHistory;
+              }
+              if (old.slotStats && typeof old.slotStats === 'object') {
+                u.slotStats = old.slotStats;
+              }
+              if (typeof old.slotReplayPending === 'boolean') {
+                u.slotReplayPending = old.slotReplayPending;
               }
             }
             delete u.hasPassword;

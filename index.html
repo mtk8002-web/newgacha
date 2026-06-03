@@ -3248,6 +3248,487 @@ footer {
   .rank-jp { font-size: 0.78rem; }
   .rank-spoon { font-size: 0.78rem; }
 }
+
+/* ============================================================
+   スロット機能（パチスロ風）
+   ============================================================ */
+/* モード切替タブ：ガチャ / スロット */
+.play-mode-tabs {
+  display: flex;
+  gap: 0.4rem;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  padding: 4px;
+  max-width: 360px;
+  margin: 0 auto 1.6rem;
+  box-shadow: var(--shadow-sm);
+}
+.play-mode-tab {
+  flex: 1;
+  font-family: var(--font-jp); font-weight: 700;
+  font-size: 0.85rem; letter-spacing: 0.08em;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+}
+.play-mode-tab:hover { color: var(--pink); }
+.play-mode-tab.active {
+  background: linear-gradient(180deg, var(--pink-soft), var(--pink));
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(214,85,122,0.32);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.play-mode-tab .pm-icon { font-size: 1.05rem; }
+
+/* スロットセクション（ガチャと同じ和モダンの淡背景） */
+.slot-section {
+  background: linear-gradient(180deg, var(--bg-pink) 0%, var(--bg-warm) 100%);
+}
+.slot-dashboard {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* スロット筐体 */
+.slot-cabinet {
+  position: relative;
+  margin: 1.4rem auto;
+  max-width: 540px;
+  padding: 1.4rem 1.4rem 1.6rem;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, #2a2018 0%, #1a130d 60%, #100a06 100%);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  box-shadow:
+    var(--shadow-gold-heavy),
+    inset 0 1px 0 rgba(255,225,170,0.18),
+    inset 0 -2px 0 rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+.slot-cabinet::before {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  border-radius: 18px;
+  border: 2px solid transparent;
+  background: var(--gold-shiny-anim) border-box;
+  background-size: 220% 220%;
+  -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: goldShine 6s linear infinite;
+}
+.slot-cabinet-title {
+  text-align: center;
+  font-family: var(--font-en); font-weight: 800; letter-spacing: 0.35em;
+  font-size: 0.62rem;
+  color: var(--gold-bright);
+  margin-bottom: 0.7rem;
+  text-shadow: 0 0 8px rgba(212,173,85,0.5);
+}
+
+/* リール3つ */
+.slot-reels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  position: relative;
+  background: #0c0805;
+  border-radius: 12px;
+  padding: 0.6rem;
+  box-shadow:
+    inset 0 4px 14px rgba(0,0,0,0.7),
+    inset 0 0 0 2px rgba(212,173,85,0.35);
+}
+.slot-reel {
+  position: relative;
+  height: 168px;
+  background: linear-gradient(180deg, #fefcf3 0%, #f6ebd2 50%, #fefcf3 100%);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1.5px solid rgba(184,146,63,0.45);
+  box-shadow: inset 0 0 8px rgba(184,146,63,0.18);
+}
+.slot-reel-strip {
+  display: flex; flex-direction: column;
+  will-change: transform;
+}
+.slot-reel.spinning .slot-reel-strip {
+  animation: slot-spin 0.13s linear infinite;
+  filter: blur(1.4px);
+}
+.slot-reel.stopping .slot-reel-strip {
+  animation: slot-bounce 0.32s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes slot-spin {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-56px); }
+}
+@keyframes slot-bounce {
+  0%   { transform: translateY(8px); }
+  60%  { transform: translateY(-4px); }
+  100% { transform: translateY(0); }
+}
+.slot-symbol {
+  height: 56px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.4rem; line-height: 1;
+  user-select: none;
+  flex-shrink: 0;
+}
+.slot-symbol img { width: 44px; height: 44px; object-fit: contain; }
+
+/* リールの中央（揃いライン）に金ライン */
+.slot-reels::after {
+  content: '';
+  position: absolute;
+  left: 0.6rem; right: 0.6rem;
+  top: 50%; height: 2px; transform: translateY(-1px);
+  background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+  box-shadow: 0 0 12px rgba(212,173,85,0.7);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* 当たり：揃った図柄の枠が光る */
+.slot-reel.win {
+  border-color: var(--gold-bright);
+  box-shadow:
+    inset 0 0 14px rgba(212,173,85,0.55),
+    0 0 16px rgba(212,173,85,0.7);
+  animation: slot-win-pulse 0.65s ease-in-out 3;
+}
+.slot-reel.win-replay {
+  border-color: #5fa8c8;
+  box-shadow:
+    inset 0 0 14px rgba(95,168,200,0.55),
+    0 0 16px rgba(95,168,200,0.7);
+}
+@keyframes slot-win-pulse {
+  0%, 100% { filter: brightness(1); }
+  50%      { filter: brightness(1.35); }
+}
+
+/* テンパイ表示 */
+.slot-tempai {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.6);
+  font-family: var(--font-en); font-weight: 800;
+  font-size: 1.4rem; letter-spacing: 0.3em;
+  color: #fff;
+  background: rgba(214,85,122,0.85);
+  padding: 0.4rem 1.2rem;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3;
+  text-shadow: 0 0 8px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 18px rgba(214,85,122,0.6);
+  transition: opacity 0.25s, transform 0.25s;
+}
+.slot-cabinet.tempai .slot-tempai {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  animation: slot-tempai-pulse 0.6s ease-in-out infinite alternate;
+}
+@keyframes slot-tempai-pulse {
+  from { transform: translate(-50%, -50%) scale(1); }
+  to   { transform: translate(-50%, -50%) scale(1.06); }
+}
+
+/* スピン操作部 */
+.slot-controls {
+  margin-top: 1.2rem;
+  display: flex; flex-direction: column; gap: 0.7rem;
+  align-items: stretch;
+}
+.slot-spin-btn {
+  position: relative;
+  font-family: var(--font-en); font-weight: 800;
+  font-size: 1rem; letter-spacing: 0.16em;
+  padding: 1rem 1.2rem;
+  background:
+    linear-gradient(180deg, #f8c75b 0%, #d4ad55 40%, #8a6d29 100%);
+  color: #2a2018;
+  border: 2px solid #b8923f;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow:
+    0 6px 18px rgba(184,146,63,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.55),
+    inset 0 -2px 0 rgba(0,0,0,0.15);
+  text-shadow: 0 1px 1px rgba(255,255,255,0.4);
+  transition: filter 0.2s, transform 0.15s;
+  text-transform: uppercase;
+}
+.slot-spin-btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+.slot-spin-btn:active:not(:disabled) { transform: translateY(1px); }
+.slot-spin-btn:disabled {
+  background: var(--text-soft); color: var(--card); border-color: transparent;
+  box-shadow: none; text-shadow: none; cursor: not-allowed;
+  opacity: 0.6;
+}
+.slot-spin-btn.replay {
+  background: linear-gradient(180deg, #88c3dd 0%, #5fa8c8 40%, #2f6c8a 100%);
+  border-color: #5fa8c8; color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+.slot-spin-btn .spin-cost { font-size: 0.7rem; opacity: 0.85; margin-left: 0.5rem; }
+
+.slot-options {
+  display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; justify-content: center;
+  margin-top: 0.3rem;
+}
+.slot-option-chip {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  font-size: 0.72rem; font-weight: 700;
+  padding: 0.35rem 0.8rem;
+  background: var(--bg-warm);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.slot-option-chip:hover { color: var(--pink); border-color: var(--pink); }
+.slot-option-chip.active {
+  background: var(--pink); color: #fff; border-color: var(--pink);
+}
+.slot-option-chip:disabled { opacity: 0.4; cursor: not-allowed; }
+.slot-auto-count {
+  margin-left: 0.4rem;
+  font-family: var(--font-en); font-weight: 800;
+  color: var(--pink-deep);
+}
+
+/* 履歴 */
+.slot-history-title {
+  font-family: var(--font-en); font-size: 0.65rem;
+  letter-spacing: 0.3em; color: var(--text-muted);
+  margin: 1.6rem 0 0.6rem;
+  text-transform: uppercase;
+  display: flex; align-items: center; gap: 0.8rem;
+}
+.slot-history-title::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.slot-history-list {
+  display: flex; flex-direction: column; gap: 0.4rem;
+}
+.slot-history-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 0.7rem;
+  align-items: center;
+  padding: 0.55rem 0.85rem;
+  background: var(--bg-warm);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.82rem;
+}
+.slot-history-item.tier-big   { border-left: 4px solid var(--gold-bright); }
+.slot-history-item.tier-small { border-left: 4px solid var(--pink-soft); }
+.slot-history-item.tier-replay{ border-left: 4px solid #5fa8c8; }
+.slot-history-item.tier-lose  { border-left: 4px solid var(--text-soft); }
+.slot-history-item.has-bonus  {
+  border-color: var(--gold);
+  background: linear-gradient(90deg, var(--gold-bg), var(--bg-warm));
+}
+.shi-reels { font-size: 1.1rem; letter-spacing: 0.15em; }
+.shi-role  { font-weight: 700; color: var(--text); }
+.shi-bonus {
+  font-family: var(--font-en); font-weight: 800;
+  font-size: 0.7rem; letter-spacing: 0.15em;
+  color: #fff; background: linear-gradient(90deg, var(--pink-deep), var(--gold-deep));
+  padding: 0.15rem 0.55rem; border-radius: 999px;
+  margin-right: 0.4rem;
+}
+.shi-payout {
+  font-family: var(--font-en); font-weight: 800;
+  color: var(--gold-deep);
+}
+.shi-payout.zero { color: var(--text-soft); }
+.shi-payout .unit { font-size: 0.65rem; margin-left: 0.2rem; letter-spacing: 0.15em; }
+.shi-time { font-family: var(--font-en); font-size: 0.7rem; color: var(--text-muted); }
+
+/* ===== BIG / REG 突入演出（フルスクリーン） ===== */
+.slot-bonus-overlay {
+  position: fixed; inset: 0; z-index: 1500;
+  display: none;
+  align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.slot-bonus-overlay.show { display: flex; pointer-events: auto; }
+.sbo-bg {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at center, rgba(20,12,4,0.6) 0%, rgba(0,0,0,0.85) 70%);
+  animation: sboBgFade 0.4s ease-out;
+}
+.slot-bonus-overlay.kind-big .sbo-bg {
+  background: radial-gradient(circle at center, rgba(120,80,0,0.65) 0%, rgba(60,40,0,0.85) 60%, rgba(0,0,0,0.92) 100%);
+}
+.slot-bonus-overlay.kind-reg .sbo-bg {
+  background: radial-gradient(circle at center, rgba(0,80,120,0.55) 0%, rgba(10,40,60,0.85) 60%, rgba(0,0,0,0.92) 100%);
+}
+@keyframes sboBgFade { from { opacity: 0; } to { opacity: 1; } }
+
+.sbo-rays {
+  position: absolute; inset: -25%;
+  background: conic-gradient(from 0deg at 50% 50%,
+    rgba(212,173,85,0.7) 0deg, transparent 12deg,
+    rgba(212,173,85,0.5) 24deg, transparent 36deg,
+    rgba(212,173,85,0.8) 48deg, transparent 60deg,
+    rgba(212,173,85,0.45) 72deg, transparent 84deg);
+  filter: blur(1px);
+  animation: sboRays 4s linear infinite;
+  mix-blend-mode: screen;
+}
+.slot-bonus-overlay.kind-reg .sbo-rays {
+  background: conic-gradient(from 0deg at 50% 50%,
+    rgba(95,168,200,0.7) 0deg, transparent 12deg,
+    rgba(95,168,200,0.5) 24deg, transparent 36deg,
+    rgba(95,168,200,0.8) 48deg, transparent 60deg,
+    rgba(95,168,200,0.45) 72deg, transparent 84deg);
+}
+@keyframes sboRays {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.sbo-flash {
+  position: absolute; inset: 0;
+  background: #fff;
+  opacity: 0;
+  animation: sboFlash 0.18s ease-out 4;
+}
+@keyframes sboFlash {
+  0%, 100% { opacity: 0; }
+  50%      { opacity: 0.9; }
+}
+
+.sbo-content {
+  position: relative;
+  text-align: center;
+  z-index: 3;
+  animation: sboPop 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+@keyframes sboPop {
+  from { transform: scale(0.4); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.sbo-tell-symbols {
+  font-size: 5.5rem; line-height: 1;
+  letter-spacing: 0.15em;
+  filter: drop-shadow(0 0 24px rgba(212,173,85,0.9));
+  margin-bottom: 0.8rem;
+  animation: sboShake 0.16s ease-in-out 5;
+}
+.slot-bonus-overlay.kind-reg .sbo-tell-symbols {
+  filter: drop-shadow(0 0 24px rgba(95,168,200,0.9));
+}
+@keyframes sboShake {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(-4px, 2px); }
+  40% { transform: translate(4px, -2px); }
+  60% { transform: translate(-3px, 3px); }
+  80% { transform: translate(3px, -3px); }
+}
+.sbo-title {
+  font-family: var(--font-en); font-weight: 800;
+  font-size: clamp(2.4rem, 8vw, 5rem);
+  letter-spacing: 0.15em;
+  background: var(--gold-shiny-anim);
+  background-size: 220% 220%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--gold-bright);
+  animation: goldShine 2s linear infinite;
+  text-shadow: 0 0 40px rgba(212,173,85,0.6);
+  margin-bottom: 0.3rem;
+}
+.slot-bonus-overlay.kind-reg .sbo-title {
+  background: linear-gradient(135deg, #c9eaff, #88c3dd 50%, #2f6c8a 100%);
+  background-size: 220% 220%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 40px rgba(95,168,200,0.6);
+}
+.sbo-subtitle {
+  font-family: var(--font-jp); font-weight: 900;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  color: #fff;
+  letter-spacing: 0.3em;
+  margin-top: 0.4rem;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+}
+
+/* 紙吹雪・コイン */
+.sbo-particles {
+  position: absolute; inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.sbo-particle {
+  position: absolute;
+  top: -40px;
+  font-size: 1.6rem;
+  animation: sboFall linear forwards;
+  will-change: transform;
+}
+@keyframes sboFall {
+  to { transform: translateY(110vh) rotate(720deg); opacity: 0.85; }
+}
+
+/* シェイク（body 全体を軽く振る） */
+@keyframes screenShake {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(-3px, 2px); }
+  40% { transform: translate(3px, -3px); }
+  60% { transform: translate(-2px, 3px); }
+  80% { transform: translate(2px, -2px); }
+}
+body.slot-shake { animation: screenShake 0.18s ease-in-out 4; }
+
+/* reduce-motion 配慮 */
+@media (prefers-reduced-motion: reduce) {
+  .slot-reel.spinning .slot-reel-strip,
+  .slot-reel.stopping .slot-reel-strip,
+  .slot-reel.win,
+  .sbo-rays, .sbo-flash, .sbo-tell-symbols,
+  body.slot-shake,
+  .slot-cabinet::before {
+    animation: none !important;
+  }
+  .sbo-particle { display: none; }
+  .slot-cabinet.tempai .slot-tempai { animation: none !important; }
+}
+
+/* スマホ調整 */
+@media (max-width: 600px) {
+  .slot-cabinet { padding: 1rem 0.7rem 1.2rem; }
+  .slot-reels { padding: 0.4rem; gap: 0.35rem; }
+  .slot-reel { height: 144px; }
+  .slot-symbol { height: 48px; font-size: 2rem; }
+  @keyframes slot-spin {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-48px); }
+  }
+  .slot-spin-btn { font-size: 0.88rem; padding: 0.85rem 1rem; }
+  .sbo-tell-symbols { font-size: 4rem; }
+  .play-mode-tabs { max-width: 100%; }
+}
 </style>
 </head>
 <body>
@@ -3260,7 +3741,8 @@ footer {
   <nav class="top-nav">
     <a href="#hero">HOME</a>
     <a href="#ranking">RANKING</a>
-    <a href="#gacha">GACHA</a>
+    <a href="#gacha" data-mode-link="gacha">GACHA</a>
+    <a href="#slot" data-mode-link="slot">SLOT</a>
     <a href="#gallery">GALLERY</a>
     <a href="#trade">TRADE</a>
     <a href="#timeline">FEED</a>
@@ -3376,6 +3858,29 @@ footer {
   <div class="gpr-pulse gpr-pulse-3"></div>
   <div class="gpr-rarity" id="gpRarityText"></div>
   <div class="gpr-flash"></div>
+</div>
+
+<!-- ===== スロット ===== -->
+<section class="slot-section" id="slot">
+  <div class="container">
+    <div class="section-label">Slot</div>
+    <div class="section-title-en" id="slotSectionTitleEn">Lucky Slot</div>
+    <h2 class="section-title" id="slotSectionTitle">スロット</h2>
+    <div id="slotPanel"></div>
+  </div>
+</section>
+
+<!-- スロット BIG/REG 突入演出（フルスクリーン） -->
+<div class="slot-bonus-overlay" id="slotBonusOverlay">
+  <div class="sbo-bg"></div>
+  <div class="sbo-rays"></div>
+  <div class="sbo-flash"></div>
+  <div class="sbo-particles" id="slotBonusParticles"></div>
+  <div class="sbo-content">
+    <div class="sbo-tell-symbols" id="slotBonusTellSymbols">7️⃣7️⃣7️⃣</div>
+    <div class="sbo-title" id="slotBonusTitle">BIG BONUS</div>
+    <div class="sbo-subtitle" id="slotBonusSubtitle">大当たり</div>
+  </div>
 </div>
 
 <!-- ===== ギャラリー（所持景品） ===== -->
@@ -3561,10 +4066,24 @@ function normalizeData(parsed) {
   if (!Array.isArray(parsed.settings.gachaTypes) || parsed.settings.gachaTypes.length === 0) {
     parsed.settings.gachaTypes = DEFAULT_GACHA_TYPES;
   }
+  // slot 設定が未配信なら最低限のデフォルト（無効状態で落ちないように）
+  if (!parsed.settings.slot || typeof parsed.settings.slot !== 'object') {
+    parsed.settings.slot = {
+      enabled: false, cost: 100, payoutCurrency: 'gachaPoint',
+      autoSpinEnabled: true, soundEnabled: true,
+      symbols: SLOT_DEFAULT_SYMBOLS, roles: [], bonus: { enabled: false, types: [], overlap: {} },
+    };
+  }
   if (!Array.isArray(parsed.users)) parsed.users = [];
   for (const u of parsed.users) {
     if (typeof u.spentSpoon !== 'number') u.spentSpoon = 0;
     if (!Array.isArray(u.gachaHistory)) u.gachaHistory = [];
+    // スロット用フィールド（後方互換）
+    if (!Array.isArray(u.slotHistory)) u.slotHistory = [];
+    if (!u.slotStats || typeof u.slotStats !== 'object') {
+      u.slotStats = { spins: 0, totalBet: 0, totalPayout: 0, bonusBig: 0, bonusReg: 0, maxPayout: 0 };
+    }
+    if (typeof u.slotReplayPending !== 'boolean') u.slotReplayPending = false;
   }
   return parsed;
 }
@@ -3738,11 +4257,11 @@ function renderGacha(data) {
   if (!panel) return;
   const me = getCurrentUser(data);
   if (!me) {
-    panel.innerHTML = renderGachaLoginHTML(data);
+    panel.innerHTML = renderPlayModeTabsHtml() + renderGachaLoginHTML(data);
     setupGachaLogin(data);
     return;
   }
-  panel.innerHTML = renderGachaDashboardHTML(data, me);
+  panel.innerHTML = renderPlayModeTabsHtml() + renderGachaDashboardHTML(data, me);
   setupGachaDashboard(data, me);
 }
 
@@ -4231,6 +4750,653 @@ function setupGachaModal() {
   });
 }
 
+// ============================================================
+// プレイモード切替（ガチャ / スロット）
+// ============================================================
+const PLAY_MODE_KEY = 'mtk_play_mode'; // 'gacha' | 'slot'
+function getPlayMode() {
+  const v = localStorage.getItem(PLAY_MODE_KEY);
+  return v === 'slot' ? 'slot' : 'gacha';
+}
+function setPlayMode(mode) {
+  const m = mode === 'slot' ? 'slot' : 'gacha';
+  localStorage.setItem(PLAY_MODE_KEY, m);
+  applyPlayMode();
+}
+// セクションの表示・非表示を切り替え。タブのアクティブ状態も更新。
+function applyPlayMode() {
+  const mode = getPlayMode();
+  const gacha = document.getElementById('gacha');
+  const slot  = document.getElementById('slot');
+  if (gacha) gacha.style.display = mode === 'gacha' ? '' : 'none';
+  if (slot)  slot.style.display  = mode === 'slot'  ? '' : 'none';
+  document.querySelectorAll('.play-mode-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+}
+// モードタブのHTML（ガチャ・スロットの両セクション先頭に挿入）
+function renderPlayModeTabsHtml() {
+  const mode = getPlayMode();
+  return `
+    <div class="play-mode-tabs" role="tablist" aria-label="プレイモード">
+      <button class="play-mode-tab${mode === 'gacha' ? ' active' : ''}" type="button" data-mode="gacha" role="tab">
+        <span class="pm-icon">🎰</span>ガチャ
+      </button>
+      <button class="play-mode-tab${mode === 'slot' ? ' active' : ''}" type="button" data-mode="slot" role="tab">
+        <span class="pm-icon">🎲</span>スロット
+      </button>
+    </div>
+  `;
+}
+function setupPlayModeTabs() {
+  document.body.addEventListener('click', (e) => {
+    const tab = e.target.closest('.play-mode-tab');
+    if (!tab) return;
+    setPlayMode(tab.dataset.mode);
+    // 切替先セクションへ滑らかにスクロール
+    const target = document.getElementById(tab.dataset.mode === 'slot' ? 'slot' : 'gacha');
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  // ナビの "GACHA" / "SLOT" クリックでもモードを揃える
+  document.querySelectorAll('[data-mode-link]').forEach(a => {
+    a.addEventListener('click', () => {
+      setPlayMode(a.dataset.modeLink);
+    });
+  });
+}
+
+// ============================================================
+// スロット画面
+// ============================================================
+// 図柄・役定義のデフォルト（サーバー未配信時のフォールバック）
+const SLOT_DEFAULT_SYMBOLS = [
+  { id: 'seven',      icon: '7️⃣' },
+  { id: 'mushroom',   icon: '🍄' },
+  { id: 'bar',        icon: '🅱️' },
+  { id: 'watermelon', icon: '🍉' },
+  { id: 'bell',       icon: '🔔' },
+  { id: 'cherry',     icon: '🍒' },
+  { id: 'replay',     icon: '🔄' },
+  { id: 'blank',      icon: '🍬' },
+];
+
+function getSlotSettings(data) {
+  const s = (data && data.settings && data.settings.slot) || {};
+  return {
+    enabled: s.enabled !== false,
+    cost: Math.max(0, Math.floor(Number(s.cost) || 100)),
+    payoutCurrency: s.payoutCurrency === 'pt' ? 'pt' : 'gachaPoint',
+    autoSpinEnabled: s.autoSpinEnabled !== false,
+    soundEnabled: s.soundEnabled !== false,
+    symbols: (Array.isArray(s.symbols) && s.symbols.length > 0) ? s.symbols : SLOT_DEFAULT_SYMBOLS,
+    roles: Array.isArray(s.roles) ? s.roles : [],
+    bonus: s.bonus || { enabled: false, types: [], overlap: {} },
+  };
+}
+
+// 図柄 id → 表示HTML
+function renderSlotSymbolHtml(symbolId, slotSettings) {
+  const sym = (slotSettings.symbols || []).find(s => s.id === symbolId);
+  const icon = sym ? sym.icon : '🍬';
+  if (typeof icon === 'string' && icon.startsWith('data:image')) {
+    return `<img src="${escapeHtml(icon)}" alt="">`;
+  }
+  return escapeHtml(icon || '🍬');
+}
+
+// 各リールの初期ストリップ（縦に図柄を並べた長いリスト）
+// リール高=168px / 図柄高=56px → 可視3枠（index 0/1/2 が見える）
+// 金ライン(50%)＝84px に重なる図柄は index 1 なので、当たり図柄はそこに置く
+function buildReelStripHtml(slotSettings, startSymbolId) {
+  const syms = slotSettings.symbols || SLOT_DEFAULT_SYMBOLS;
+  const list = [];
+  for (let i = 0; i < 5; i++) {
+    const sid = i === 1 ? (startSymbolId || syms[0].id) : syms[(i * 3 + 2) % syms.length].id;
+    list.push(`<div class="slot-symbol">${renderSlotSymbolHtml(sid, slotSettings)}</div>`);
+  }
+  return list.join('');
+}
+
+// オートスピン状態
+const slotAutoState = { active: false, remaining: 0, mode: 'count' /* 'count' | 'untilEmpty' */, count: 10 };
+let slotSpinInFlight = false;
+let slotSoundEnabled = true;
+
+function renderSlot(data) {
+  const panel = document.getElementById('slotPanel');
+  if (!panel) return;
+  // スピン中は DOM を作り直さない（リール演出が壊れる）
+  if (slotSpinInFlight && panel.childElementCount > 0) return;
+  const me = getCurrentUser(data);
+  // ガチャと同じく未ログインはログイン誘導
+  if (!me) {
+    panel.innerHTML = `
+      ${renderPlayModeTabsHtml()}
+      <div class="gacha-login">
+        <h3>ログインしてスロットを回そう</h3>
+        <p>名前を選んでログインすると、スロットを回せます。<br>
+          ※ ユーザーの新規登録は管理者のみ可能です。</p>
+        <p style="font-size:0.78rem">GACHA タブからログインしてください。</p>
+      </div>
+    `;
+    return;
+  }
+  panel.innerHTML = renderSlotDashboardHTML(data, me);
+  setupSlotDashboard(data, me);
+}
+
+function renderSlotDashboardHTML(data, me) {
+  const slot = getSlotSettings(data);
+  const avail = availableSpoon(me);
+  const gachaPoint = Math.max(0, parseInt(me.gachaPoint || 0, 10) || 0);
+  const stats = me.slotStats || { spins: 0, totalBet: 0, totalPayout: 0, bonusBig: 0, bonusReg: 0, maxPayout: 0 };
+  const history = Array.isArray(me.slotHistory) ? me.slotHistory.slice(0, 8) : [];
+  const replayPending = !!me.slotReplayPending;
+  const balance = (stats.totalPayout || 0) - (stats.totalBet || 0);
+
+  // 初期表示の出目（履歴の最新があればそれを、なければ blank, bell, bar）
+  const lastReels = (me.slotHistory && me.slotHistory[0] && Array.isArray(me.slotHistory[0].reels))
+    ? me.slotHistory[0].reels
+    : ['blank', 'bell', 'bar'];
+
+  const reelsHtml = [0,1,2].map(i => `
+    <div class="slot-reel" data-reel-index="${i}">
+      <div class="slot-reel-strip">${buildReelStripHtml(slot, lastReels[i])}</div>
+    </div>
+  `).join('');
+
+  // ボタン表示
+  let spinLabel;
+  let spinClass = 'slot-spin-btn';
+  let disabled = false;
+  if (!slot.enabled) {
+    spinLabel = 'スロットは停止中';
+    disabled = true;
+  } else if (replayPending) {
+    spinLabel = `🔄 REPLAY（無料）`;
+    spinClass += ' replay';
+  } else if (avail < slot.cost) {
+    spinLabel = `pt不足`;
+    disabled = true;
+  } else {
+    spinLabel = `SPIN <span class="spin-cost">-${fmt(slot.cost)}pt</span>`;
+  }
+
+  // 履歴行
+  const histHtml = history.length === 0
+    ? `<div style="text-align:center;padding:1rem;color:var(--text-muted);font-size:0.8rem">まだ回していません</div>`
+    : history.map(h => {
+        const reelsStr = (h.reels || []).map(sid => {
+          const sym = (slot.symbols || []).find(s => s.id === sid);
+          const ic = sym ? sym.icon : '🍬';
+          return (typeof ic === 'string' && ic.startsWith('data:image')) ? '🎴' : ic;
+        }).join(' ');
+        const payCur = h.payCurrency === 'gachaPoint' ? 'GP' : 'pt';
+        const tier = (h.bonus ? 'has-bonus' : '');
+        const tierCls = h.bonus
+          ? 'tier-big'
+          : (h.isReplay ? 'tier-replay' : (h.payout > 0 ? (h.payout >= 300 ? 'tier-big' : 'tier-small') : 'tier-lose'));
+        return `
+          <div class="slot-history-item ${tierCls} ${tier}">
+            <div class="shi-reels">${escapeHtml(reelsStr || '— — —')}</div>
+            <div>
+              ${h.bonus ? `<span class="shi-bonus">${escapeHtml(h.bonus.typeName || h.bonus.typeId)}</span>` : ''}
+              <span class="shi-role">${escapeHtml(h.roleName || h.roleId || '—')}</span>
+              ${h.bonus ? ` → <span style="color:var(--gold-deep);font-weight:700">${escapeHtml(h.bonus.prizeName || '景品')}</span>` : ''}
+            </div>
+            <div class="shi-payout${h.payout > 0 ? '' : ' zero'}">
+              ${h.payout > 0 ? `+${fmt(h.payout)}<span class="unit">${payCur}</span>` : '—'}
+            </div>
+            <div class="shi-time">${relativeTime(h.timestamp)}</div>
+          </div>
+        `;
+      }).join('');
+
+  // 自動スピン UI（slot.autoSpinEnabled の時のみ）
+  const autoHtml = slot.autoSpinEnabled ? `
+    <div class="slot-options">
+      <button type="button" class="slot-option-chip${slotAutoState.active ? ' active' : ''}" id="slotAutoToggle">
+        🔁 オートスピン${slotAutoState.active ? `<span class="slot-auto-count">${slotAutoState.remaining}</span>` : ''}
+      </button>
+      <button type="button" class="slot-option-chip" data-auto-count="10">10回</button>
+      <button type="button" class="slot-option-chip" data-auto-count="50">50回</button>
+      <button type="button" class="slot-option-chip" data-auto-count="-1">pt切れまで</button>
+      <button type="button" class="slot-option-chip${slotSoundEnabled ? ' active' : ''}" id="slotSoundToggle">
+        ${slotSoundEnabled ? '🔊 SOUND' : '🔇 MUTE'}
+      </button>
+    </div>
+  ` : `
+    <div class="slot-options">
+      <button type="button" class="slot-option-chip${slotSoundEnabled ? ' active' : ''}" id="slotSoundToggle">
+        ${slotSoundEnabled ? '🔊 SOUND' : '🔇 MUTE'}
+      </button>
+    </div>
+  `;
+
+  return `
+    ${renderPlayModeTabsHtml()}
+    <div class="slot-dashboard">
+      <div class="gacha-stat-grid">
+        <div class="gacha-stat highlight">
+          <div class="label">使える pt</div>
+          <div class="value" id="slotStatPt">${fmtCap(avail)}<span class="unit">PT</span></div>
+        </div>
+        <div class="gacha-stat gp-stat">
+          <div class="label">ガチャ pt</div>
+          <div class="value" id="slotStatGp">${fmtCap(gachaPoint)}<span class="unit">GP</span></div>
+        </div>
+        <div class="gacha-stat">
+          <div class="label">総回転数</div>
+          <div class="value">${fmt(stats.spins || 0)}<span class="unit">回</span></div>
+        </div>
+        <div class="gacha-stat">
+          <div class="label">収支(GP/pt)</div>
+          <div class="value" style="color:${balance >= 0 ? 'var(--gold-deep)' : 'var(--danger)'}">
+            ${balance >= 0 ? '+' : ''}${fmt(balance)}
+          </div>
+        </div>
+        <div class="gacha-stat">
+          <div class="label">BIG / REG</div>
+          <div class="value">${stats.bonusBig || 0} / ${stats.bonusReg || 0}</div>
+        </div>
+        <div class="gacha-stat">
+          <div class="label">最大払い出し</div>
+          <div class="value">${fmt(stats.maxPayout || 0)}</div>
+        </div>
+      </div>
+
+      <div class="slot-cabinet" id="slotCabinet">
+        <div class="slot-cabinet-title">★ LUCKY SLOT ★</div>
+        <div class="slot-reels" id="slotReels">
+          ${reelsHtml}
+          <div class="slot-tempai">TEMPAI!</div>
+        </div>
+        <div class="slot-controls">
+          <button type="button" id="slotSpinBtn" class="${spinClass}"${disabled ? ' disabled' : ''}>
+            ${spinLabel}
+          </button>
+          ${autoHtml}
+        </div>
+      </div>
+
+      <div class="slot-history-title">最近のスピン</div>
+      <div class="slot-history-list">${histHtml}</div>
+    </div>
+  `;
+}
+
+function setupSlotDashboard(data, me) {
+  const spinBtn = document.getElementById('slotSpinBtn');
+  if (spinBtn) {
+    spinBtn.addEventListener('click', () => {
+      if (slotSpinInFlight) return;
+      doSlotSpin(me.id, { free: !!me.slotReplayPending });
+    });
+  }
+  // オートスピン
+  const autoToggle = document.getElementById('slotAutoToggle');
+  if (autoToggle) {
+    autoToggle.addEventListener('click', () => {
+      if (slotAutoState.active) {
+        slotAutoState.active = false;
+        slotAutoState.remaining = 0;
+      } else {
+        slotAutoState.active = true;
+        slotAutoState.remaining = slotAutoState.count > 0 ? slotAutoState.count : -1;
+        // 即時1回スピン開始
+        setTimeout(() => {
+          if (slotAutoState.active && !slotSpinInFlight) {
+            const cur = getCurrentUser(loadData());
+            if (cur) doSlotSpin(cur.id, { free: !!cur.slotReplayPending });
+          }
+        }, 60);
+      }
+      renderAll();
+    });
+  }
+  document.querySelectorAll('[data-auto-count]').forEach(b => {
+    b.addEventListener('click', () => {
+      slotAutoState.count = parseInt(b.dataset.autoCount, 10) || 10;
+      slotAutoState.mode = slotAutoState.count > 0 ? 'count' : 'untilEmpty';
+      // UI に反映
+      document.querySelectorAll('[data-auto-count]').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+    });
+  });
+  // サウンド
+  const sndToggle = document.getElementById('slotSoundToggle');
+  if (sndToggle) {
+    sndToggle.addEventListener('click', () => {
+      slotSoundEnabled = !slotSoundEnabled;
+      renderAll();
+    });
+  }
+}
+
+// /api/slot を呼んでアニメ → 結果反映
+async function doSlotSpin(userId, opts) {
+  if (slotSpinInFlight) return;
+  slotSpinInFlight = true;
+  const spinBtn = document.getElementById('slotSpinBtn');
+  if (spinBtn) { spinBtn.disabled = true; spinBtn.textContent = '抽選中…'; }
+
+  // 先に回転アニメを開始（結果はサーバから受け取って停止時に反映）
+  startReelSpin();
+  slotSE('spin');
+
+  // アニメ完了まで slotSpinInFlight を保持するための分岐フラグ
+  // （アニメ中に setupSync の renderAll が走るとリールDOMが壊れるため）
+  let animationStarted = false;
+  // 503 リトライ最大3回（既存ガチャと同じ規約）
+  const maxAttempts = 3;
+  let attempt = 0;
+  try {
+    while (attempt < maxAttempts) {
+      attempt++;
+      const res = await fetch('/api/slot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, free: !!(opts && opts.free) }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (res.status === 503 && json && json.error === 'busy, retry') {
+        if (attempt < maxAttempts) {
+          if (spinBtn) spinBtn.textContent = `混雑中…再試行 ${attempt}/${maxAttempts - 1}`;
+          await new Promise(r => setTimeout(r, 400 * attempt));
+          continue;
+        }
+        stopReelSpinImmediately();
+        alert('サーバー混雑中です。少し時間を置いてから再度お試しください。');
+        slotAutoState.active = false;
+        return;
+      }
+      if (!res.ok || !json.ok) {
+        stopReelSpinImmediately();
+        const msg = (json && json.error) || '抽選に失敗しました';
+        if (msg === 'not enough pt') alert('pt が足りません。');
+        else if (msg === 'slot disabled') alert('スロットは現在停止中です。');
+        else if (msg === 'user not found') { alert('ユーザーが見つかりません。'); setCurrentUserId(null); }
+        else alert('エラー: ' + msg);
+        slotAutoState.active = false;
+        await fetchRemoteData();
+        renderAll();
+        return;
+      }
+      // 成功：結果をアニメに反映（アニメ完了までフラグを保持）
+      await fetchRemoteData();
+      const result = json.result || {};
+      animationStarted = true;
+      animateSlot(result, () => {
+        slotSpinInFlight = false;
+        renderAll();
+        scheduleAutoSpinNext();
+      });
+      return;
+    }
+  } catch (e) {
+    stopReelSpinImmediately();
+    alert('通信エラー：' + (e.message || e));
+    slotAutoState.active = false;
+  } finally {
+    // アニメ開始済みなら、フラグはアニメ完了コールバックがクリアする
+    if (!animationStarted) slotSpinInFlight = false;
+  }
+}
+
+function startReelSpin() {
+  document.querySelectorAll('#slotReels .slot-reel').forEach(r => {
+    r.classList.remove('win', 'win-replay', 'stopping');
+    r.classList.add('spinning');
+  });
+  const cab = document.getElementById('slotCabinet');
+  if (cab) cab.classList.remove('tempai');
+}
+function stopReelSpinImmediately() {
+  document.querySelectorAll('#slotReels .slot-reel').forEach(r => {
+    r.classList.remove('spinning', 'stopping');
+  });
+}
+
+// 左→中→右の順に止める。中・右が同じ高揚役の時テンパイ演出。
+async function animateSlot(result, onDone) {
+  const data = loadData();
+  const slot = getSlotSettings(data);
+  const reels = Array.isArray(result.reels) ? result.reels : ['blank', 'bell', 'bar'];
+  const role = result.role || { id: 'lose', tier: 'lose' };
+  const bonus = result.bonus || null;
+  const reelEls = Array.from(document.querySelectorAll('#slotReels .slot-reel'));
+
+  // ストリップを結果に合わせて差し替えるヘルパ
+  function setReelSymbol(reelEl, symbolId) {
+    const strip = reelEl.querySelector('.slot-reel-strip');
+    if (!strip) return;
+    strip.innerHTML = buildReelStripHtml(slot, symbolId);
+  }
+
+  // 左を止める
+  await new Promise(r => setTimeout(r, 480));
+  setReelSymbol(reelEls[0], reels[0]);
+  reelEls[0].classList.remove('spinning');
+  reelEls[0].classList.add('stopping');
+  slotSE('stop');
+
+  // 中央を止める
+  await new Promise(r => setTimeout(r, 320));
+  setReelSymbol(reelEls[1], reels[1]);
+  reelEls[1].classList.remove('spinning');
+  reelEls[1].classList.add('stopping');
+  slotSE('stop');
+
+  // テンパイ判定：左と中央が同じ高揚役（bar/watermelon/seven/mushroom）
+  const TEMPAI_SYMBOLS = new Set(['bar', 'watermelon', 'seven', 'mushroom']);
+  const isTempai = reels[0] === reels[1] && TEMPAI_SYMBOLS.has(reels[0]);
+  if (isTempai) {
+    const cab = document.getElementById('slotCabinet');
+    if (cab) cab.classList.add('tempai');
+    slotSE('tempai');
+    // 右リールを少し長めに回す
+    await new Promise(r => setTimeout(r, 900));
+    if (cab) cab.classList.remove('tempai');
+  } else {
+    await new Promise(r => setTimeout(r, 320));
+  }
+
+  // 右を止める
+  setReelSymbol(reelEls[2], reels[2]);
+  reelEls[2].classList.remove('spinning');
+  reelEls[2].classList.add('stopping');
+  slotSE('stop');
+
+  // 当たり枠ライト
+  await new Promise(r => setTimeout(r, 240));
+  reelEls.forEach(r => r.classList.remove('stopping'));
+
+  // 揃い判定（演出用）
+  const allEqual = reels[0] === reels[1] && reels[1] === reels[2];
+  if (bonus) {
+    // BIG/REG 突入
+    reelEls.forEach(r => r.classList.add('win'));
+    await new Promise(r => setTimeout(r, 280));
+    playBonus(bonus, () => {
+      reelEls.forEach(r => r.classList.remove('win'));
+      onDone && onDone();
+    });
+    return;
+  }
+  if (role.tier === 'big' && allEqual) {
+    reelEls.forEach(r => r.classList.add('win'));
+    slotSE('big');
+    await new Promise(r => setTimeout(r, 900));
+    reelEls.forEach(r => r.classList.remove('win'));
+  } else if (role.tier === 'small' && (allEqual || role.id === 'cherry')) {
+    if (role.id === 'cherry') {
+      reelEls[0].classList.add('win');
+    } else {
+      reelEls.forEach(r => r.classList.add('win'));
+    }
+    slotSE('small');
+    await new Promise(r => setTimeout(r, 550));
+    reelEls.forEach(r => r.classList.remove('win'));
+  } else if (role.tier === 'replay' && allEqual) {
+    reelEls.forEach(r => r.classList.add('win-replay'));
+    slotSE('replay');
+    await new Promise(r => setTimeout(r, 550));
+    reelEls.forEach(r => r.classList.remove('win-replay'));
+  } else {
+    // ハズレ
+    await new Promise(r => setTimeout(r, 220));
+  }
+  onDone && onDone();
+}
+
+// BIG / REG 突入演出 → クライマックスで景品モーダル
+function playBonus(bonus, onDone) {
+  const overlay = document.getElementById('slotBonusOverlay');
+  if (!overlay) {
+    // フォールバック：景品だけ表示
+    revealGachaModal(bonus.prize);
+    onDone && onDone();
+    return;
+  }
+  const isBig = bonus.typeId === 'big';
+  overlay.classList.remove('kind-big', 'kind-reg');
+  overlay.classList.add(isBig ? 'kind-big' : 'kind-reg');
+
+  // 告知出目テキスト
+  const tellEl = document.getElementById('slotBonusTellSymbols');
+  if (tellEl) {
+    tellEl.textContent = isBig ? '7️⃣7️⃣7️⃣' : '🍄🍄🍄';
+  }
+  document.getElementById('slotBonusTitle').textContent = bonus.typeName || (isBig ? 'BIG BONUS' : 'REG BONUS');
+  document.getElementById('slotBonusSubtitle').textContent = isBig ? '大当たり' : 'ボーナス';
+
+  // 紙吹雪
+  spawnBonusParticles(isBig ? 80 : 40, isBig);
+  // 画面シェイク（BIG のみ強め）
+  if (isBig) {
+    document.body.classList.add('slot-shake');
+    setTimeout(() => document.body.classList.remove('slot-shake'), 800);
+  }
+  // SE
+  slotSE(isBig ? 'fanfare-big' : 'fanfare-reg');
+
+  overlay.classList.add('show');
+  const duration = isBig ? 2400 : 1700;
+  setTimeout(() => {
+    overlay.classList.remove('show');
+    // 景品モーダルを既存の revealGachaModal で表示（レアリティ class が効く）
+    revealGachaModal(bonus.prize);
+    onDone && onDone();
+  }, duration);
+}
+
+// 紙吹雪 / コインを overlay に散布
+function spawnBonusParticles(count, isBig) {
+  const wrap = document.getElementById('slotBonusParticles');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  const colors = isBig ? ['🪙', '🎉', '✨', '🌟', '💛'] : ['🎊', '✨', '💧', '🔷'];
+  for (let i = 0; i < count; i++) {
+    const span = document.createElement('span');
+    span.className = 'sbo-particle';
+    span.textContent = colors[Math.floor(Math.random() * colors.length)];
+    span.style.left = (Math.random() * 100) + '%';
+    span.style.animationDuration = (1.2 + Math.random() * 1.6) + 's';
+    span.style.animationDelay = (Math.random() * 0.4) + 's';
+    span.style.fontSize = (1 + Math.random() * 1.4) + 'rem';
+    wrap.appendChild(span);
+  }
+  // 動作後に掃除
+  setTimeout(() => { wrap.innerHTML = ''; }, 3500);
+}
+
+// オートスピン継続判定
+function scheduleAutoSpinNext() {
+  if (!slotAutoState.active) return;
+  if (slotAutoState.remaining > 0) slotAutoState.remaining--;
+  else if (slotAutoState.remaining === -1) { /* pt切れまで */ }
+  else { slotAutoState.active = false; renderAll(); return; }
+
+  const data = loadData();
+  const me = getCurrentUser(data);
+  if (!me) { slotAutoState.active = false; return; }
+  const slot = getSlotSettings(data);
+  const canSpin = !!me.slotReplayPending || availableSpoon(me) >= slot.cost;
+  if (!canSpin) { slotAutoState.active = false; renderAll(); return; }
+  setTimeout(() => {
+    if (!slotAutoState.active || slotSpinInFlight) return;
+    doSlotSpin(me.id, { free: !!me.slotReplayPending });
+  }, 700);
+}
+
+// ============================================================
+// スロット用簡易サウンド（Web Audio で合成）
+// ============================================================
+let slotAudioCtx = null;
+function getSlotAudio() {
+  if (!slotSoundEnabled) return null;
+  try {
+    if (!slotAudioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return null;
+      slotAudioCtx = new AC();
+    }
+    if (slotAudioCtx.state === 'suspended') slotAudioCtx.resume();
+    return slotAudioCtx;
+  } catch { return null; }
+}
+function slotSE(kind) {
+  const ctx = getSlotAudio();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const beep = (freq, dur, type, gain) => {
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = type || 'sine';
+    o.frequency.value = freq;
+    g.gain.value = 0;
+    g.gain.linearRampToValueAtTime(gain || 0.18, now + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+    o.connect(g).connect(ctx.destination);
+    o.start(now);
+    o.stop(now + dur + 0.05);
+  };
+  if (kind === 'spin') {
+    beep(880, 0.08, 'square', 0.12);
+  } else if (kind === 'stop') {
+    beep(440, 0.06, 'triangle', 0.18);
+  } else if (kind === 'tempai') {
+    beep(620, 0.18, 'sawtooth', 0.16);
+    setTimeout(() => beep(720, 0.18, 'sawtooth', 0.16), 180);
+    setTimeout(() => beep(620, 0.18, 'sawtooth', 0.16), 360);
+  } else if (kind === 'small') {
+    beep(1040, 0.12, 'square', 0.16);
+    setTimeout(() => beep(1320, 0.12, 'square', 0.14), 90);
+  } else if (kind === 'big') {
+    beep(880, 0.18, 'square', 0.2);
+    setTimeout(() => beep(1175, 0.18, 'square', 0.2), 120);
+    setTimeout(() => beep(1568, 0.3, 'square', 0.22), 240);
+  } else if (kind === 'replay') {
+    beep(640, 0.12, 'sine', 0.16);
+    setTimeout(() => beep(800, 0.18, 'sine', 0.16), 100);
+  } else if (kind === 'fanfare-big') {
+    const seq = [880, 1175, 1568, 1175, 1568, 1976];
+    seq.forEach((f, i) => setTimeout(() => beep(f, 0.22, 'square', 0.22), i * 130));
+  } else if (kind === 'fanfare-reg') {
+    const seq = [620, 880, 1175];
+    seq.forEach((f, i) => setTimeout(() => beep(f, 0.2, 'triangle', 0.2), i * 130));
+  }
+}
+
+function setupSlotModal() {
+  const overlay = document.getElementById('slotBonusOverlay');
+  if (!overlay) return;
+  // タップで早送り（演出中に閉じる）
+  overlay.addEventListener('click', () => {
+    overlay.classList.remove('show');
+  });
+}
+
 function renderHero(data) {
   // イベント名
   document.getElementById('heroEventName').textContent = data.settings.eventName || 'イベント';
@@ -4549,6 +5715,8 @@ function renderAll() {
   renderRanking(data);
   renderTimeline(data);
   renderGacha(data);
+  renderSlot(data);
+  applyPlayMode();
   renderGallery(data);
   renderTrade(data);
   renderGachaPrizes(data);
@@ -5751,6 +6919,8 @@ setupPasswordModal();
 setupTradeModals();
 setupGalleryModal();
 setupSalvageConfirmModal();
+setupSlotModal();
+setupPlayModeTabs();
 // 初回はリモートからデータ取得後に描画
 fetchRemoteData().then(() => {
   renderAll();
