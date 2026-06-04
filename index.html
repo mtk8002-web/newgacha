@@ -4951,24 +4951,33 @@ function renderSlotSymbolHtml(symbolId, slotSettings) {
   return escapeHtml(icon || '🍬');
 }
 
-// 各リールの初期ストリップ（縦に図柄を並べた長いリスト）
-// リール高=168px / 図柄高=56px → 可視3枠（index 0/1/2 が見える）
-// 金ライン(50%)＝84px に重なる図柄は index 1 なので、当たり図柄はそこに置く
-function buildReelStripHtml(slotSettings, startSymbolId) {
-  const syms = slotSettings.symbols || SLOT_DEFAULT_SYMBOLS;
-  const list = [];
-  for (let i = 0; i < 5; i++) {
-    const sid = i === 1 ? (startSymbolId || syms[0].id) : syms[(i * 3 + 2) % syms.length].id;
-    list.push(`<div class="slot-symbol">${renderSlotSymbolHtml(sid, slotSettings)}</div>`);
-  }
-  return list.join('');
+// 各リールのストリップ（縦に図柄を並べたリスト）
+// 可視3枠（index 0/1/2）＝上段・中段・下段。中央ライン(index 1)に当たり図柄を置く。
+// 上下段のダミー図柄は「リール番号」でずらして選び、当たりライン以外の段が
+// 偶然そろって（例：下段に 7-7-7）見えないようにする。
+function buildReelStripHtml(slotSettings, centerSymbolId, reelIndex) {
+  const syms = (slotSettings.symbols && slotSettings.symbols.length) ? slotSettings.symbols : SLOT_DEFAULT_SYMBOLS;
+  const ids = syms.map(s => s.id);
+  const n = ids.length;
+  const center = centerSymbolId || ids[0];
+  const ci = Math.max(0, ids.indexOf(center));
+  const ri = Number(reelIndex) || 0;
+  const at = (offset) => ids[((ci + offset) % n + n) % n];
+  // 上段・下段（リールごとに別オフセット）＋ 回転時用のダミー2枚
+  const above = at(-(ri + 1));   // 上段
+  const below = at(ri + 2);      // 下段
+  const fill1 = at(ri + 4);
+  const fill2 = at(-(ri + 3));
+  const order = [above, center, below, fill1, fill2];
+  return order.map(sid => `<div class="slot-symbol">${renderSlotSymbolHtml(sid, slotSettings)}</div>`).join('');
 }
 
 let slotSpinInFlight = false;
 let slotSoundEnabled = true;
 // 目押し（手動ストップ）用の状態
 let slotPendingResult = null;     // サーバから受け取った確定結果（停止待ち）
-let slotStopFlags = [false, false, false]; // 各リールが停止済みか
+let slotStopFlags = [false, false, false];     // 各リールが停止済みか
+let slotStopRequested = [false, false, false]; // STOP 押下済み（結果到着前の先取り押下を含む）
 let slotOnDoneCb = null;          // 全リール停止後に呼ぶコールバック
 
 function renderSlot(data) {
@@ -5010,7 +5019,7 @@ function renderSlotDashboardHTML(data, me) {
 
   const reelsHtml = [0,1,2].map(i => `
     <div class="slot-reel" data-reel-index="${i}">
-      <div class="slot-reel-strip">${buildReelStripHtml(slot, lastReels[i])}</div>
+      <div class="slot-reel-strip">${buildReelStripHtml(slot, lastReels[i], i)}</div>
     </div>
   `).join('');
 
@@ -5147,12 +5156,16 @@ async function doSlotSpin(userId, opts) {
   slotSpinInFlight = true;
   const spinBtn = document.getElementById('slotSpinBtn');
   const stopRow = document.getElementById('slotStopRow');
-  // SPIN ボタンを隠して、各リールの STOP ボタンを表示（結果到着までは押せない）
+  // 押下状態をリセット
+  slotStopFlags = [false, false, false];
+  slotStopRequested = [false, false, false];
+  // SPIN ボタンを隠して STOP ボタンを表示。ラグなく押せるよう最初から有効化しておき、
+  // 結果到着前に押された分は「先取り」として記録 → 結果が来た瞬間にそのリールを止める。
   if (spinBtn) spinBtn.hidden = true;
   if (stopRow) {
     stopRow.hidden = false;
     stopRow.querySelectorAll('.slot-stop-btn').forEach(b => {
-      b.disabled = true; b.classList.remove('stopped'); b.textContent = 'STOP';
+      b.disabled = false; b.classList.remove('stopped'); b.textContent = 'STOP';
     });
   }
 
@@ -5197,11 +5210,12 @@ async function doSlotSpin(userId, opts) {
         renderAll();
         return;
       }
-      // 成功：結果を保持し、STOP ボタンで止められる状態にする
-      await fetchRemoteData();
+      // 成功：結果を保持し、先取り押下済みのリールは即停止（残りは押下で停止）
+      // 残高更新の通信(fetchRemoteData)は反応を最優先するため停止後に回す。
       const result = json.result || {};
       animationStarted = true;
-      beginManualStop(result, () => {
+      beginManualStop(result, async () => {
+        await fetchRemoteData();
         slotSpinInFlight = false;
         renderAll();
       });
@@ -5235,7 +5249,7 @@ function stopReelSpinImmediately() {
 // 高揚役（テンパイ対象）の図柄
 const SLOT_TEMPAI_SYMBOLS = new Set(['bar', 'watermelon', 'seven', 'mushroom']);
 
-// 結果を保持し、各リールの STOP ボタンを押せる状態にする（目押し開始）
+// 結果を保持し、先取り押下済みのリールを即停止（目押し開始）
 function beginManualStop(result, onDone) {
   const reels = Array.isArray(result.reels) ? result.reels : ['blank', 'bell', 'bar'];
   slotPendingResult = {
@@ -5244,29 +5258,37 @@ function beginManualStop(result, onDone) {
     bonus: result.bonus || null,
     bonusReserved: result.bonusReserved || null,
   };
-  slotStopFlags = [false, false, false];
   slotOnDoneCb = onDone || null;
-  // STOP ボタンを押せるようにする
-  document.querySelectorAll('#slotStopRow .slot-stop-btn').forEach(b => { b.disabled = false; });
+  // 結果到着前に押されていたリールは、ここで実際に停止させる
+  [0, 1, 2].forEach(i => {
+    if (slotStopRequested[i] && !slotStopFlags[i]) doStopReel(i);
+  });
 }
 
-// 指定リールを確定図柄で止める（STOP ボタン）
+// STOP ボタン押下：押した瞬間にボタンを反応させ、結果があれば即停止／無ければ先取り記録
 function stopReel(i) {
-  if (!slotPendingResult) return;
-  if (i < 0 || i > 2 || slotStopFlags[i]) return;
+  if (i < 0 || i > 2 || slotStopFlags[i] || slotStopRequested[i]) return;
+  slotStopRequested[i] = true;
+  // ボタンを即「停止」表示に（結果待ちでもラグなく反応）
+  const btn = document.querySelector(`#slotStopRow .slot-stop-btn[data-stop="${i}"]`);
+  if (btn) { btn.disabled = true; btn.classList.add('stopped'); btn.textContent = '停止'; }
+  // 結果が既に来ていれば実際に止める。未到着なら beginManualStop が到着時に止める。
+  if (slotPendingResult) doStopReel(i);
+}
+
+// 指定リールを確定図柄で実際に止める
+function doStopReel(i) {
+  if (!slotPendingResult || slotStopFlags[i]) return;
   const slot = getSlotSettings(loadData());
   const reelEl = document.querySelector(`#slotReels .slot-reel[data-reel-index="${i}"]`);
   if (!reelEl) return;
   // 確定図柄を中央ライン（index 1）に来るよう差し替えて停止
   const strip = reelEl.querySelector('.slot-reel-strip');
-  if (strip) strip.innerHTML = buildReelStripHtml(slot, slotPendingResult.reels[i]);
+  if (strip) strip.innerHTML = buildReelStripHtml(slot, slotPendingResult.reels[i], i);
   reelEl.classList.remove('spinning');
   reelEl.classList.add('stopping');
   slotSE('stop');
   slotStopFlags[i] = true;
-  // ボタンを停止済み表示に
-  const btn = document.querySelector(`#slotStopRow .slot-stop-btn[data-stop="${i}"]`);
-  if (btn) { btn.disabled = true; btn.classList.add('stopped'); btn.textContent = '停止'; }
   // テンパイ演出の更新
   updateTempaiState();
   // 全リール停止 → 当たり判定へ
