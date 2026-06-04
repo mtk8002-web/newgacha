@@ -992,53 +992,60 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
   to { opacity: 1; transform: scale(1) rotate(0); }
 }
 
-/* ============ スロット設定 ============ */
+/* ============ スロット設定（ダークテーマ） ============ */
 .slot-roles-title {
-  font-weight: 700; font-size: 0.92rem;
-  margin: 1.6rem 0 0.5rem; padding-top: 1.2rem;
-  border-top: 1px solid var(--border);
+  font-weight: 700; font-size: 0.95rem; color: var(--white);
+  margin: 1.8rem 0 0.5rem; padding-top: 1.3rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
 }
 .slot-roles-table { display: flex; flex-direction: column; gap: 0.4rem; }
 .slot-roles-head, .slot-roles-row {
   display: grid; grid-template-columns: 1fr 90px 130px; gap: 0.6rem; align-items: center;
 }
 .slot-roles-head {
-  font-size: 0.72rem; color: var(--text-muted); font-weight: 700;
-  padding: 0 0.2rem 0.2rem;
+  font-size: 0.72rem; color: var(--pink); font-weight: 700;
+  letter-spacing: 0.08em; padding: 0 0.2rem 0.2rem;
 }
 .slot-roles-head span:nth-child(2), .slot-roles-head span:nth-child(3) { text-align: center; }
 .slot-roles-row {
-  background: var(--bg-warm, #faf6f0); border: 1px solid var(--border);
-  border-radius: 8px; padding: 0.5rem 0.7rem;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 0.55rem 0.7rem;
 }
-.slot-roles-row.is-auto { background: transparent; border-style: dashed; }
-.srr-name { font-weight: 700; font-size: 0.88rem; display: flex; flex-direction: column; }
-.srr-name small { font-weight: 400; font-size: 0.68rem; color: var(--text-muted); }
-.slot-roles-row .input { padding: 0.45rem 0.5rem; text-align: center; }
-.srr-pay { display: flex; align-items: center; gap: 0.3rem; }
+.slot-roles-row.is-auto {
+  background: rgba(232,99,138,0.08); border-style: dashed; border-color: rgba(232,99,138,0.4);
+}
+.srr-name {
+  font-weight: 700; font-size: 0.9rem; color: var(--cream);
+  display: flex; flex-direction: column;
+}
+.srr-name small { font-weight: 400; font-size: 0.68rem; color: rgba(255,255,255,0.5); margin-top: 0.1rem; }
+.slot-roles-row .input { padding: 0.5rem 0.5rem; text-align: center; }
+.srr-pay { display: flex; align-items: center; gap: 0.35rem; }
 .srr-pay .input { width: 100%; }
-.srr-pay em { font-style: normal; font-size: 0.72rem; color: var(--text-muted); }
-.srr-fixed, .srr-auto { text-align: center; font-size: 0.8rem; color: var(--text-muted); }
-.srr-auto { font-weight: 800; font-size: 1rem; color: var(--accent, #d6557a); }
+.srr-pay em { font-style: normal; font-size: 0.72rem; color: rgba(255,255,255,0.55); }
+.srr-fixed { text-align: center; font-size: 0.78rem; color: rgba(255,255,255,0.45); }
+.srr-auto { text-align: center; font-weight: 800; font-size: 1.05rem; color: var(--pink-soft); }
 .slot-roles-total {
-  margin-top: 0.5rem; text-align: right; font-size: 0.82rem; font-weight: 700;
+  margin-top: 0.6rem; text-align: right; font-size: 0.85rem; font-weight: 700; color: var(--cream);
 }
-.slot-roles-total .srt-sep { color: var(--text-muted); margin: 0 0.3rem; }
-.slot-roles-table.over100 .slot-roles-total { color: var(--danger, #d6455a); }
+.slot-roles-total #slotRolesSum, .slot-roles-total #slotLoseProb2 { color: var(--gold-bright); }
+.slot-roles-total .srt-sep { color: rgba(255,255,255,0.35); margin: 0 0.3rem; }
+.slot-roles-table.over100 .slot-roles-total { color: #ff8a8a; }
+.slot-roles-table.over100 .slot-roles-total #slotRolesSum { color: var(--danger); }
 .slot-overlap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
 .slot-overlap-cell {
-  background: var(--bg-warm, #faf6f0); border: 1px solid var(--border);
-  border-radius: 8px; padding: 0.7rem 0.8rem;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 0.8rem 0.9rem;
 }
-.soc-head { font-weight: 700; font-size: 0.85rem; margin-bottom: 0.5rem; }
+.soc-head { font-weight: 700; font-size: 0.88rem; color: var(--cream); margin-bottom: 0.5rem; }
 .slot-overlap-cell label {
-  display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; font-weight: 700;
-  margin-top: 0.4rem;
+  display: flex; align-items: center; gap: 0.45rem; font-size: 0.82rem; font-weight: 700;
+  color: var(--cream); margin-top: 0.45rem;
 }
-.slot-overlap-cell label .input { padding: 0.4rem 0.5rem; text-align: center; width: 80px; }
-.slot-overlap-cell label em { font-style: normal; color: var(--text-muted); font-size: 0.72rem; }
+.slot-overlap-cell label .input { padding: 0.45rem 0.5rem; text-align: center; width: 80px; }
+.slot-overlap-cell label em { font-style: normal; color: rgba(255,255,255,0.55); font-size: 0.72rem; }
 @media (max-width: 700px) {
-  .slot-roles-head, .slot-roles-row { grid-template-columns: 1fr 70px 110px; gap: 0.4rem; }
+  .slot-roles-head, .slot-roles-row { grid-template-columns: 1fr 66px 104px; gap: 0.4rem; }
   .slot-overlap-grid { grid-template-columns: 1fr; }
 }
 
