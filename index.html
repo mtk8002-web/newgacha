@@ -4998,7 +4998,7 @@ function renderSlotDashboardHTML(data, me) {
   const slot = getSlotSettings(data);
   const avail = availableSpoon(me);
   const gachaPoint = Math.max(0, parseInt(me.gachaPoint || 0, 10) || 0);
-  const history = Array.isArray(me.slotHistory) ? me.slotHistory.slice(0, 5) : [];
+  const history = Array.isArray(me.slotHistory) ? me.slotHistory.slice(0, 3) : [];
   const replayPending = !!me.slotReplayPending;
   // 予約済みボーナス（ランプ点灯中）: null | 'big' | 'reg'
   const bonusPending = (me.slotBonusPending === 'big' || me.slotBonusPending === 'reg') ? me.slotBonusPending : null;
@@ -5032,7 +5032,7 @@ function renderSlotDashboardHTML(data, me) {
     spinLabel = `pt不足`;
     disabled = true;
   } else {
-    spinLabel = `SPIN <span class="spin-cost">-${fmt(slot.cost)}pt</span>`;
+    spinLabel = `SPIN`;
   }
 
   // 告知ランプ（単独/重複でボーナス予約されると点灯）
