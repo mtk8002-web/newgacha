@@ -3484,6 +3484,69 @@ footer {
   text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 .slot-spin-btn .spin-cost { font-size: 0.78rem; opacity: 0.85; margin-left: 0.5rem; }
+/* ボーナス確定（無料スピン）ボタン */
+.slot-spin-btn.bonus {
+  background: linear-gradient(180deg, #ffe169 0%, #ff8a3c 45%, #d6557a 100%);
+  background-size: 100% 200%;
+  border-color: #ffcf4d; color: #2a1810;
+  animation: slot-bonus-btn 1.1s ease-in-out infinite;
+  box-shadow: 0 6px 22px rgba(255,138,60,0.55), inset 0 1px 0 rgba(255,255,255,0.6);
+}
+@keyframes slot-bonus-btn {
+  0%,100% { background-position: 50% 0%; filter: brightness(1); }
+  50%     { background-position: 50% 100%; filter: brightness(1.12); }
+}
+
+/* 告知ランプ（単独/重複でボーナス予約されると点灯） */
+.slot-lamp {
+  display: flex; align-items: center; justify-content: center; gap: 0.7rem;
+  margin: 0 auto 0.7rem;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  font-family: var(--font-en); font-weight: 800; letter-spacing: 0.2em;
+  font-size: 0.78rem;
+  color: rgba(255,235,190,0.45);
+  background: rgba(0,0,0,0.35);
+  border: 1.5px solid rgba(212,173,85,0.25);
+  transition: all 0.3s;
+}
+.slot-lamp-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: rgba(255,235,190,0.2);
+  box-shadow: inset 0 0 3px rgba(0,0,0,0.5);
+}
+.slot-lamp.on {
+  color: #fff;
+  animation: slot-lamp-pulse 0.7s ease-in-out infinite alternate;
+}
+.slot-lamp.on.lamp-big {
+  background: rgba(212,173,85,0.22);
+  border-color: var(--gold-bright);
+  text-shadow: 0 0 10px rgba(255,209,77,0.9);
+}
+.slot-lamp.on.lamp-big .slot-lamp-dot {
+  background: var(--gold-bright);
+  box-shadow: 0 0 12px 2px rgba(255,209,77,0.95);
+}
+.slot-lamp.on.lamp-reg {
+  background: rgba(95,168,200,0.22);
+  border-color: #5fa8c8;
+  text-shadow: 0 0 10px rgba(120,200,235,0.9);
+}
+.slot-lamp.on.lamp-reg .slot-lamp-dot {
+  background: #7fd0ee;
+  box-shadow: 0 0 12px 2px rgba(120,200,235,0.95);
+}
+.slot-lamp.just-lit { animation: slot-lamp-burst 0.5s ease-out, slot-lamp-pulse 0.7s 0.5s ease-in-out infinite alternate; }
+@keyframes slot-lamp-pulse {
+  from { filter: brightness(1); }
+  to   { filter: brightness(1.35); }
+}
+@keyframes slot-lamp-burst {
+  0%   { transform: scale(0.85); }
+  50%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
 
 /* 上部の pt 表示バー（シンプル化） */
 .slot-topbar {
@@ -3747,6 +3810,7 @@ body.slot-shake { animation: screenShake 0.18s ease-in-out 4; }
   .slot-reel.win,
   .sbo-rays, .sbo-flash, .sbo-tell-symbols,
   body.slot-shake,
+  .slot-lamp.on, .slot-lamp.just-lit, .slot-spin-btn.bonus,
   .slot-cabinet::before {
     animation: none !important;
   }
@@ -4936,6 +5000,8 @@ function renderSlotDashboardHTML(data, me) {
   const gachaPoint = Math.max(0, parseInt(me.gachaPoint || 0, 10) || 0);
   const history = Array.isArray(me.slotHistory) ? me.slotHistory.slice(0, 5) : [];
   const replayPending = !!me.slotReplayPending;
+  // 予約済みボーナス（ランプ点灯中）: null | 'big' | 'reg'
+  const bonusPending = (me.slotBonusPending === 'big' || me.slotBonusPending === 'reg') ? me.slotBonusPending : null;
 
   // 初期表示の出目（履歴の最新があればそれを、なければ blank, bell, bar）
   const lastReels = (me.slotHistory && me.slotHistory[0] && Array.isArray(me.slotHistory[0].reels))
@@ -4955,6 +5021,10 @@ function renderSlotDashboardHTML(data, me) {
   if (!slot.enabled) {
     spinLabel = 'スロットは停止中';
     disabled = true;
+  } else if (bonusPending) {
+    // ボーナス確定：次の1回は無料で回せる
+    spinLabel = `🎰 ${bonusPending === 'big' ? 'BIG' : 'REG'}確定！無料でSPIN`;
+    spinClass += ' bonus';
   } else if (replayPending) {
     spinLabel = `🔄 REPLAY（無料）`;
     spinClass += ' replay';
@@ -4964,6 +5034,14 @@ function renderSlotDashboardHTML(data, me) {
   } else {
     spinLabel = `SPIN <span class="spin-cost">-${fmt(slot.cost)}pt</span>`;
   }
+
+  // 告知ランプ（単独/重複でボーナス予約されると点灯）
+  const lampHtml = `
+    <div class="slot-lamp${bonusPending ? ' on ' + (bonusPending === 'big' ? 'lamp-big' : 'lamp-reg') : ''}" id="slotLamp">
+      <span class="slot-lamp-dot"></span>
+      <span class="slot-lamp-text">${bonusPending ? (bonusPending === 'big' ? 'BIG 確定！' : 'REG 確定！') : 'CHANCE'}</span>
+      <span class="slot-lamp-dot"></span>
+    </div>`;
 
   // 履歴行
   const histHtml = history.length === 0
@@ -5014,6 +5092,7 @@ function renderSlotDashboardHTML(data, me) {
 
       <div class="slot-cabinet" id="slotCabinet">
         <div class="slot-cabinet-title">★ LUCKY SLOT ★</div>
+        ${lampHtml}
         <div class="slot-reels" id="slotReels">
           ${reelsHtml}
           <div class="slot-tempai">TEMPAI!</div>
@@ -5041,7 +5120,8 @@ function setupSlotDashboard(data, me) {
   if (spinBtn) {
     spinBtn.addEventListener('click', () => {
       if (slotSpinInFlight) return;
-      doSlotSpin(me.id, { free: !!me.slotReplayPending });
+      // リプレイ or ボーナス確定時は無料スピン
+      doSlotSpin(me.id, { free: !!(me.slotReplayPending || me.slotBonusPending) });
     });
   }
   // 各リールの STOP ボタン（目押し）
@@ -5162,6 +5242,7 @@ function beginManualStop(result, onDone) {
     reels,
     role: result.role || { id: 'lose', tier: 'lose' },
     bonus: result.bonus || null,
+    bonusReserved: result.bonusReserved || null,
   };
   slotStopFlags = [false, false, false];
   slotOnDoneCb = onDone || null;
@@ -5226,13 +5307,14 @@ async function finishSlotEvaluation() {
   const reels = pending.reels;
   const role = pending.role;
   const bonus = pending.bonus;
+  const reserved = pending.bonusReserved;
 
   await new Promise(r => setTimeout(r, 200));
   reelEls.forEach(r => r.classList.remove('stopping'));
 
   const allEqual = reels[0] === reels[1] && reels[1] === reels[2];
   if (bonus) {
-    // BIG/REG 突入
+    // BIG/REG 突入（確定演出スピン）
     reelEls.forEach(r => r.classList.add('win'));
     await new Promise(r => setTimeout(r, 280));
     playBonus(bonus, () => {
@@ -5241,12 +5323,7 @@ async function finishSlotEvaluation() {
     });
     return;
   }
-  if (role.tier === 'big' && allEqual) {
-    reelEls.forEach(r => r.classList.add('win'));
-    slotSE('big');
-    await new Promise(r => setTimeout(r, 900));
-    reelEls.forEach(r => r.classList.remove('win'));
-  } else if (role.tier === 'small' && (allEqual || role.id === 'cherry')) {
+  if (role.tier === 'small' && (allEqual || role.id === 'cherry')) {
     if (role.id === 'cherry') {
       reelEls[0].classList.add('win');
     } else {
@@ -5261,10 +5338,29 @@ async function finishSlotEvaluation() {
     await new Promise(r => setTimeout(r, 550));
     reelEls.forEach(r => r.classList.remove('win-replay'));
   } else {
-    // ハズレ
+    // ハズレ（単独BIG/REG もここを通り、この後ランプ点灯）
     await new Promise(r => setTimeout(r, 220));
   }
+
+  // 単独 / 重複でボーナス予約が成立 → リール停止後にランプ点灯
+  if (reserved === 'big' || reserved === 'reg') {
+    flashSlotLamp(reserved);
+    await new Promise(r => setTimeout(r, 700));
+  }
   onDone && onDone();
+}
+
+// 告知ランプを点灯（単独/重複の成立時）
+function flashSlotLamp(type) {
+  const lamp = document.getElementById('slotLamp');
+  if (!lamp) return;
+  lamp.classList.remove('lamp-big', 'lamp-reg');
+  lamp.classList.add('on', type === 'big' ? 'lamp-big' : 'lamp-reg', 'just-lit');
+  lamp.querySelector('.slot-lamp-text').textContent = (type === 'big' ? 'BIG 確定！' : 'REG 確定！');
+  slotSE(type === 'big' ? 'big' : 'small');
+  // 軽い画面シェイク
+  document.body.classList.add('slot-shake');
+  setTimeout(() => document.body.classList.remove('slot-shake'), 500);
 }
 
 // BIG / REG 突入演出 → クライマックスで景品モーダル

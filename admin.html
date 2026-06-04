@@ -992,6 +992,56 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
   to { opacity: 1; transform: scale(1) rotate(0); }
 }
 
+/* ============ スロット設定 ============ */
+.slot-roles-title {
+  font-weight: 700; font-size: 0.92rem;
+  margin: 1.6rem 0 0.5rem; padding-top: 1.2rem;
+  border-top: 1px solid var(--border);
+}
+.slot-roles-table { display: flex; flex-direction: column; gap: 0.4rem; }
+.slot-roles-head, .slot-roles-row {
+  display: grid; grid-template-columns: 1fr 90px 130px; gap: 0.6rem; align-items: center;
+}
+.slot-roles-head {
+  font-size: 0.72rem; color: var(--text-muted); font-weight: 700;
+  padding: 0 0.2rem 0.2rem;
+}
+.slot-roles-head span:nth-child(2), .slot-roles-head span:nth-child(3) { text-align: center; }
+.slot-roles-row {
+  background: var(--bg-warm, #faf6f0); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.5rem 0.7rem;
+}
+.slot-roles-row.is-auto { background: transparent; border-style: dashed; }
+.srr-name { font-weight: 700; font-size: 0.88rem; display: flex; flex-direction: column; }
+.srr-name small { font-weight: 400; font-size: 0.68rem; color: var(--text-muted); }
+.slot-roles-row .input { padding: 0.45rem 0.5rem; text-align: center; }
+.srr-pay { display: flex; align-items: center; gap: 0.3rem; }
+.srr-pay .input { width: 100%; }
+.srr-pay em { font-style: normal; font-size: 0.72rem; color: var(--text-muted); }
+.srr-fixed, .srr-auto { text-align: center; font-size: 0.8rem; color: var(--text-muted); }
+.srr-auto { font-weight: 800; font-size: 1rem; color: var(--accent, #d6557a); }
+.slot-roles-total {
+  margin-top: 0.5rem; text-align: right; font-size: 0.82rem; font-weight: 700;
+}
+.slot-roles-total .srt-sep { color: var(--text-muted); margin: 0 0.3rem; }
+.slot-roles-table.over100 .slot-roles-total { color: var(--danger, #d6455a); }
+.slot-overlap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+.slot-overlap-cell {
+  background: var(--bg-warm, #faf6f0); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.7rem 0.8rem;
+}
+.soc-head { font-weight: 700; font-size: 0.85rem; margin-bottom: 0.5rem; }
+.slot-overlap-cell label {
+  display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; font-weight: 700;
+  margin-top: 0.4rem;
+}
+.slot-overlap-cell label .input { padding: 0.4rem 0.5rem; text-align: center; width: 80px; }
+.slot-overlap-cell label em { font-style: normal; color: var(--text-muted); font-size: 0.72rem; }
+@media (max-width: 700px) {
+  .slot-roles-head, .slot-roles-row { grid-template-columns: 1fr 70px 110px; gap: 0.4rem; }
+  .slot-overlap-grid { grid-template-columns: 1fr; }
+}
+
 /* ============ ロゴ用ヘルパー ============ */
 @media (max-width: 700px) {
   .app-header { padding: 0.8rem 1rem; }
@@ -1329,8 +1379,100 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
           <input type="number" class="input" id="setSlotCost" min="0" step="1" placeholder="100">
           <div class="form-hint">0 にすると無料で回せます。</div>
         </div>
-        <div style="text-align:right;margin-top:1rem">
-          <button class="btn btn-primary btn-sm" id="saveSlotBtn"><span>保存</span></button>
+
+        <!-- 役と確率 -->
+        <div class="slot-roles-title">役 と 確率（%）</div>
+        <div class="form-hint" style="margin-bottom:0.8rem">
+          ※ 各役の当選確率(%)と払い出しを設定します。<br>
+          ※ <b>はずれ</b>の確率は「100 − その他の合計」で自動計算されます（マイナスにならないよう合計100%以下にしてください）。
+        </div>
+        <div class="slot-roles-table" id="slotRolesTable">
+          <div class="slot-roles-head">
+            <span>役</span><span>確率 %</span><span>払い出し</span>
+          </div>
+          <!-- リプレイ -->
+          <div class="slot-roles-row">
+            <span class="srr-name">🔄 リプレイ<small>次の1回が無料</small></span>
+            <input type="number" class="input slot-prob" data-role="replay" min="0" step="0.1">
+            <span class="srr-fixed">—</span>
+          </div>
+          <!-- スイカ -->
+          <div class="slot-roles-row">
+            <span class="srr-name">🍉 スイカ<small>pt 払い出し</small></span>
+            <input type="number" class="input slot-prob" data-role="watermelon" min="0" step="0.1">
+            <span class="srr-pay"><input type="number" class="input" id="setSlotPayout_watermelon" min="0" step="1"><em>pt</em></span>
+          </div>
+          <!-- チェリー -->
+          <div class="slot-roles-row">
+            <span class="srr-name">🍒 チェリー<small>ガチャpt 払い出し</small></span>
+            <input type="number" class="input slot-prob" data-role="cherry" min="0" step="0.1">
+            <span class="srr-pay"><input type="number" class="input" id="setSlotPayout_cherry" min="0" step="1"><em>GP</em></span>
+          </div>
+          <!-- ベル -->
+          <div class="slot-roles-row">
+            <span class="srr-name">🔔 ベル<small>ガチャpt 払い出し</small></span>
+            <input type="number" class="input slot-prob" data-role="bell" min="0" step="0.1">
+            <span class="srr-pay"><input type="number" class="input" id="setSlotPayout_bell" min="0" step="1"><em>GP</em></span>
+          </div>
+          <!-- 単独BIG -->
+          <div class="slot-roles-row">
+            <span class="srr-name">🎰 単独BIG<small>はずれ→次回ボーナス</small></span>
+            <input type="number" class="input slot-prob" data-role="big" min="0" step="0.01">
+            <span class="srr-fixed">景品</span>
+          </div>
+          <!-- 単独REG -->
+          <div class="slot-roles-row">
+            <span class="srr-name">🎰 単独REG<small>はずれ→次回ボーナス</small></span>
+            <input type="number" class="input slot-prob" data-role="reg" min="0" step="0.01">
+            <span class="srr-fixed">景品</span>
+          </div>
+          <!-- はずれ（自動） -->
+          <div class="slot-roles-row is-auto">
+            <span class="srr-name">✖ はずれ<small>自動計算</small></span>
+            <span class="srr-auto" id="slotLoseProb">—%</span>
+            <span class="srr-fixed">—</span>
+          </div>
+          <div class="slot-roles-total">
+            役の合計：<span id="slotRolesSum">0</span>% <span class="srt-sep">/</span> はずれ <span id="slotLoseProb2">100</span>%
+          </div>
+        </div>
+
+        <!-- 重複当選 -->
+        <div class="slot-roles-title">重複当選（スイカ / チェリーから BIG・REG）</div>
+        <div class="form-hint" style="margin-bottom:0.8rem">
+          ※ スイカ・チェリーを引いたとき、設定した確率(%)で BIG / REG が重複当選します。<br>
+          ※ 成立するとランプが点灯し、次の1回（無料スピン）でボーナスが確定します。
+        </div>
+        <div class="slot-overlap-grid">
+          <div class="slot-overlap-cell">
+            <div class="soc-head">🍉 スイカから</div>
+            <label>BIG <input type="number" class="input" id="setSlotOvWmBig" min="0" max="100" step="0.1"><em>%</em></label>
+            <label>REG <input type="number" class="input" id="setSlotOvWmReg" min="0" max="100" step="0.1"><em>%</em></label>
+          </div>
+          <div class="slot-overlap-cell">
+            <div class="soc-head">🍒 チェリーから</div>
+            <label>BIG <input type="number" class="input" id="setSlotOvChBig" min="0" max="100" step="0.1"><em>%</em></label>
+            <label>REG <input type="number" class="input" id="setSlotOvChReg" min="0" max="100" step="0.1"><em>%</em></label>
+          </div>
+        </div>
+
+        <!-- ボーナス景品 -->
+        <div class="slot-roles-title">ボーナス景品（当たる中身）</div>
+        <div class="form-hint" style="margin-bottom:0.8rem">
+          ※ BIG / REG 当選時に当たる景品を、ガチャの景品プールから選びます。<br>
+          ※ そのガチャの景品とWeight（重み）でそのまま抽選されます。ボーナス専用にしたい場合は、非表示のガチャタイプを作って指定してください。
+        </div>
+        <div class="field-row">
+          <label class="label-text">BIG の景品プール</label>
+          <select class="input" id="setSlotBigSource"></select>
+        </div>
+        <div class="field-row" style="margin-top:0.8rem">
+          <label class="label-text">REG の景品プール</label>
+          <select class="input" id="setSlotRegSource"></select>
+        </div>
+
+        <div style="text-align:right;margin-top:1.2rem">
+          <button class="btn btn-primary btn-sm" id="saveSlotBtn"><span>スロット設定を保存</span></button>
         </div>
       </div>
 
@@ -1599,6 +1741,33 @@ const DEFAULT_GACHA_TYPES = [
   },
 ];
 
+// スロット既定値（api/slot.js の既定と揃える）
+const DEFAULT_SLOT = {
+  enabled: true,
+  cost: 100,
+  payoutCurrency: 'gachaPoint',
+  roles: [
+    { id: 'replay',     name: 'リプレイ', match: 'all3',  symbolId: 'replay',     prob: 8,    payout: 0,   currency: 'pt',         replay: true, tier: 'replay' },
+    { id: 'watermelon', name: 'スイカ',   match: 'all3',  symbolId: 'watermelon', prob: 4,    payout: 100, currency: 'pt',         tier: 'small' },
+    { id: 'cherry',     name: 'チェリー', match: 'left1', symbolId: 'cherry',     prob: 10,   payout: 30,  currency: 'gachaPoint', tier: 'small' },
+    { id: 'bell',       name: 'ベル',     match: 'all3',  symbolId: 'bell',       prob: 12,   payout: 20,  currency: 'gachaPoint', tier: 'small' },
+    { id: 'big',        name: '単独BIG',  match: 'none',  prob: 0.4,  tier: 'big', bonus: 'big' },
+    { id: 'reg',        name: '単独REG',  match: 'none',  prob: 0.8,  tier: 'reg', bonus: 'reg' },
+    { id: 'lose',       name: 'はずれ',   match: 'none',  prob: 0,    tier: 'lose' },
+  ],
+  overlap: {
+    watermelon: { big: 30, reg: 10 },
+    cherry:     { big: 5,  reg: 20 },
+  },
+  bonus: {
+    enabled: true,
+    types: [
+      { id: 'big', name: 'BIG BONUS', tellSymbolId: 'seven',    color: '#d4ad55', sourceGachaTypeId: '' },
+      { id: 'reg', name: 'REG BONUS', tellSymbolId: 'mushroom', color: '#5fa8c8', sourceGachaTypeId: '' },
+    ],
+  },
+};
+
 function getDefaultData() {
   const now = new Date();
   const end = new Date(Date.now() + 14 * 86400000);
@@ -1628,8 +1797,8 @@ function getDefaultData() {
       // 表記
       userLabel: 'ユーザー',
       gachaTypes: JSON.parse(JSON.stringify(DEFAULT_GACHA_TYPES)),  // ディープコピー
-      // スロット（1回の消費 pt は管理者が設定）
-      slot: { enabled: true, cost: 100 },
+      // スロット（役・確率・重複・ボーナス景品は管理者が設定）
+      slot: JSON.parse(JSON.stringify(DEFAULT_SLOT)),
     },
     version: 4,
   };
@@ -1656,6 +1825,18 @@ function normalizeData(parsed) {
     if (!t.candyIconType) t.candyIconType = 'emoji';
     if (!t.accent) t.accent = '#e8638a';
   });
+  // スロット設定：旧データ（enabled/cost のみ等）でも役・重複・ボーナスを既定で補完
+  const slot = (parsed.settings.slot && typeof parsed.settings.slot === 'object') ? parsed.settings.slot : {};
+  parsed.settings.slot = Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_SLOT)), slot);
+  if (!Array.isArray(parsed.settings.slot.roles) || parsed.settings.slot.roles.length === 0) {
+    parsed.settings.slot.roles = JSON.parse(JSON.stringify(DEFAULT_SLOT.roles));
+  }
+  if (!parsed.settings.slot.overlap || typeof parsed.settings.slot.overlap !== 'object') {
+    parsed.settings.slot.overlap = JSON.parse(JSON.stringify(DEFAULT_SLOT.overlap));
+  }
+  if (!parsed.settings.slot.bonus || !Array.isArray(parsed.settings.slot.bonus.types) || parsed.settings.slot.bonus.types.length === 0) {
+    parsed.settings.slot.bonus = JSON.parse(JSON.stringify(DEFAULT_SLOT.bonus));
+  }
   if (!Array.isArray(parsed.users)) parsed.users = [];
   for (const u of parsed.users) {
     // 旧フィールド gachaConsumed は無視。新フィールド spentSpoon を使う
@@ -2615,14 +2796,44 @@ function setupSettings() {
     showToast('セクションタイトルを保存しました');
   });
 
-  // スロット設定（消費 pt は管理者が決める）
+  // スロット設定（消費 pt・役の確率・払い出し・重複・ボーナス景品を管理者が決める）
   document.getElementById('saveSlotBtn').addEventListener('click', () => {
     const enabled = document.getElementById('setSlotEnabled').checked;
     const cost = Math.max(0, parseInt(document.getElementById('setSlotCost').value || '0', 10) || 0);
-    // 既存の slot 設定（payoutCurrency / 図柄 / 役 / ボーナス等）は保持して上書き
-    data.settings.slot = Object.assign({}, data.settings.slot || {}, { enabled, cost });
+    const numId = (id) => { const el = document.getElementById(id); return el ? Math.max(0, Number(el.value) || 0) : 0; };
+    const probOf = (role) => {
+      const el = document.querySelector(`.slot-prob[data-role="${role}"]`);
+      return el ? Math.max(0, Number(el.value) || 0) : 0;
+    };
+    // 固定メタの役テンプレに、入力の確率・払い出しを反映
+    const roles = JSON.parse(JSON.stringify(DEFAULT_SLOT.roles)).map(r => {
+      if (r.id === 'lose') { r.prob = 0; return r; }
+      r.prob = probOf(r.id);
+      if (r.id === 'watermelon')   r.payout = numId('setSlotPayout_watermelon');
+      else if (r.id === 'cherry')  r.payout = numId('setSlotPayout_cherry');
+      else if (r.id === 'bell')    r.payout = numId('setSlotPayout_bell');
+      return r;
+    });
+    const overlap = {
+      watermelon: { big: numId('setSlotOvWmBig'), reg: numId('setSlotOvWmReg') },
+      cherry:     { big: numId('setSlotOvChBig'), reg: numId('setSlotOvChReg') },
+    };
+    // ボーナス景品ソース（既存 bonus を保持しつつ source を更新）
+    const bonus = JSON.parse(JSON.stringify((data.settings.slot && data.settings.slot.bonus) || DEFAULT_SLOT.bonus));
+    if (!Array.isArray(bonus.types) || bonus.types.length === 0) bonus.types = JSON.parse(JSON.stringify(DEFAULT_SLOT.bonus.types));
+    bonus.enabled = true;
+    const bigType = bonus.types.find(t => t.id === 'big'); if (bigType) bigType.sourceGachaTypeId = document.getElementById('setSlotBigSource').value || '';
+    const regType = bonus.types.find(t => t.id === 'reg'); if (regType) regType.sourceGachaTypeId = document.getElementById('setSlotRegSource').value || '';
+
+    data.settings.slot = Object.assign({}, data.settings.slot || {}, { enabled, cost, roles, overlap, bonus });
+    const sum = roles.filter(r => r.id !== 'lose').reduce((s, r) => s + (Number(r.prob) || 0), 0);
     saveData();
-    showToast('スロット設定を保存しました');
+    if (sum > 100) showToast('保存しました（注意：役の合計が100%を超えています。はずれが0%になります）');
+    else showToast('スロット設定を保存しました');
+  });
+  // 確率入力に応じて「はずれ%」をライブ更新
+  document.querySelectorAll('.slot-prob').forEach(el => {
+    el.addEventListener('input', updateSlotLoseProb);
   });
 
   document.getElementById('saveEventBtn').addEventListener('click', () => {
@@ -2884,6 +3095,23 @@ function captureGachaTypesFromForm() {
   data.settings.gachaTypes = newTypes;
 }
 
+// 役の確率合計と、自動算出される「はずれ%」を更新
+function updateSlotLoseProb() {
+  const probs = Array.from(document.querySelectorAll('.slot-prob'))
+    .map(el => Math.max(0, Number(el.value) || 0));
+  const sum = probs.reduce((s, v) => s + v, 0);
+  const lose = Math.max(0, 100 - sum);
+  const sumEl = document.getElementById('slotRolesSum');
+  const loseEl = document.getElementById('slotLoseProb');
+  const lose2El = document.getElementById('slotLoseProb2');
+  const fmtPct = (v) => (Math.round(v * 100) / 100);
+  if (sumEl) sumEl.textContent = fmtPct(sum);
+  if (loseEl) loseEl.textContent = fmtPct(lose) + '%';
+  if (lose2El) lose2El.textContent = fmtPct(lose);
+  const tableEl = document.getElementById('slotRolesTable');
+  if (tableEl) tableEl.classList.toggle('over100', sum > 100);
+}
+
 function renderSettings() {
   // サイト基本情報
   document.getElementById('setSiteName').value   = data.settings.siteName   || '';
@@ -2910,6 +3138,34 @@ function renderSettings() {
   const slot = data.settings.slot || {};
   document.getElementById('setSlotEnabled').checked = slot.enabled !== false;
   document.getElementById('setSlotCost').value = (typeof slot.cost === 'number' && slot.cost >= 0) ? Math.floor(slot.cost) : 100;
+  // 役・確率
+  const slotRoles = (Array.isArray(slot.roles) && slot.roles.length) ? slot.roles : DEFAULT_SLOT.roles;
+  const roleById = id => slotRoles.find(r => r.id === id) || {};
+  ['replay', 'watermelon', 'cherry', 'bell', 'big', 'reg'].forEach(id => {
+    const el = document.querySelector(`.slot-prob[data-role="${id}"]`);
+    if (el) el.value = Number(roleById(id).prob) || 0;
+  });
+  const setPay = (inputId, role) => { const el = document.getElementById(inputId); if (el) el.value = Number(roleById(role).payout) || 0; };
+  setPay('setSlotPayout_watermelon', 'watermelon');
+  setPay('setSlotPayout_cherry', 'cherry');
+  setPay('setSlotPayout_bell', 'bell');
+  // 重複当選%
+  const ov = slot.overlap || DEFAULT_SLOT.overlap;
+  document.getElementById('setSlotOvWmBig').value = Number((ov.watermelon || {}).big) || 0;
+  document.getElementById('setSlotOvWmReg').value = Number((ov.watermelon || {}).reg) || 0;
+  document.getElementById('setSlotOvChBig').value = Number((ov.cherry || {}).big) || 0;
+  document.getElementById('setSlotOvChReg').value = Number((ov.cherry || {}).reg) || 0;
+  // ボーナス景品ソース（ガチャタイプ ドロップダウン）
+  const bonusTypes = (slot.bonus && Array.isArray(slot.bonus.types)) ? slot.bonus.types : DEFAULT_SLOT.bonus.types;
+  const bigSrc = (bonusTypes.find(t => t.id === 'big') || {}).sourceGachaTypeId || '';
+  const regSrc = (bonusTypes.find(t => t.id === 'reg') || {}).sourceGachaTypeId || '';
+  const srcOptions = (sel) => ['<option value="">（景品ありの先頭ガチャを自動使用）</option>']
+    .concat((data.settings.gachaTypes || []).map(t =>
+      `<option value="${escapeHtml(t.id)}"${t.id === sel ? ' selected' : ''}>${escapeHtml(t.name)}（${(t.prizes || []).length}景品）</option>`)).join('');
+  document.getElementById('setSlotBigSource').innerHTML = srcOptions(bigSrc);
+  document.getElementById('setSlotRegSource').innerHTML = srcOptions(regSrc);
+  // 合計・はずれ% を再計算
+  updateSlotLoseProb();
 
   // 分解レート / 限界突破
   const sr = (data.settings.salvageRates && typeof data.settings.salvageRates === 'object') ? data.settings.salvageRates : {};
