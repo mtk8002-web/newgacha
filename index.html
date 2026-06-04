@@ -4978,6 +4978,7 @@ let slotSoundEnabled = true;
 let slotPendingResult = null;     // サーバから受け取った確定結果（停止待ち）
 let slotStopFlags = [false, false, false];     // 各リールが停止済みか
 let slotStopRequested = [false, false, false]; // STOP 押下済み（結果到着前の先取り押下を含む）
+let slotPreResultStops = [];      // 結果到着前に押されたリール番号（押した順）
 let slotOnDoneCb = null;          // 全リール停止後に呼ぶコールバック
 
 function renderSlot(data) {
@@ -5159,6 +5160,7 @@ async function doSlotSpin(userId, opts) {
   // 押下状態をリセット
   slotStopFlags = [false, false, false];
   slotStopRequested = [false, false, false];
+  slotPreResultStops = [];
   // SPIN ボタンを隠して STOP ボタンを表示。ラグなく押せるよう最初から有効化しておき、
   // 結果到着前に押された分は「先取り」として記録 → 結果が来た瞬間にそのリールを止める。
   if (spinBtn) spinBtn.hidden = true;
@@ -5259,9 +5261,13 @@ function beginManualStop(result, onDone) {
     bonusReserved: result.bonusReserved || null,
   };
   slotOnDoneCb = onDone || null;
-  // 結果到着前に押されていたリールは、ここで実際に停止させる
-  [0, 1, 2].forEach(i => {
-    if (slotStopRequested[i] && !slotStopFlags[i]) doStopReel(i);
+  // 結果到着前に押されていたリールは、押した順に時間差で1つずつ停止させる
+  // （一斉停止に見えないように）
+  const queue = slotPreResultStops.slice();
+  slotPreResultStops = [];
+  queue.forEach((i, k) => {
+    if (slotStopFlags[i]) return;
+    setTimeout(() => doStopReel(i), k * 220);
   });
 }
 
@@ -5272,8 +5278,10 @@ function stopReel(i) {
   // ボタンを即「停止」表示に（結果待ちでもラグなく反応）
   const btn = document.querySelector(`#slotStopRow .slot-stop-btn[data-stop="${i}"]`);
   if (btn) { btn.disabled = true; btn.classList.add('stopped'); btn.textContent = '停止'; }
-  // 結果が既に来ていれば実際に止める。未到着なら beginManualStop が到着時に止める。
+  // 結果が既に来ていれば、そのリールだけ即停止（押すたびに1つずつ止まる）。
+  // 未到着なら押した順を記録 → beginManualStop が時間差で止める。
   if (slotPendingResult) doStopReel(i);
+  else slotPreResultStops.push(i);
 }
 
 // 指定リールを確定図柄で実際に止める
