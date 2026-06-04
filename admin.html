@@ -1309,6 +1309,31 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
         </div>
       </div>
 
+      <!-- スロット設定 -->
+      <div class="setting-section">
+        <div class="setting-section-en">Slot</div>
+        <div class="setting-section-title">スロット設定</div>
+        <div class="form-hint" style="margin-bottom:1rem">
+          ※ スロットを1回回すのに消費する pt を設定します。<br>
+          ※ ユーザーはこの pt を消費して、各リールの STOP ボタンで目押しできます。
+        </div>
+        <div class="field-row">
+          <label class="visibility-toggle">
+            <input type="checkbox" id="setSlotEnabled">
+            <span class="visibility-toggle-track"></span>
+            <span class="visibility-toggle-label">スロットを公開する</span>
+          </label>
+        </div>
+        <div class="field-row" style="margin-top:1rem">
+          <label class="label-text">1回の消費 pt</label>
+          <input type="number" class="input" id="setSlotCost" min="0" step="1" placeholder="100">
+          <div class="form-hint">0 にすると無料で回せます。</div>
+        </div>
+        <div style="text-align:right;margin-top:1rem">
+          <button class="btn btn-primary btn-sm" id="saveSlotBtn"><span>保存</span></button>
+        </div>
+      </div>
+
       <!-- ヘッダー画像設定 -->
       <div class="setting-section">
         <div class="setting-section-en">Header Image</div>
@@ -1603,6 +1628,8 @@ function getDefaultData() {
       // 表記
       userLabel: 'ユーザー',
       gachaTypes: JSON.parse(JSON.stringify(DEFAULT_GACHA_TYPES)),  // ディープコピー
+      // スロット（1回の消費 pt は管理者が設定）
+      slot: { enabled: true, cost: 100 },
     },
     version: 4,
   };
@@ -2588,6 +2615,16 @@ function setupSettings() {
     showToast('セクションタイトルを保存しました');
   });
 
+  // スロット設定（消費 pt は管理者が決める）
+  document.getElementById('saveSlotBtn').addEventListener('click', () => {
+    const enabled = document.getElementById('setSlotEnabled').checked;
+    const cost = Math.max(0, parseInt(document.getElementById('setSlotCost').value || '0', 10) || 0);
+    // 既存の slot 設定（payoutCurrency / 図柄 / 役 / ボーナス等）は保持して上書き
+    data.settings.slot = Object.assign({}, data.settings.slot || {}, { enabled, cost });
+    saveData();
+    showToast('スロット設定を保存しました');
+  });
+
   document.getElementById('saveEventBtn').addEventListener('click', () => {
     const name = document.getElementById('setEventName').value.trim();
     const nameEn = document.getElementById('setEventNameEn').value.trim();
@@ -2868,6 +2905,11 @@ function renderSettings() {
   document.getElementById('setEventStart').value = toLocalInputValue(data.settings.eventStartDate);
   document.getElementById('setEventEnd').value = toLocalInputValue(data.settings.eventEndDate);
   document.getElementById('setGachaDesc').value = data.settings.gachaDescription || '';
+
+  // スロット設定
+  const slot = data.settings.slot || {};
+  document.getElementById('setSlotEnabled').checked = slot.enabled !== false;
+  document.getElementById('setSlotCost').value = (typeof slot.cost === 'number' && slot.cost >= 0) ? Math.floor(slot.cost) : 100;
 
   // 分解レート / 限界突破
   const sr = (data.settings.salvageRates && typeof data.settings.salvageRates === 'object') ? data.settings.salvageRates : {};

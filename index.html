@@ -3294,15 +3294,15 @@ footer {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 2rem;
+  padding: 1.2rem;
   box-shadow: var(--shadow-sm);
 }
 
 /* スロット筐体 */
 .slot-cabinet {
   position: relative;
-  margin: 1.4rem auto;
-  max-width: 540px;
+  margin: 1.2rem auto;
+  max-width: 860px;
   padding: 1.4rem 1.4rem 1.6rem;
   border-radius: 18px;
   background:
@@ -3351,7 +3351,7 @@ footer {
 }
 .slot-reel {
   position: relative;
-  height: 168px;
+  height: 336px;
   background: linear-gradient(180deg, #fefcf3 0%, #f6ebd2 50%, #fefcf3 100%);
   border-radius: 8px;
   overflow: hidden;
@@ -3371,21 +3371,21 @@ footer {
 }
 @keyframes slot-spin {
   from { transform: translateY(0); }
-  to   { transform: translateY(-56px); }
+  to   { transform: translateY(-112px); }
 }
 @keyframes slot-bounce {
-  0%   { transform: translateY(8px); }
-  60%  { transform: translateY(-4px); }
+  0%   { transform: translateY(14px); }
+  60%  { transform: translateY(-6px); }
   100% { transform: translateY(0); }
 }
 .slot-symbol {
-  height: 56px;
+  height: 112px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 2.4rem; line-height: 1;
+  font-size: 4.6rem; line-height: 1;
   user-select: none;
   flex-shrink: 0;
 }
-.slot-symbol img { width: 44px; height: 44px; object-fit: contain; }
+.slot-symbol img { width: 92px; height: 92px; object-fit: contain; }
 
 /* リールの中央（揃いライン）に金ライン */
 .slot-reels::after {
@@ -3424,10 +3424,10 @@ footer {
   top: 50%; left: 50%;
   transform: translate(-50%, -50%) scale(0.6);
   font-family: var(--font-en); font-weight: 800;
-  font-size: 1.4rem; letter-spacing: 0.3em;
+  font-size: 2.2rem; letter-spacing: 0.3em;
   color: #fff;
   background: rgba(214,85,122,0.85);
-  padding: 0.4rem 1.2rem;
+  padding: 0.5rem 1.6rem;
   border-radius: 4px;
   opacity: 0;
   pointer-events: none;
@@ -3483,32 +3483,71 @@ footer {
   border-color: #5fa8c8; color: #fff;
   text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
-.slot-spin-btn .spin-cost { font-size: 0.7rem; opacity: 0.85; margin-left: 0.5rem; }
+.slot-spin-btn .spin-cost { font-size: 0.78rem; opacity: 0.85; margin-left: 0.5rem; }
 
-.slot-options {
-  display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; justify-content: center;
-  margin-top: 0.3rem;
+/* 上部の pt 表示バー（シンプル化） */
+.slot-topbar {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.6rem; flex-wrap: wrap;
+  margin-bottom: 0.4rem;
 }
-.slot-option-chip {
-  display: inline-flex; align-items: center; gap: 0.35rem;
-  font-size: 0.72rem; font-weight: 700;
-  padding: 0.35rem 0.8rem;
+.slot-pt-pill {
+  display: inline-flex; align-items: baseline; gap: 0.45rem;
+  padding: 0.5rem 1.1rem;
   background: var(--bg-warm);
   border: 1.5px solid var(--border);
   border-radius: 999px;
-  color: var(--text-muted);
-  cursor: pointer;
+}
+.slot-pt-pill.gp { background: var(--card); }
+.slot-pt-pill .label { font-size: 0.72rem; color: var(--text-muted); font-weight: 700; }
+.slot-pt-pill .value {
+  font-family: var(--font-en); font-weight: 800; font-size: 1.15rem;
+  color: var(--gold-deep);
+}
+.slot-pt-pill.gp .value { color: var(--pink-deep); }
+.slot-sound-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1.5px solid var(--border); background: var(--bg-warm);
+  font-size: 1.1rem; cursor: pointer; line-height: 1;
   transition: all 0.2s;
 }
-.slot-option-chip:hover { color: var(--pink); border-color: var(--pink); }
-.slot-option-chip.active {
-  background: var(--pink); color: #fff; border-color: var(--pink);
+.slot-sound-btn.on { border-color: var(--pink); }
+.slot-sound-btn:hover { filter: brightness(1.05); }
+
+/* 目押し用 STOP ボタン（各リールの下に3つ） */
+.slot-stop-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
 }
-.slot-option-chip:disabled { opacity: 0.4; cursor: not-allowed; }
-.slot-auto-count {
-  margin-left: 0.4rem;
+.slot-stop-row[hidden] { display: none; }
+.slot-stop-btn {
   font-family: var(--font-en); font-weight: 800;
-  color: var(--pink-deep);
+  font-size: 1.3rem; letter-spacing: 0.18em;
+  padding: 1.1rem 0.5rem;
+  color: #fff;
+  background: linear-gradient(180deg, #e8607a 0%, #d6557a 45%, #9a2f4f 100%);
+  border: 2px solid #b8395c;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow:
+    0 6px 18px rgba(154,47,79,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.4),
+    inset 0 -2px 0 rgba(0,0,0,0.2);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  transition: filter 0.15s, transform 0.1s;
+}
+.slot-stop-btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+.slot-stop-btn:active:not(:disabled) { transform: translateY(2px); }
+.slot-stop-btn:disabled {
+  background: #c9bfb4; color: #fff8; border-color: transparent;
+  box-shadow: none; text-shadow: none; cursor: default; opacity: 0.7;
+}
+/* 既に止めたリールのボタン */
+.slot-stop-btn.stopped {
+  background: linear-gradient(180deg, #d8cdbd 0%, #b8ab97 100%);
+  color: #6b5d49; border-color: transparent; cursor: default;
+  box-shadow: none; text-shadow: none;
 }
 
 /* 履歴 */
@@ -3717,15 +3756,19 @@ body.slot-shake { animation: screenShake 0.18s ease-in-out 4; }
 
 /* スマホ調整 */
 @media (max-width: 600px) {
-  .slot-cabinet { padding: 1rem 0.7rem 1.2rem; }
+  .slot-dashboard { padding: 0.8rem; }
+  .slot-cabinet { padding: 1rem 0.6rem 1.2rem; }
   .slot-reels { padding: 0.4rem; gap: 0.35rem; }
-  .slot-reel { height: 144px; }
-  .slot-symbol { height: 48px; font-size: 2rem; }
+  .slot-reel { height: 270px; }
+  .slot-symbol { height: 90px; font-size: 3.4rem; }
+  .slot-symbol img { width: 70px; height: 70px; }
   @keyframes slot-spin {
     from { transform: translateY(0); }
-    to   { transform: translateY(-48px); }
+    to   { transform: translateY(-90px); }
   }
-  .slot-spin-btn { font-size: 0.88rem; padding: 0.85rem 1rem; }
+  .slot-spin-btn { font-size: 0.95rem; padding: 0.9rem 1rem; }
+  .slot-stop-btn { font-size: 1rem; padding: 0.9rem 0.3rem; letter-spacing: 0.1em; }
+  .slot-stop-row { gap: 0.35rem; }
   .sbo-tell-symbols { font-size: 4rem; }
   .play-mode-tabs { max-width: 100%; }
 }
@@ -4857,10 +4900,12 @@ function buildReelStripHtml(slotSettings, startSymbolId) {
   return list.join('');
 }
 
-// オートスピン状態
-const slotAutoState = { active: false, remaining: 0, mode: 'count' /* 'count' | 'untilEmpty' */, count: 10 };
 let slotSpinInFlight = false;
 let slotSoundEnabled = true;
+// 目押し（手動ストップ）用の状態
+let slotPendingResult = null;     // サーバから受け取った確定結果（停止待ち）
+let slotStopFlags = [false, false, false]; // 各リールが停止済みか
+let slotOnDoneCb = null;          // 全リール停止後に呼ぶコールバック
 
 function renderSlot(data) {
   const panel = document.getElementById('slotPanel');
@@ -4889,10 +4934,8 @@ function renderSlotDashboardHTML(data, me) {
   const slot = getSlotSettings(data);
   const avail = availableSpoon(me);
   const gachaPoint = Math.max(0, parseInt(me.gachaPoint || 0, 10) || 0);
-  const stats = me.slotStats || { spins: 0, totalBet: 0, totalPayout: 0, bonusBig: 0, bonusReg: 0, maxPayout: 0 };
-  const history = Array.isArray(me.slotHistory) ? me.slotHistory.slice(0, 8) : [];
+  const history = Array.isArray(me.slotHistory) ? me.slotHistory.slice(0, 5) : [];
   const replayPending = !!me.slotReplayPending;
-  const balance = (stats.totalPayout || 0) - (stats.totalBet || 0);
 
   // 初期表示の出目（履歴の最新があればそれを、なければ blank, bell, bar）
   const lastReels = (me.slotHistory && me.slotHistory[0] && Array.isArray(me.slotHistory[0].reels))
@@ -4952,57 +4995,21 @@ function renderSlotDashboardHTML(data, me) {
         `;
       }).join('');
 
-  // 自動スピン UI（slot.autoSpinEnabled の時のみ）
-  const autoHtml = slot.autoSpinEnabled ? `
-    <div class="slot-options">
-      <button type="button" class="slot-option-chip${slotAutoState.active ? ' active' : ''}" id="slotAutoToggle">
-        🔁 オートスピン${slotAutoState.active ? `<span class="slot-auto-count">${slotAutoState.remaining}</span>` : ''}
-      </button>
-      <button type="button" class="slot-option-chip" data-auto-count="10">10回</button>
-      <button type="button" class="slot-option-chip" data-auto-count="50">50回</button>
-      <button type="button" class="slot-option-chip" data-auto-count="-1">pt切れまで</button>
-      <button type="button" class="slot-option-chip${slotSoundEnabled ? ' active' : ''}" id="slotSoundToggle">
-        ${slotSoundEnabled ? '🔊 SOUND' : '🔇 MUTE'}
-      </button>
-    </div>
-  ` : `
-    <div class="slot-options">
-      <button type="button" class="slot-option-chip${slotSoundEnabled ? ' active' : ''}" id="slotSoundToggle">
-        ${slotSoundEnabled ? '🔊 SOUND' : '🔇 MUTE'}
-      </button>
-    </div>
-  `;
-
   return `
     ${renderPlayModeTabsHtml()}
     <div class="slot-dashboard">
-      <div class="gacha-stat-grid">
-        <div class="gacha-stat highlight">
-          <div class="label">使える pt</div>
-          <div class="value" id="slotStatPt">${fmtCap(avail)}<span class="unit">PT</span></div>
+      <div class="slot-topbar">
+        <div class="slot-pt-pill">
+          <span class="label">使える pt</span>
+          <span class="value" id="slotStatPt">${fmtCap(avail)}</span>
         </div>
-        <div class="gacha-stat gp-stat">
-          <div class="label">ガチャ pt</div>
-          <div class="value" id="slotStatGp">${fmtCap(gachaPoint)}<span class="unit">GP</span></div>
+        <div class="slot-pt-pill gp">
+          <span class="label">ガチャ pt</span>
+          <span class="value" id="slotStatGp">${fmtCap(gachaPoint)}</span>
         </div>
-        <div class="gacha-stat">
-          <div class="label">総回転数</div>
-          <div class="value">${fmt(stats.spins || 0)}<span class="unit">回</span></div>
-        </div>
-        <div class="gacha-stat">
-          <div class="label">収支(GP/pt)</div>
-          <div class="value" style="color:${balance >= 0 ? 'var(--gold-deep)' : 'var(--danger)'}">
-            ${balance >= 0 ? '+' : ''}${fmt(balance)}
-          </div>
-        </div>
-        <div class="gacha-stat">
-          <div class="label">BIG / REG</div>
-          <div class="value">${stats.bonusBig || 0} / ${stats.bonusReg || 0}</div>
-        </div>
-        <div class="gacha-stat">
-          <div class="label">最大払い出し</div>
-          <div class="value">${fmt(stats.maxPayout || 0)}</div>
-        </div>
+        <button type="button" class="slot-sound-btn${slotSoundEnabled ? ' on' : ''}" id="slotSoundToggle" aria-label="サウンド切替">
+          ${slotSoundEnabled ? '🔊' : '🔇'}
+        </button>
       </div>
 
       <div class="slot-cabinet" id="slotCabinet">
@@ -5015,7 +5022,11 @@ function renderSlotDashboardHTML(data, me) {
           <button type="button" id="slotSpinBtn" class="${spinClass}"${disabled ? ' disabled' : ''}>
             ${spinLabel}
           </button>
-          ${autoHtml}
+          <div class="slot-stop-row" id="slotStopRow" hidden>
+            <button type="button" class="slot-stop-btn" data-stop="0" disabled>STOP</button>
+            <button type="button" class="slot-stop-btn" data-stop="1" disabled>STOP</button>
+            <button type="button" class="slot-stop-btn" data-stop="2" disabled>STOP</button>
+          </div>
         </div>
       </div>
 
@@ -5033,37 +5044,14 @@ function setupSlotDashboard(data, me) {
       doSlotSpin(me.id, { free: !!me.slotReplayPending });
     });
   }
-  // オートスピン
-  const autoToggle = document.getElementById('slotAutoToggle');
-  if (autoToggle) {
-    autoToggle.addEventListener('click', () => {
-      if (slotAutoState.active) {
-        slotAutoState.active = false;
-        slotAutoState.remaining = 0;
-      } else {
-        slotAutoState.active = true;
-        slotAutoState.remaining = slotAutoState.count > 0 ? slotAutoState.count : -1;
-        // 即時1回スピン開始
-        setTimeout(() => {
-          if (slotAutoState.active && !slotSpinInFlight) {
-            const cur = getCurrentUser(loadData());
-            if (cur) doSlotSpin(cur.id, { free: !!cur.slotReplayPending });
-          }
-        }, 60);
-      }
-      renderAll();
-    });
-  }
-  document.querySelectorAll('[data-auto-count]').forEach(b => {
+  // 各リールの STOP ボタン（目押し）
+  document.querySelectorAll('#slotStopRow .slot-stop-btn').forEach(b => {
     b.addEventListener('click', () => {
-      slotAutoState.count = parseInt(b.dataset.autoCount, 10) || 10;
-      slotAutoState.mode = slotAutoState.count > 0 ? 'count' : 'untilEmpty';
-      // UI に反映
-      document.querySelectorAll('[data-auto-count]').forEach(x => x.classList.remove('active'));
-      b.classList.add('active');
+      const idx = parseInt(b.dataset.stop, 10);
+      stopReel(idx);
     });
   });
-  // サウンド
+  // サウンド切替
   const sndToggle = document.getElementById('slotSoundToggle');
   if (sndToggle) {
     sndToggle.addEventListener('click', () => {
@@ -5078,14 +5066,21 @@ async function doSlotSpin(userId, opts) {
   if (slotSpinInFlight) return;
   slotSpinInFlight = true;
   const spinBtn = document.getElementById('slotSpinBtn');
-  if (spinBtn) { spinBtn.disabled = true; spinBtn.textContent = '抽選中…'; }
+  const stopRow = document.getElementById('slotStopRow');
+  // SPIN ボタンを隠して、各リールの STOP ボタンを表示（結果到着までは押せない）
+  if (spinBtn) spinBtn.hidden = true;
+  if (stopRow) {
+    stopRow.hidden = false;
+    stopRow.querySelectorAll('.slot-stop-btn').forEach(b => {
+      b.disabled = true; b.classList.remove('stopped'); b.textContent = 'STOP';
+    });
+  }
 
-  // 先に回転アニメを開始（結果はサーバから受け取って停止時に反映）
+  // 全リールを回し始める（結果はサーバから受け取り、STOP 押下で確定図柄に止まる）
   startReelSpin();
   slotSE('spin');
 
-  // アニメ完了まで slotSpinInFlight を保持するための分岐フラグ
-  // （アニメ中に setupSync の renderAll が走るとリールDOMが壊れるため）
+  // 停止待ち（手動ストップ）に入ったら、フラグは全停止後のコールバックでクリアする
   let animationStarted = false;
   // 503 リトライ最大3回（既存ガチャと同じ規約）
   const maxAttempts = 3;
@@ -5101,13 +5096,13 @@ async function doSlotSpin(userId, opts) {
       const json = await res.json().catch(() => ({}));
       if (res.status === 503 && json && json.error === 'busy, retry') {
         if (attempt < maxAttempts) {
-          if (spinBtn) spinBtn.textContent = `混雑中…再試行 ${attempt}/${maxAttempts - 1}`;
           await new Promise(r => setTimeout(r, 400 * attempt));
           continue;
         }
         stopReelSpinImmediately();
         alert('サーバー混雑中です。少し時間を置いてから再度お試しください。');
-        slotAutoState.active = false;
+        slotSpinInFlight = false;
+        renderAll();
         return;
       }
       if (!res.ok || !json.ok) {
@@ -5117,28 +5112,28 @@ async function doSlotSpin(userId, opts) {
         else if (msg === 'slot disabled') alert('スロットは現在停止中です。');
         else if (msg === 'user not found') { alert('ユーザーが見つかりません。'); setCurrentUserId(null); }
         else alert('エラー: ' + msg);
-        slotAutoState.active = false;
+        slotSpinInFlight = false;
         await fetchRemoteData();
         renderAll();
         return;
       }
-      // 成功：結果をアニメに反映（アニメ完了までフラグを保持）
+      // 成功：結果を保持し、STOP ボタンで止められる状態にする
       await fetchRemoteData();
       const result = json.result || {};
       animationStarted = true;
-      animateSlot(result, () => {
+      beginManualStop(result, () => {
         slotSpinInFlight = false;
         renderAll();
-        scheduleAutoSpinNext();
       });
       return;
     }
   } catch (e) {
     stopReelSpinImmediately();
     alert('通信エラー：' + (e.message || e));
-    slotAutoState.active = false;
+    slotSpinInFlight = false;
+    renderAll();
   } finally {
-    // アニメ開始済みなら、フラグはアニメ完了コールバックがクリアする
+    // 停止待ちに入っていれば、フラグは全停止後のコールバックがクリアする
     if (!animationStarted) slotSpinInFlight = false;
   }
 }
@@ -5157,61 +5152,84 @@ function stopReelSpinImmediately() {
   });
 }
 
-// 左→中→右の順に止める。中・右が同じ高揚役の時テンパイ演出。
-async function animateSlot(result, onDone) {
-  const data = loadData();
-  const slot = getSlotSettings(data);
+// 高揚役（テンパイ対象）の図柄
+const SLOT_TEMPAI_SYMBOLS = new Set(['bar', 'watermelon', 'seven', 'mushroom']);
+
+// 結果を保持し、各リールの STOP ボタンを押せる状態にする（目押し開始）
+function beginManualStop(result, onDone) {
   const reels = Array.isArray(result.reels) ? result.reels : ['blank', 'bell', 'bar'];
-  const role = result.role || { id: 'lose', tier: 'lose' };
-  const bonus = result.bonus || null;
+  slotPendingResult = {
+    reels,
+    role: result.role || { id: 'lose', tier: 'lose' },
+    bonus: result.bonus || null,
+  };
+  slotStopFlags = [false, false, false];
+  slotOnDoneCb = onDone || null;
+  // STOP ボタンを押せるようにする
+  document.querySelectorAll('#slotStopRow .slot-stop-btn').forEach(b => { b.disabled = false; });
+}
+
+// 指定リールを確定図柄で止める（STOP ボタン）
+function stopReel(i) {
+  if (!slotPendingResult) return;
+  if (i < 0 || i > 2 || slotStopFlags[i]) return;
+  const slot = getSlotSettings(loadData());
+  const reelEl = document.querySelector(`#slotReels .slot-reel[data-reel-index="${i}"]`);
+  if (!reelEl) return;
+  // 確定図柄を中央ライン（index 1）に来るよう差し替えて停止
+  const strip = reelEl.querySelector('.slot-reel-strip');
+  if (strip) strip.innerHTML = buildReelStripHtml(slot, slotPendingResult.reels[i]);
+  reelEl.classList.remove('spinning');
+  reelEl.classList.add('stopping');
+  slotSE('stop');
+  slotStopFlags[i] = true;
+  // ボタンを停止済み表示に
+  const btn = document.querySelector(`#slotStopRow .slot-stop-btn[data-stop="${i}"]`);
+  if (btn) { btn.disabled = true; btn.classList.add('stopped'); btn.textContent = '停止'; }
+  // テンパイ演出の更新
+  updateTempaiState();
+  // 全リール停止 → 当たり判定へ
+  if (slotStopFlags.every(Boolean)) {
+    setTimeout(() => finishSlotEvaluation(), 260);
+  }
+}
+
+// 停止済み2リールが同じ高揚役で残り1つが回転中ならテンパイ表示
+function updateTempaiState() {
+  if (!slotPendingResult) return;
+  const cab = document.getElementById('slotCabinet');
+  if (!cab) return;
+  const stopped = [0, 1, 2].filter(i => slotStopFlags[i]);
+  if (stopped.length === 2) {
+    const [a, b] = stopped;
+    const sa = slotPendingResult.reels[a];
+    const sb = slotPendingResult.reels[b];
+    if (sa === sb && SLOT_TEMPAI_SYMBOLS.has(sa)) {
+      if (!cab.classList.contains('tempai')) { cab.classList.add('tempai'); slotSE('tempai'); }
+      return;
+    }
+  }
+  if (!slotStopFlags.every(Boolean)) cab.classList.remove('tempai');
+}
+
+// 全リール停止後：揃い判定 → 当たり演出 / ボーナス突入
+async function finishSlotEvaluation() {
+  const pending = slotPendingResult;
+  const onDone = slotOnDoneCb;
+  slotPendingResult = null;
+  slotOnDoneCb = null;
+  const cab = document.getElementById('slotCabinet');
+  if (cab) cab.classList.remove('tempai');
   const reelEls = Array.from(document.querySelectorAll('#slotReels .slot-reel'));
+  if (!pending) { reelEls.forEach(r => r.classList.remove('stopping')); onDone && onDone(); return; }
 
-  // ストリップを結果に合わせて差し替えるヘルパ
-  function setReelSymbol(reelEl, symbolId) {
-    const strip = reelEl.querySelector('.slot-reel-strip');
-    if (!strip) return;
-    strip.innerHTML = buildReelStripHtml(slot, symbolId);
-  }
+  const reels = pending.reels;
+  const role = pending.role;
+  const bonus = pending.bonus;
 
-  // 左を止める
-  await new Promise(r => setTimeout(r, 480));
-  setReelSymbol(reelEls[0], reels[0]);
-  reelEls[0].classList.remove('spinning');
-  reelEls[0].classList.add('stopping');
-  slotSE('stop');
-
-  // 中央を止める
-  await new Promise(r => setTimeout(r, 320));
-  setReelSymbol(reelEls[1], reels[1]);
-  reelEls[1].classList.remove('spinning');
-  reelEls[1].classList.add('stopping');
-  slotSE('stop');
-
-  // テンパイ判定：左と中央が同じ高揚役（bar/watermelon/seven/mushroom）
-  const TEMPAI_SYMBOLS = new Set(['bar', 'watermelon', 'seven', 'mushroom']);
-  const isTempai = reels[0] === reels[1] && TEMPAI_SYMBOLS.has(reels[0]);
-  if (isTempai) {
-    const cab = document.getElementById('slotCabinet');
-    if (cab) cab.classList.add('tempai');
-    slotSE('tempai');
-    // 右リールを少し長めに回す
-    await new Promise(r => setTimeout(r, 900));
-    if (cab) cab.classList.remove('tempai');
-  } else {
-    await new Promise(r => setTimeout(r, 320));
-  }
-
-  // 右を止める
-  setReelSymbol(reelEls[2], reels[2]);
-  reelEls[2].classList.remove('spinning');
-  reelEls[2].classList.add('stopping');
-  slotSE('stop');
-
-  // 当たり枠ライト
-  await new Promise(r => setTimeout(r, 240));
+  await new Promise(r => setTimeout(r, 200));
   reelEls.forEach(r => r.classList.remove('stopping'));
 
-  // 揃い判定（演出用）
   const allEqual = reels[0] === reels[1] && reels[1] === reels[2];
   if (bonus) {
     // BIG/REG 突入
@@ -5310,24 +5328,6 @@ function spawnBonusParticles(count, isBig) {
   setTimeout(() => { wrap.innerHTML = ''; }, 3500);
 }
 
-// オートスピン継続判定
-function scheduleAutoSpinNext() {
-  if (!slotAutoState.active) return;
-  if (slotAutoState.remaining > 0) slotAutoState.remaining--;
-  else if (slotAutoState.remaining === -1) { /* pt切れまで */ }
-  else { slotAutoState.active = false; renderAll(); return; }
-
-  const data = loadData();
-  const me = getCurrentUser(data);
-  if (!me) { slotAutoState.active = false; return; }
-  const slot = getSlotSettings(data);
-  const canSpin = !!me.slotReplayPending || availableSpoon(me) >= slot.cost;
-  if (!canSpin) { slotAutoState.active = false; renderAll(); return; }
-  setTimeout(() => {
-    if (!slotAutoState.active || slotSpinInFlight) return;
-    doSlotSpin(me.id, { free: !!me.slotReplayPending });
-  }, 700);
-}
 
 // ============================================================
 // スロット用簡易サウンド（Web Audio で合成）
