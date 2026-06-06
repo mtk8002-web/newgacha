@@ -660,6 +660,35 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
 .ranking-list {
   display: flex; flex-direction: column; gap: 0.6rem;
 }
+/* シーズン切替バー */
+.ranking-season-bar {
+  display: flex; align-items: center; justify-content: center; gap: 0.7rem;
+  margin-bottom: 1.2rem;
+}
+.ranking-season-bar .rsb-label {
+  font-family: var(--font-en); font-size: 0.62rem; font-weight: 700;
+  letter-spacing: 0.3em; color: var(--text-muted); text-transform: uppercase;
+}
+.ranking-season-select {
+  font-family: var(--font-jp); font-weight: 700; font-size: 0.9rem;
+  color: var(--text);
+  padding: 0.5rem 2.2rem 0.5rem 1rem;
+  background: var(--card)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23b8923f' d='M1 1l5 5 5-5'/%3E%3C/svg%3E")
+    no-repeat right 0.9rem center;
+  border: 1.5px solid var(--gold-bright);
+  border-radius: 999px;
+  cursor: pointer;
+  -webkit-appearance: none; appearance: none;
+  box-shadow: var(--shadow-sm);
+}
+.ranking-season-select:focus { outline: none; border-color: var(--pink); }
+.ranking-archived-note {
+  text-align: center; font-size: 0.8rem; color: var(--text-muted);
+  background: var(--bg-gold); border: 1px solid var(--border);
+  border-radius: 999px; padding: 0.5rem 1rem; margin-bottom: 1.2rem;
+}
+.ranking-archived-note span { color: var(--gold-deep); font-weight: 700; }
 .ranking-list-label {
   font-family: var(--font-en); font-size: 0.6rem; font-weight: 700;
   letter-spacing: 0.4em; color: var(--text-muted);
@@ -3302,61 +3331,119 @@ footer {
 .slot-cabinet {
   position: relative;
   margin: 1.2rem auto;
-  max-width: 860px;
-  padding: 1.4rem 1.4rem 1.6rem;
-  border-radius: 18px;
+  max-width: 880px;
+  padding: 1.7rem 1.7rem 1.9rem;
+  border-radius: 26px;
   background:
-    linear-gradient(180deg, #2a2018 0%, #1a130d 60%, #100a06 100%);
+    radial-gradient(130% 70% at 50% -12%, rgba(255,228,150,0.22), transparent 58%),
+    radial-gradient(80% 120% at 50% 120%, rgba(214,85,122,0.12), transparent 60%),
+    linear-gradient(180deg, #3a2c1d 0%, #241a10 45%, #140d07 100%);
   border: 3px solid transparent;
   background-clip: padding-box;
   box-shadow:
-    var(--shadow-gold-heavy),
-    inset 0 1px 0 rgba(255,225,170,0.18),
-    inset 0 -2px 0 rgba(0,0,0,0.5);
+    0 22px 60px rgba(0,0,0,0.45),
+    0 6px 30px rgba(184,146,63,0.35),
+    inset 0 2px 0 rgba(255,235,190,0.25),
+    inset 0 -3px 8px rgba(0,0,0,0.6);
   overflow: hidden;
 }
+/* 二重のアニメ金フレーム */
 .slot-cabinet::before {
   content: '';
   position: absolute; inset: 0;
   pointer-events: none;
-  border-radius: 18px;
-  border: 2px solid transparent;
+  border-radius: 26px;
+  border: 3px solid transparent;
   background: var(--gold-shiny-anim) border-box;
   background-size: 220% 220%;
   -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
   -webkit-mask-composite: xor; mask-composite: exclude;
   animation: goldShine 6s linear infinite;
 }
-.slot-cabinet-title {
-  text-align: center;
-  font-family: var(--font-en); font-weight: 800; letter-spacing: 0.35em;
-  font-size: 0.62rem;
-  color: var(--gold-bright);
-  margin-bottom: 0.7rem;
-  text-shadow: 0 0 8px rgba(212,173,85,0.5);
+/* 内側の細い金ライン（彫り込み風） */
+.slot-cabinet::after {
+  content: '';
+  position: absolute; inset: 9px;
+  pointer-events: none;
+  border-radius: 19px;
+  border: 1px solid rgba(212,173,85,0.45);
+  box-shadow:
+    inset 0 0 18px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(255,235,190,0.12);
 }
+.slot-cabinet-title {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: center; gap: 0.9rem;
+  font-family: var(--font-en); font-weight: 800; letter-spacing: 0.4em;
+  font-size: 0.74rem;
+  color: transparent;
+  background: linear-gradient(180deg, #fbeeb6 0%, #e6c87a 45%, #b8923f 100%);
+  -webkit-background-clip: text; background-clip: text;
+  margin-bottom: 0.9rem;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.5)) drop-shadow(0 0 10px rgba(212,173,85,0.45));
+}
+.slot-cabinet-title::before,
+.slot-cabinet-title::after {
+  content: ''; height: 1px; width: 46px;
+  background: linear-gradient(90deg, transparent, var(--gold-bright));
+  -webkit-text-fill-color: initial;
+}
+.slot-cabinet-title::after { background: linear-gradient(90deg, var(--gold-bright), transparent); }
 
 /* リール3つ */
 .slot-reels {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.6rem;
+  gap: 0.7rem;
   position: relative;
-  background: #0c0805;
-  border-radius: 12px;
-  padding: 0.6rem;
+  z-index: 1;
+  background: linear-gradient(180deg, #050302 0%, #0c0805 50%, #050302 100%);
+  border-radius: 16px;
+  padding: 0.7rem;
   box-shadow:
-    inset 0 4px 14px rgba(0,0,0,0.7),
-    inset 0 0 0 2px rgba(212,173,85,0.35);
+    inset 0 6px 18px rgba(0,0,0,0.8),
+    inset 0 0 0 2px rgba(212,173,85,0.5),
+    inset 0 0 0 4px rgba(0,0,0,0.55),
+    0 1px 0 rgba(255,235,190,0.12);
 }
 .slot-reel {
   position: relative;
   height: 336px;
-  background: linear-gradient(180deg, #fefcf3 0%, #f6ebd2 50%, #fefcf3 100%);
-  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #fdf6e6 50%, #f3e6c8 100%);
+  border-radius: 10px;
   overflow: hidden;
-  border: 1.5px solid rgba(184,146,63,0.45);
-  box-shadow: inset 0 0 8px rgba(184,146,63,0.18);
+  border: 1px solid rgba(120,92,40,0.5);
+  box-shadow:
+    inset 0 0 10px rgba(120,92,40,0.22),
+    inset 0 0 0 1px rgba(255,255,255,0.5);
+}
+/* リール上下の暗がり（ドラム曲面の立体感／モダンなフェード） */
+.slot-reel::before,
+.slot-reel::after {
+  content: ''; position: absolute; left: 0; right: 0; height: 36%;
+  z-index: 3; pointer-events: none;
+}
+.slot-reel::before {
+  top: 0;
+  background: linear-gradient(180deg, rgba(18,11,4,0.5) 0%, rgba(18,11,4,0.12) 55%, transparent 100%);
+  border-radius: 10px 10px 0 0;
+}
+.slot-reel::after {
+  bottom: 0;
+  background: linear-gradient(0deg, rgba(18,11,4,0.5) 0%, rgba(18,11,4,0.12) 55%, transparent 100%);
+  border-radius: 0 0 10px 10px;
+}
+/* リール全体のガラス光沢（斜めのハイライト） */
+.slot-reels::before {
+  content: '';
+  position: absolute; inset: 0.7rem;
+  z-index: 4; pointer-events: none;
+  border-radius: 10px;
+  background: linear-gradient(118deg,
+    rgba(255,255,255,0.30) 0%,
+    rgba(255,255,255,0.08) 16%,
+    transparent 34%,
+    transparent 100%);
 }
 .slot-reel-strip {
   display: flex; flex-direction: column;
@@ -3365,6 +3452,11 @@ footer {
 .slot-reel.spinning .slot-reel-strip {
   animation: slot-spin 0.13s linear infinite;
   filter: blur(1.4px);
+}
+/* STOP 押下後・結果待ちの減速表示（押した瞬間に反応させる） */
+.slot-reel.braking .slot-reel-strip {
+  animation: slot-spin 0.34s linear infinite;
+  filter: blur(0.4px);
 }
 .slot-reel.stopping .slot-reel-strip {
   animation: slot-bounce 0.32s cubic-bezier(0.34,1.56,0.64,1);
@@ -3387,17 +3479,35 @@ footer {
 }
 .slot-symbol img { width: 92px; height: 92px; object-fit: contain; }
 
-/* リールの中央（揃いライン）に金ライン */
+/* リールの中央（揃いライン）：発光する金ライン＋左右マーカー */
 .slot-reels::after {
   content: '';
   position: absolute;
-  left: 0.6rem; right: 0.6rem;
-  top: 50%; height: 2px; transform: translateY(-1px);
-  background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
-  box-shadow: 0 0 12px rgba(212,173,85,0.7);
+  left: 0.3rem; right: 0.3rem;
+  top: 50%; height: 3px; transform: translateY(-1.5px);
+  background: linear-gradient(90deg,
+    rgba(212,173,85,0) 0%,
+    rgba(255,225,150,0.95) 18%,
+    #fff7e0 50%,
+    rgba(255,225,150,0.95) 82%,
+    rgba(212,173,85,0) 100%);
+  box-shadow: 0 0 14px rgba(255,210,110,0.85), 0 0 28px rgba(214,85,122,0.4);
   pointer-events: none;
-  z-index: 2;
+  z-index: 5;
+  animation: slot-payline-glow 2.2s ease-in-out infinite;
 }
+@keyframes slot-payline-glow {
+  0%, 100% { opacity: 0.8; }
+  50%      { opacity: 1; }
+}
+/* ペイライン左右の三角マーカー */
+.slot-payline-marker {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 0; height: 0; z-index: 6; pointer-events: none;
+  filter: drop-shadow(0 0 4px rgba(255,210,110,0.9));
+}
+.slot-payline-marker.left  { left: -2px;  border-top: 9px solid transparent; border-bottom: 9px solid transparent; border-left: 12px solid var(--gold-bright); }
+.slot-payline-marker.right { right: -2px; border-top: 9px solid transparent; border-bottom: 9px solid transparent; border-right: 12px solid var(--gold-bright); }
 
 /* 当たり：揃った図柄の枠が光る */
 .slot-reel.win {
@@ -3448,36 +3558,53 @@ footer {
 
 /* スピン操作部 */
 .slot-controls {
+  position: relative; z-index: 1;
   margin-top: 1.2rem;
   display: flex; flex-direction: column; gap: 0.7rem;
   align-items: stretch;
 }
 .slot-spin-btn {
   position: relative;
+  overflow: hidden;
   font-family: var(--font-en); font-weight: 800;
-  font-size: 1rem; letter-spacing: 0.16em;
-  padding: 1rem 1.2rem;
+  font-size: 1.05rem; letter-spacing: 0.18em;
+  padding: 1.05rem 1.2rem;
   background:
-    linear-gradient(180deg, #f8c75b 0%, #d4ad55 40%, #8a6d29 100%);
-  color: #2a2018;
-  border: 2px solid #b8923f;
-  border-radius: 12px;
+    linear-gradient(180deg, #fff0c0 0%, #f3cf6f 22%, #d4ad55 52%, #9a7a2e 100%);
+  color: #3a2a10;
+  border: 2px solid #e6c87a;
+  border-radius: 14px;
   cursor: pointer;
   box-shadow:
-    0 6px 18px rgba(184,146,63,0.45),
-    inset 0 1px 0 rgba(255,255,255,0.55),
-    inset 0 -2px 0 rgba(0,0,0,0.15);
-  text-shadow: 0 1px 1px rgba(255,255,255,0.4);
-  transition: filter 0.2s, transform 0.15s;
+    0 8px 22px rgba(184,146,63,0.5),
+    0 0 0 1px rgba(120,92,40,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.7),
+    inset 0 -3px 6px rgba(0,0,0,0.18);
+  text-shadow: 0 1px 1px rgba(255,255,255,0.5);
+  transition: filter 0.2s, transform 0.12s, box-shadow 0.2s;
   text-transform: uppercase;
 }
-.slot-spin-btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+/* 通り過ぎる光沢 */
+.slot-spin-btn::after {
+  content: ''; position: absolute; top: 0; left: -60%;
+  width: 45%; height: 100%; pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.6), transparent);
+  transform: skewX(-18deg);
+  animation: slot-spin-sheen 3.4s ease-in-out infinite;
+}
+@keyframes slot-spin-sheen {
+  0%   { left: -60%; }
+  40%  { left: 140%; }
+  100% { left: 140%; }
+}
+.slot-spin-btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 11px 26px rgba(184,146,63,0.6), inset 0 1px 0 rgba(255,255,255,0.7); }
 .slot-spin-btn:active:not(:disabled) { transform: translateY(1px); }
 .slot-spin-btn:disabled {
   background: var(--text-soft); color: var(--card); border-color: transparent;
   box-shadow: none; text-shadow: none; cursor: not-allowed;
   opacity: 0.6;
 }
+.slot-spin-btn:disabled::after { display: none; }
 .slot-spin-btn.replay {
   background: linear-gradient(180deg, #88c3dd 0%, #5fa8c8 40%, #2f6c8a 100%);
   border-color: #5fa8c8; color: #fff;
@@ -3561,13 +3688,14 @@ footer {
   border: 1.5px solid var(--border);
   border-radius: 999px;
 }
-.slot-pt-pill.gp { background: var(--card); }
+.slot-pt-pill.cost { background: var(--card); }
 .slot-pt-pill .label { font-size: 0.72rem; color: var(--text-muted); font-weight: 700; }
 .slot-pt-pill .value {
   font-family: var(--font-en); font-weight: 800; font-size: 1.15rem;
   color: var(--gold-deep);
 }
-.slot-pt-pill.gp .value { color: var(--pink-deep); }
+.slot-pt-pill .value small { font-size: 0.7rem; font-weight: 700; margin-left: 0.1rem; }
+.slot-pt-pill.cost .value { color: var(--pink-deep); }
 .slot-sound-btn {
   width: 40px; height: 40px; border-radius: 50%;
   border: 1.5px solid var(--border); background: var(--bg-warm);
@@ -3806,12 +3934,14 @@ body.slot-shake { animation: screenShake 0.18s ease-in-out 4; }
 /* reduce-motion 配慮 */
 @media (prefers-reduced-motion: reduce) {
   .slot-reel.spinning .slot-reel-strip,
+  .slot-reel.braking .slot-reel-strip,
   .slot-reel.stopping .slot-reel-strip,
   .slot-reel.win,
   .sbo-rays, .sbo-flash, .sbo-tell-symbols,
   body.slot-shake,
   .slot-lamp.on, .slot-lamp.just-lit, .slot-spin-btn.bonus,
-  .slot-cabinet::before {
+  .slot-spin-btn::after,
+  .slot-cabinet::before, .slot-reels::after {
     animation: none !important;
   }
   .sbo-particle { display: none; }
@@ -3821,8 +3951,11 @@ body.slot-shake { animation: screenShake 0.18s ease-in-out 4; }
 /* スマホ調整 */
 @media (max-width: 600px) {
   .slot-dashboard { padding: 0.8rem; }
-  .slot-cabinet { padding: 1rem 0.6rem 1.2rem; }
-  .slot-reels { padding: 0.4rem; gap: 0.35rem; }
+  .slot-cabinet { padding: 1.1rem 0.7rem 1.3rem; border-radius: 20px; }
+  .slot-cabinet::before { border-radius: 20px; }
+  .slot-cabinet::after { inset: 6px; border-radius: 14px; }
+  .slot-reels { padding: 0.45rem; gap: 0.4rem; border-radius: 13px; }
+  .slot-reels::before { inset: 0.45rem; }
   .slot-reel { height: 270px; }
   .slot-symbol { height: 90px; font-size: 3.4rem; }
   .slot-symbol img { width: 70px; height: 70px; }
@@ -5007,7 +5140,6 @@ function renderSlot(data) {
 function renderSlotDashboardHTML(data, me) {
   const slot = getSlotSettings(data);
   const avail = availableSpoon(me);
-  const gachaPoint = Math.max(0, parseInt(me.gachaPoint || 0, 10) || 0);
   const history = Array.isArray(me.slotHistory) ? me.slotHistory.slice(0, 3) : [];
   const replayPending = !!me.slotReplayPending;
   // 予約済みボーナス（ランプ点灯中）: null | 'big' | 'reg'
@@ -5091,9 +5223,9 @@ function renderSlotDashboardHTML(data, me) {
           <span class="label">使える pt</span>
           <span class="value" id="slotStatPt">${fmtCap(avail)}</span>
         </div>
-        <div class="slot-pt-pill gp">
-          <span class="label">ガチャ pt</span>
-          <span class="value" id="slotStatGp">${fmtCap(gachaPoint)}</span>
+        <div class="slot-pt-pill cost">
+          <span class="label">1回まわす</span>
+          <span class="value">${fmt(slot.cost)}<small>pt</small></span>
         </div>
         <button type="button" class="slot-sound-btn${slotSoundEnabled ? ' on' : ''}" id="slotSoundToggle" aria-label="サウンド切替">
           ${slotSoundEnabled ? '🔊' : '🔇'}
@@ -5105,6 +5237,8 @@ function renderSlotDashboardHTML(data, me) {
         ${lampHtml}
         <div class="slot-reels" id="slotReels">
           ${reelsHtml}
+          <span class="slot-payline-marker left"></span>
+          <span class="slot-payline-marker right"></span>
           <div class="slot-tempai">TEMPAI!</div>
         </div>
         <div class="slot-controls">
@@ -5236,7 +5370,7 @@ async function doSlotSpin(userId, opts) {
 
 function startReelSpin() {
   document.querySelectorAll('#slotReels .slot-reel').forEach(r => {
-    r.classList.remove('win', 'win-replay', 'stopping');
+    r.classList.remove('win', 'win-replay', 'stopping', 'braking');
     r.classList.add('spinning');
   });
   const cab = document.getElementById('slotCabinet');
@@ -5244,7 +5378,7 @@ function startReelSpin() {
 }
 function stopReelSpinImmediately() {
   document.querySelectorAll('#slotReels .slot-reel').forEach(r => {
-    r.classList.remove('spinning', 'stopping');
+    r.classList.remove('spinning', 'stopping', 'braking');
   });
 }
 
@@ -5267,7 +5401,7 @@ function beginManualStop(result, onDone) {
   slotPreResultStops = [];
   queue.forEach((i, k) => {
     if (slotStopFlags[i]) return;
-    setTimeout(() => doStopReel(i), k * 220);
+    setTimeout(() => doStopReel(i), k * 140);
   });
 }
 
@@ -5279,9 +5413,12 @@ function stopReel(i) {
   const btn = document.querySelector(`#slotStopRow .slot-stop-btn[data-stop="${i}"]`);
   if (btn) { btn.disabled = true; btn.classList.add('stopped'); btn.textContent = '停止'; }
   // 結果が既に来ていれば、そのリールだけ即停止（押すたびに1つずつ止まる）。
-  // 未到着なら押した順を記録 → beginManualStop が時間差で止める。
-  if (slotPendingResult) doStopReel(i);
-  else slotPreResultStops.push(i);
+  if (slotPendingResult) { doStopReel(i); return; }
+  // 未到着なら、押した瞬間にそのリールを「減速」表示にして反応させ、
+  // 押した順を記録 → 結果到着で確定停止する。
+  const reelEl = document.querySelector(`#slotReels .slot-reel[data-reel-index="${i}"]`);
+  if (reelEl) { reelEl.classList.remove('spinning'); reelEl.classList.add('braking'); }
+  slotPreResultStops.push(i);
 }
 
 // 指定リールを確定図柄で実際に止める
@@ -5293,7 +5430,7 @@ function doStopReel(i) {
   // 確定図柄を中央ライン（index 1）に来るよう差し替えて停止
   const strip = reelEl.querySelector('.slot-reel-strip');
   if (strip) strip.innerHTML = buildReelStripHtml(slot, slotPendingResult.reels[i], i);
-  reelEl.classList.remove('spinning');
+  reelEl.classList.remove('spinning', 'braking');
   reelEl.classList.add('stopping');
   slotSE('stop');
   slotStopFlags[i] = true;
@@ -5721,25 +5858,65 @@ function renderCountdown(data) {
   document.getElementById('cdSeconds').textContent = String(secs).padStart(2, '0');
 }
 
+// 表示中のシーズン：'current' または 'arc-<index>'
+let rankingSeasonSel = 'current';
+
 function renderRanking(data) {
   const list = document.getElementById('rankingList');
   list.innerHTML = '';
 
+  const settings = data.settings || {};
+  const season = settings.season || { number: 1, name: 'シーズン1' };
+  const archive = Array.isArray(settings.seasonArchive) ? settings.seasonArchive : [];
+
+  // 選択が無効（アーカイブが入れ替わった等）なら現在に戻す
+  if (rankingSeasonSel !== 'current') {
+    const i = parseInt(String(rankingSeasonSel).replace('arc-', ''), 10);
+    if (!archive[i]) rankingSeasonSel = 'current';
+  }
+
+  // シーズン切替バー
+  const bar = document.createElement('div');
+  bar.className = 'ranking-season-bar';
+  let opts = `<option value="current">${escapeHtml(season.name || `シーズン${season.number || 1}`)}（開催中）</option>`;
+  archive.forEach((a, i) => {
+    opts += `<option value="arc-${i}">${escapeHtml(a.name || `シーズン${a.number || ''}`)}（終了）</option>`;
+  });
+  bar.innerHTML = `
+    <span class="rsb-label">シーズン</span>
+    <select class="ranking-season-select" id="rankingSeasonSelect">${opts}</select>`;
+  list.appendChild(bar);
+  const sel = bar.querySelector('#rankingSeasonSelect');
+  sel.value = rankingSeasonSel;
+  sel.addEventListener('change', () => {
+    rankingSeasonSel = sel.value || 'current';
+    renderRanking(loadData());
+  });
+
+  if (rankingSeasonSel === 'current') {
+    renderLiveRanking(data, list);
+  } else {
+    const idx = parseInt(rankingSeasonSel.replace('arc-', ''), 10);
+    renderArchivedRanking(archive[idx], list);
+  }
+}
+
+// 現在シーズン（生データ）のランキング
+function renderLiveRanking(data, list) {
   const sorted = data.users.slice().sort((a, b) => (b.totalSpoon || 0) - (a.totalSpoon || 0));
   const top10 = sorted.slice(0, 10);
 
   if (top10.length === 0) {
-    list.innerHTML = `<div class="empty-msg">まだランキングに表示できる${escapeHtml(data.settings.userLabel || 'ユーザー')}がいません</div>`;
+    const empty = document.createElement('div');
+    empty.className = 'empty-msg';
+    empty.textContent = `まだランキングに表示できる${(data.settings.userLabel || 'ユーザー')}がいません`;
+    list.appendChild(empty);
     return;
   }
 
-  // 1〜3位：表彰台
   const podium = top10.slice(0, 3);
-  if (podium.length > 0) {
-    list.appendChild(buildPodium(podium));
-  }
+  if (podium.length > 0) list.appendChild(buildPodium(podium));
 
-  // 4位以下：通常リスト
   const rest = top10.slice(3);
   if (rest.length > 0) {
     const label = document.createElement('div');
@@ -5771,6 +5948,77 @@ function renderRanking(data) {
       list.appendChild(row);
     }
   }
+}
+
+// 過去シーズン（アーカイブ済みの確定順位）のランキング
+function renderArchivedRanking(arc, list) {
+  const standings = (arc && Array.isArray(arc.standings)) ? arc.standings : [];
+
+  const note = document.createElement('div');
+  note.className = 'ranking-archived-note';
+  const period = `${fmtSeasonDate(arc && arc.startedAt)} 〜 ${fmtSeasonDate(arc && arc.endedAt)}`;
+  note.innerHTML = `🏁 終了したシーズンの最終結果 ・ <span>${escapeHtml(period)}</span>`;
+  list.appendChild(note);
+
+  if (standings.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-msg';
+    empty.textContent = 'このシーズンの記録はありません';
+    list.appendChild(empty);
+    return;
+  }
+
+  // 1〜3位：表彰台
+  const top3 = standings.slice(0, 3);
+  const wrap = document.createElement('div');
+  wrap.className = 'podium';
+  const order = [];
+  if (top3[1]) order.push({ e: top3[1], pos: 2, tier: 'silver', medal: '🥈' });
+  if (top3[0]) order.push({ e: top3[0], pos: 1, tier: 'gold',   medal: '🥇' });
+  if (top3[2]) order.push({ e: top3[2], pos: 3, tier: 'bronze', medal: '🥉' });
+  for (const it of order) {
+    const card = document.createElement('div');
+    card.className = `podium-card ${it.tier}`;
+    card.innerHTML = `
+      <div class="podium-medal">${it.medal}</div>
+      <div class="podium-position-en">No. ${String(it.pos).padStart(2, '0')}</div>
+      <div class="podium-icon">${escapeHtml(it.e.icon || '👤')}</div>
+      <div class="podium-name">${escapeHtml(it.e.name || '')}</div>
+      <div class="podium-spoon">${fmtCap(it.e.score || 0)}<span class="unit">PT</span></div>
+      <div class="podium-base"><span class="small">PODIUM</span>${it.pos}</div>
+    `;
+    wrap.appendChild(card);
+  }
+  list.appendChild(wrap);
+
+  // 4位以下
+  const rest = standings.slice(3, 10);
+  if (rest.length > 0) {
+    const label = document.createElement('div');
+    label.className = 'ranking-list-label';
+    label.textContent = '4位以下';
+    list.appendChild(label);
+    for (const e of rest) {
+      const row = document.createElement('div');
+      row.className = 'rank-row';
+      row.innerHTML = `
+        <div class="rank-position">${e.rank}<span class="ord">th</span></div>
+        <div class="rank-icon">${escapeHtml(e.icon || '👤')}</div>
+        <div class="rank-info">
+          <div class="rank-name">${escapeHtml(e.name || '')}</div>
+        </div>
+        <div class="rank-spoon">${fmtCap(e.score || 0)}<span class="unit">PT</span></div>
+      `;
+      list.appendChild(row);
+    }
+  }
+}
+
+function fmtSeasonDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '—';
+  return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
 }
 
 // 表彰台（1〜3位）：2位・1位・3位 の順に配置

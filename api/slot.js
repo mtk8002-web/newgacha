@@ -59,10 +59,10 @@ const DEFAULT_SLOT_SYMBOLS = [
 // 役は固定（リプレイ / スイカ / チェリー / ベル / 単独BIG / 単独REG / はずれ）。
 // prob は確率(%)。はずれは 100 - その他合計 で自動算出。
 const DEFAULT_SLOT_ROLES = [
-  { id: 'replay',     name: 'リプレイ', match: 'all3',  symbolId: 'replay',     prob: 8,    payout: 0,   currency: 'pt',         replay: true, tier: 'replay' },
-  { id: 'watermelon', name: 'スイカ',   match: 'all3',  symbolId: 'watermelon', prob: 4,    payout: 100, currency: 'pt',         tier: 'small' },
-  { id: 'cherry',     name: 'チェリー', match: 'left1', symbolId: 'cherry',     prob: 10,   payout: 30,  currency: 'gachaPoint', tier: 'small' },
-  { id: 'bell',       name: 'ベル',     match: 'all3',  symbolId: 'bell',       prob: 12,   payout: 20,  currency: 'gachaPoint', tier: 'small' },
+  { id: 'replay',     name: 'リプレイ', match: 'all3',  symbolId: 'replay',     prob: 8,    payout: 0,   currency: 'pt', replay: true, tier: 'replay' },
+  { id: 'watermelon', name: 'スイカ',   match: 'all3',  symbolId: 'watermelon', prob: 4,    payout: 100, currency: 'pt', tier: 'small' },
+  { id: 'cherry',     name: 'チェリー', match: 'left1', symbolId: 'cherry',     prob: 10,   payout: 30,  currency: 'pt', tier: 'small' },
+  { id: 'bell',       name: 'ベル',     match: 'all3',  symbolId: 'bell',       prob: 12,   payout: 20,  currency: 'pt', tier: 'small' },
   { id: 'big',        name: '単独BIG',  match: 'none',  prob: 0.4,  tier: 'big', bonus: 'big' },
   { id: 'reg',        name: '単独REG',  match: 'none',  prob: 0.8,  tier: 'reg', bonus: 'reg' },
   { id: 'lose',       name: 'はずれ',   match: 'none',  prob: 0,    tier: 'lose' },
@@ -292,7 +292,7 @@ async function processSlot({ userId, free }) {
       roleId: 'bonus-' + pendingBonus,
       roleName: bonus ? bonus.typeName : (pendingBonus === 'big' ? 'BIG' : 'REG'),
       payout: 0,
-      payCurrency: 'gachaPoint',
+      payCurrency: 'pt',
       isReplay: false,
       reels,
       bonus: bonus ? {
@@ -335,18 +335,11 @@ async function processSlot({ userId, free }) {
 
   const reels = decideReels(role, slotFull);
 
-  // 小役払い出し（役ごとの通貨：スイカ=pt / チェリー・ベル=ガチャpt）
-  const roleCurrency = role.currency === 'pt' ? 'pt'
-    : (role.currency === 'gachaPoint' ? 'gachaPoint'
-      : (slot.payoutCurrency === 'pt' ? 'pt' : 'gachaPoint'));
+  // 小役払い出し（pt に統一：消費した pt を払い戻す方式）
+  const roleCurrency = 'pt';
   const payout = Math.max(0, Math.floor(Number(role.payout) || 0));
   if (payout > 0) {
-    if (roleCurrency === 'gachaPoint') {
-      user.gachaPoint = gp(user) + payout;
-    } else {
-      // pt 還元：累計を汚さないように消費を戻す方式
-      user.spentSpoon = Math.max(0, (user.spentSpoon || 0) - payout);
-    }
+    user.spentSpoon = Math.max(0, (user.spentSpoon || 0) - payout);
   }
   if (role.replay) user.slotReplayPending = true;
 

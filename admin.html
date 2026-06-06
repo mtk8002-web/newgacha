@@ -992,6 +992,34 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
   to { opacity: 1; transform: scale(1) rotate(0); }
 }
 
+/* ============ シーズン管理 ============ */
+.season-current {
+  display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;
+  background: rgba(232,99,138,0.1); border: 1px solid rgba(232,99,138,0.35);
+  border-radius: 8px; padding: 0.8rem 1rem;
+}
+.season-current .sc-badge {
+  font-family: var(--font-en); font-weight: 800; font-size: 0.62rem; letter-spacing: 0.25em;
+  color: var(--pink); text-transform: uppercase;
+}
+.season-current .sc-name { font-weight: 800; font-size: 1.15rem; color: var(--white); }
+.season-current .sc-meta { font-size: 0.74rem; color: rgba(255,255,255,0.55); margin-left: auto; }
+.season-archive-title {
+  margin-top: 1.6rem; padding-top: 1.2rem; font-weight: 700; color: var(--white);
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+#seasonArchiveList { margin-top: 0.8rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.season-arc {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 0.7rem 0.9rem;
+}
+.season-arc-head { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+.season-arc-name { font-weight: 800; color: var(--cream); }
+.season-arc-period { font-size: 0.72rem; color: rgba(255,255,255,0.5); }
+.season-arc-top { margin-top: 0.4rem; font-size: 0.82rem; color: rgba(255,255,255,0.8); }
+.season-arc-top .rk { color: var(--gold-bright); font-weight: 700; }
+.season-empty { font-size: 0.82rem; color: rgba(255,255,255,0.45); }
+
 /* ============ スロット設定（ダークテーマ） ============ */
 .slot-roles-title {
   font-weight: 700; font-size: 0.95rem; color: var(--white);
@@ -1259,6 +1287,28 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
       <div class="pane-en">Configuration</div>
       <h1 class="pane-title">設定</h1>
 
+      <!-- シーズン管理 -->
+      <div class="setting-section">
+        <div class="setting-section-en">Season</div>
+        <div class="setting-section-title">シーズン管理</div>
+        <div class="form-hint" style="margin-bottom:1rem">
+          ※ ランキングはシーズンごとに集計されます。<br>
+          ※「新シーズンを開始」すると、現在の順位を記録（公開ページで過去シーズンとして閲覧可）してから、<b>全員の pt を 0 にリセット</b>します。<br>
+          ※ 景品（コレクション）・ガチャpt・名前・アカウントは<b>残ります</b>。元に戻せません。
+        </div>
+        <div class="season-current" id="seasonCurrent"></div>
+        <div class="field-row" style="margin-top:1rem">
+          <label class="label-text">現シーズン名</label>
+          <input type="text" class="input" id="setSeasonName" maxlength="40" placeholder="シーズン1">
+        </div>
+        <div style="display:flex;justify-content:space-between;gap:0.6rem;flex-wrap:wrap;margin-top:1rem">
+          <button class="btn btn-ghost btn-sm" id="saveSeasonNameBtn"><span>名前を保存</span></button>
+          <button class="btn btn-danger btn-sm" id="startNewSeasonBtn"><span>新シーズンを開始（ptリセット）</span></button>
+        </div>
+        <div class="season-archive-title">過去のシーズン</div>
+        <div id="seasonArchiveList"></div>
+      </div>
+
       <!-- サイト基本情報 -->
       <div class="setting-section">
         <div class="setting-section-en">Site</div>
@@ -1411,15 +1461,15 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
           </div>
           <!-- チェリー -->
           <div class="slot-roles-row">
-            <span class="srr-name">🍒 チェリー<small>ガチャpt 払い出し</small></span>
+            <span class="srr-name">🍒 チェリー<small>pt 払い出し</small></span>
             <input type="number" class="input slot-prob" data-role="cherry" min="0" step="0.1">
-            <span class="srr-pay"><input type="number" class="input" id="setSlotPayout_cherry" min="0" step="1"><em>GP</em></span>
+            <span class="srr-pay"><input type="number" class="input" id="setSlotPayout_cherry" min="0" step="1"><em>pt</em></span>
           </div>
           <!-- ベル -->
           <div class="slot-roles-row">
-            <span class="srr-name">🔔 ベル<small>ガチャpt 払い出し</small></span>
+            <span class="srr-name">🔔 ベル<small>pt 払い出し</small></span>
             <input type="number" class="input slot-prob" data-role="bell" min="0" step="0.1">
-            <span class="srr-pay"><input type="number" class="input" id="setSlotPayout_bell" min="0" step="1"><em>GP</em></span>
+            <span class="srr-pay"><input type="number" class="input" id="setSlotPayout_bell" min="0" step="1"><em>pt</em></span>
           </div>
           <!-- 単独BIG -->
           <div class="slot-roles-row">
@@ -1754,10 +1804,10 @@ const DEFAULT_SLOT = {
   cost: 100,
   payoutCurrency: 'gachaPoint',
   roles: [
-    { id: 'replay',     name: 'リプレイ', match: 'all3',  symbolId: 'replay',     prob: 8,    payout: 0,   currency: 'pt',         replay: true, tier: 'replay' },
-    { id: 'watermelon', name: 'スイカ',   match: 'all3',  symbolId: 'watermelon', prob: 4,    payout: 100, currency: 'pt',         tier: 'small' },
-    { id: 'cherry',     name: 'チェリー', match: 'left1', symbolId: 'cherry',     prob: 10,   payout: 30,  currency: 'gachaPoint', tier: 'small' },
-    { id: 'bell',       name: 'ベル',     match: 'all3',  symbolId: 'bell',       prob: 12,   payout: 20,  currency: 'gachaPoint', tier: 'small' },
+    { id: 'replay',     name: 'リプレイ', match: 'all3',  symbolId: 'replay',     prob: 8,    payout: 0,   currency: 'pt', replay: true, tier: 'replay' },
+    { id: 'watermelon', name: 'スイカ',   match: 'all3',  symbolId: 'watermelon', prob: 4,    payout: 100, currency: 'pt', tier: 'small' },
+    { id: 'cherry',     name: 'チェリー', match: 'left1', symbolId: 'cherry',     prob: 10,   payout: 30,  currency: 'pt', tier: 'small' },
+    { id: 'bell',       name: 'ベル',     match: 'all3',  symbolId: 'bell',       prob: 12,   payout: 20,  currency: 'pt', tier: 'small' },
     { id: 'big',        name: '単独BIG',  match: 'none',  prob: 0.4,  tier: 'big', bonus: 'big' },
     { id: 'reg',        name: '単独REG',  match: 'none',  prob: 0.8,  tier: 'reg', bonus: 'reg' },
     { id: 'lose',       name: 'はずれ',   match: 'none',  prob: 0,    tier: 'lose' },
@@ -1792,6 +1842,9 @@ function getDefaultData() {
       eventEndDate: end.toISOString(),
       gachaDescription: '',
       headerImage: '',
+      // シーズン（ランキングのリセット単位）
+      season: { number: 1, name: 'シーズン1', startedAt: now.toISOString() },
+      seasonArchive: [],
       // セクションタイトル
       rankingTitle: 'ランキング',
       rankingTitleEn: 'Top Players',
@@ -1832,6 +1885,11 @@ function normalizeData(parsed) {
     if (!t.candyIconType) t.candyIconType = 'emoji';
     if (!t.accent) t.accent = '#e8638a';
   });
+  // シーズン情報を補完
+  if (!parsed.settings.season || typeof parsed.settings.season !== 'object') {
+    parsed.settings.season = { number: 1, name: 'シーズン1', startedAt: new Date().toISOString() };
+  }
+  if (!Array.isArray(parsed.settings.seasonArchive)) parsed.settings.seasonArchive = [];
   // スロット設定：旧データ（enabled/cost のみ等）でも役・重複・ボーナスを既定で補完
   const slot = (parsed.settings.slot && typeof parsed.settings.slot === 'object') ? parsed.settings.slot : {};
   parsed.settings.slot = Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_SLOT)), slot);
@@ -2771,6 +2829,25 @@ function openHistoryModal(userId) {
 // 設定
 // ============================================================
 function setupSettings() {
+  // シーズン：名前を保存
+  document.getElementById('saveSeasonNameBtn').addEventListener('click', async () => {
+    const name = document.getElementById('setSeasonName').value.trim();
+    if (!name) { showToast('シーズン名を入力してください'); return; }
+    const r = await callSeason('rename', name);
+    if (r) { await loadData(); renderAll(); showToast('シーズン名を保存しました'); }
+  });
+  // シーズン：新シーズンを開始（pt リセット）
+  document.getElementById('startNewSeasonBtn').addEventListener('click', async () => {
+    const ok = confirm('現在のランキングを記録して、全員の pt を 0 にリセットします。\n景品・ガチャpt・名前は残ります。元に戻せません。よろしいですか？');
+    if (!ok) return;
+    const r = await callSeason('reset');
+    if (r) {
+      await loadData();   // サーバーの最新（pt=0）で再読込（古いキャッシュで上書きしないため）
+      renderAll();
+      showToast(`新シーズンを開始しました（${(r.season && r.season.name) || ''}）`);
+    }
+  });
+
   // サイト基本情報
   document.getElementById('saveSiteBtn').addEventListener('click', () => {
     const siteName = document.getElementById('setSiteName').value.trim();
@@ -3119,7 +3196,70 @@ function updateSlotLoseProb() {
   if (tableEl) tableEl.classList.toggle('over100', sum > 100);
 }
 
+// シーズン管理：現在シーズン＋過去シーズン一覧を描画
+function fmtDateShort(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '—';
+  return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+}
+function renderSeasonSettings() {
+  const s = (data.settings && data.settings.season) || { number: 1, name: 'シーズン1' };
+  const cur = document.getElementById('seasonCurrent');
+  if (cur) {
+    cur.innerHTML = `
+      <span class="sc-badge">Now</span>
+      <span class="sc-name">${escapeHtml(s.name || `シーズン${s.number || 1}`)}</span>
+      <span class="sc-meta">開始 ${fmtDateShort(s.startedAt)}</span>`;
+  }
+  const nameInput = document.getElementById('setSeasonName');
+  if (nameInput) nameInput.value = s.name || `シーズン${s.number || 1}`;
+
+  const archive = Array.isArray(data.settings && data.settings.seasonArchive) ? data.settings.seasonArchive : [];
+  const list = document.getElementById('seasonArchiveList');
+  if (list) {
+    if (archive.length === 0) {
+      list.innerHTML = `<div class="season-empty">まだ過去シーズンはありません。</div>`;
+    } else {
+      list.innerHTML = archive.map(a => {
+        const top = (a.standings || []).slice(0, 3)
+          .map(st => `<span class="rk">${st.rank}位</span> ${escapeHtml(st.icon || '')}${escapeHtml(st.name || '')}（${fmt(st.score || 0)}）`)
+          .join(' ／ ') || '記録なし';
+        return `
+          <div class="season-arc">
+            <div class="season-arc-head">
+              <span class="season-arc-name">${escapeHtml(a.name || `シーズン${a.number || ''}`)}</span>
+              <span class="season-arc-period">${fmtDateShort(a.startedAt)} 〜 ${fmtDateShort(a.endedAt)}・${(a.standings || []).length}名</span>
+            </div>
+            <div class="season-arc-top">${top}</div>
+          </div>`;
+      }).join('');
+    }
+  }
+}
+
+// /api/season を叩く（管理者トークン）
+async function callSeason(action, name) {
+  const token = sessionStorage.getItem(SESSION_KEY) || '';
+  try {
+    const res = await fetch('/api/season', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ action, name }),
+    });
+    if (res.status === 401) { showToast('セッションが無効です。再ログインしてください'); logout(); return null; }
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json.ok) { showToast('失敗しました: ' + (json.error || res.status)); return null; }
+    return json;
+  } catch (e) {
+    showToast('通信エラー: ' + (e.message || e));
+    return null;
+  }
+}
+
 function renderSettings() {
+  // シーズン
+  renderSeasonSettings();
   // サイト基本情報
   document.getElementById('setSiteName').value   = data.settings.siteName   || '';
   document.getElementById('setLogoText').value   = data.settings.logoText   || '';

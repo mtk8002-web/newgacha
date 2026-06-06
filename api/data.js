@@ -25,6 +25,9 @@ function getDefaultData() {
       eventStartDate: now.toISOString(),
       eventEndDate: end.toISOString(),
       headerImage: '',
+      // シーズン（ランキングのリセット単位）
+      season: { number: 1, name: 'シーズン1', startedAt: now.toISOString() },
+      seasonArchive: [],
       // セクションタイトル（公開ページ）
       rankingTitle: 'ランキング',
       rankingTitleEn: 'Top Players',
