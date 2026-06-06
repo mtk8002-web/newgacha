@@ -5051,13 +5051,11 @@ function setupPlayModeTabs() {
 // 図柄・役定義のデフォルト（サーバー未配信時のフォールバック）
 const SLOT_DEFAULT_SYMBOLS = [
   { id: 'seven',      icon: '7️⃣' },
-  { id: 'mushroom',   icon: '🍄' },
-  { id: 'bar',        icon: '🅱️' },
   { id: 'watermelon', icon: '🍉' },
-  { id: 'bell',       icon: '🔔' },
   { id: 'cherry',     icon: '🍒' },
+  { id: 'bell',       icon: '🔔' },
   { id: 'replay',     icon: '🔄' },
-  { id: 'blank',      icon: '🍬' },
+  { id: 'mushroom',   icon: '🍄' },
 ];
 
 function getSlotSettings(data) {
@@ -5068,7 +5066,7 @@ function getSlotSettings(data) {
     payoutCurrency: s.payoutCurrency === 'pt' ? 'pt' : 'gachaPoint',
     autoSpinEnabled: s.autoSpinEnabled !== false,
     soundEnabled: s.soundEnabled !== false,
-    symbols: (Array.isArray(s.symbols) && s.symbols.length > 0) ? s.symbols : SLOT_DEFAULT_SYMBOLS,
+    symbols: SLOT_DEFAULT_SYMBOLS, // 図柄は固定（意味のある6種のみ）
     roles: Array.isArray(s.roles) ? s.roles : [],
     bonus: s.bonus || { enabled: false, types: [], overlap: {} },
   };
@@ -5148,7 +5146,7 @@ function renderSlotDashboardHTML(data, me) {
   // 初期表示の出目（履歴の最新があればそれを、なければ blank, bell, bar）
   const lastReels = (me.slotHistory && me.slotHistory[0] && Array.isArray(me.slotHistory[0].reels))
     ? me.slotHistory[0].reels
-    : ['blank', 'bell', 'bar'];
+    : ['cherry', 'bell', 'watermelon'];
 
   const reelsHtml = [0,1,2].map(i => `
     <div class="slot-reel" data-reel-index="${i}">
@@ -5375,19 +5373,21 @@ function startReelSpin() {
   });
   const cab = document.getElementById('slotCabinet');
   if (cab) cab.classList.remove('tempai');
+  startSlotHum();  // リール回転音を鳴らし始める
 }
 function stopReelSpinImmediately() {
   document.querySelectorAll('#slotReels .slot-reel').forEach(r => {
     r.classList.remove('spinning', 'stopping', 'braking');
   });
+  stopSlotHum();
 }
 
 // 高揚役（テンパイ対象）の図柄
-const SLOT_TEMPAI_SYMBOLS = new Set(['bar', 'watermelon', 'seven', 'mushroom']);
+const SLOT_TEMPAI_SYMBOLS = new Set(['watermelon', 'seven', 'mushroom', 'bell']);
 
 // 結果を保持し、先取り押下済みのリールを即停止（目押し開始）
 function beginManualStop(result, onDone) {
-  const reels = Array.isArray(result.reels) ? result.reels : ['blank', 'bell', 'bar'];
+  const reels = Array.isArray(result.reels) ? result.reels : ['cherry', 'bell', 'watermelon'];
   slotPendingResult = {
     reels,
     role: result.role || { id: 'lose', tier: 'lose' },
@@ -5462,6 +5462,7 @@ function updateTempaiState() {
 
 // 全リール停止後：揃い判定 → 当たり演出 / ボーナス突入
 async function finishSlotEvaluation() {
+  stopSlotHum();  // 全リール停止 → 回転音を止める
   const pending = slotPendingResult;
   const onDone = slotOnDoneCb;
   slotPendingResult = null;
@@ -5593,9 +5594,10 @@ function spawnBonusParticles(count, isBig) {
 
 
 // ============================================================
-// スロット用簡易サウンド（Web Audio で合成）
+// スロット用サウンド（Web Audio で合成・本格スロット風）
 // ============================================================
 let slotAudioCtx = null;
+let slotMasterGain = null;
 function getSlotAudio() {
   if (!slotSoundEnabled) return null;
   try {
@@ -5603,51 +5605,143 @@ function getSlotAudio() {
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return null;
       slotAudioCtx = new AC();
+      slotMasterGain = slotAudioCtx.createGain();
+      slotMasterGain.gain.value = 0.5;
+      slotMasterGain.connect(slotAudioCtx.destination);
     }
     if (slotAudioCtx.state === 'suspended') slotAudioCtx.resume();
     return slotAudioCtx;
   } catch { return null; }
 }
+
+// エンベロープ付き単音
+function slotTone(freq, start, dur, type, gain) {
+  const ctx = slotAudioCtx; if (!ctx) return;
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.type = type || 'sine';
+  o.frequency.setValueAtTime(freq, start);
+  g.gain.setValueAtTime(0.0008, start);
+  g.gain.linearRampToValueAtTime(gain, start + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0008, start + dur);
+  o.connect(g).connect(slotMasterGain);
+  o.start(start);
+  o.stop(start + dur + 0.05);
+}
+
+// 減衰ノイズ（メカニカルなリール停止音用）
+function slotNoise(start, dur, gain, freq) {
+  const ctx = slotAudioCtx; if (!ctx) return;
+  const len = Math.max(1, Math.floor(ctx.sampleRate * dur));
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const filt = ctx.createBiquadFilter();
+  filt.type = 'bandpass'; filt.frequency.value = freq || 1800; filt.Q.value = 0.8;
+  const g = ctx.createGain(); g.gain.value = gain;
+  src.connect(filt).connect(g).connect(slotMasterGain);
+  src.start(start);
+}
+
+// リール回転中のループ音（うなり）
+let slotHumNodes = null;
+function startSlotHum() {
+  const ctx = getSlotAudio(); if (!ctx) return;
+  stopSlotHum();
+  const t = ctx.currentTime;
+  const o  = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 68;
+  const o2 = ctx.createOscillator(); o2.type = 'square';  o2.frequency.value = 136;
+  const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 24;
+  const lfoG = ctx.createGain(); lfoG.gain.value = 7;
+  lfo.connect(lfoG); lfoG.connect(o.frequency);
+  const filt = ctx.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 520;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0008, t);
+  g.gain.linearRampToValueAtTime(0.05, t + 0.08);
+  o.connect(filt); o2.connect(filt); filt.connect(g); g.connect(slotMasterGain);
+  o.start(t); o2.start(t); lfo.start(t);
+  slotHumNodes = { o, o2, lfo, g };
+}
+function stopSlotHum() {
+  if (!slotHumNodes || !slotAudioCtx) return;
+  const { o, o2, lfo, g } = slotHumNodes;
+  const t = slotAudioCtx.currentTime;
+  try {
+    g.gain.cancelScheduledValues(t);
+    g.gain.setValueAtTime(g.gain.value, t);
+    g.gain.exponentialRampToValueAtTime(0.0008, t + 0.12);
+    o.stop(t + 0.16); o2.stop(t + 0.16); lfo.stop(t + 0.16);
+  } catch { /* ignore */ }
+  slotHumNodes = null;
+}
+
+// 当たり時のファンファーレ（メロディ＋ベース＝音楽）
+function playWinFanfare(isBig) {
+  const ctx = getSlotAudio(); if (!ctx) return;
+  const t = ctx.currentTime + 0.02;
+  const melodyBig = [
+    [523,0.00,0.16],[659,0.16,0.16],[784,0.32,0.16],[1047,0.48,0.30],
+    [988,0.82,0.16],[1047,0.98,0.16],[1175,1.14,0.16],[1319,1.30,0.42],
+    [1047,1.74,0.18],[1319,1.94,0.18],[1568,2.14,0.55],
+  ];
+  const melodyReg = [
+    [523,0.00,0.16],[659,0.16,0.16],[784,0.32,0.18],[1047,0.52,0.40],
+    [880,0.98,0.16],[1047,1.18,0.50],
+  ];
+  const mel = isBig ? melodyBig : melodyReg;
+  mel.forEach(([f, dt, dur]) => {
+    slotTone(f, t + dt, dur, 'square', 0.15);
+    slotTone(f * 2, t + dt, dur * 0.8, 'sine', 0.04);
+  });
+  const bass = isBig
+    ? [[131,0,0.42],[196,0.48,0.42],[131,0.96,0.42],[196,1.44,0.42],[262,1.92,0.75]]
+    : [[131,0,0.46],[196,0.52,0.46],[262,0.98,0.62]];
+  bass.forEach(([f, dt, dur]) => slotTone(f, t + dt, dur, 'triangle', 0.16));
+}
+
 function slotSE(kind) {
   const ctx = getSlotAudio();
   if (!ctx) return;
-  const now = ctx.currentTime;
-  const beep = (freq, dur, type, gain) => {
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = type || 'sine';
-    o.frequency.value = freq;
-    g.gain.value = 0;
-    g.gain.linearRampToValueAtTime(gain || 0.18, now + 0.01);
-    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
-    o.connect(g).connect(ctx.destination);
-    o.start(now);
-    o.stop(now + dur + 0.05);
-  };
+  const t = ctx.currentTime;
   if (kind === 'spin') {
-    beep(880, 0.08, 'square', 0.12);
+    // レバーON：低→高の短いスイープ＋クリック
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(220, t);
+    o.frequency.exponentialRampToValueAtTime(680, t + 0.18);
+    g.gain.setValueAtTime(0.0008, t);
+    g.gain.linearRampToValueAtTime(0.12, t + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0008, t + 0.22);
+    o.connect(g).connect(slotMasterGain); o.start(t); o.stop(t + 0.26);
+    slotNoise(t, 0.05, 0.05, 2600);
   } else if (kind === 'stop') {
-    beep(440, 0.06, 'triangle', 0.18);
+    // メカニカルな「ガコッ」：低い thump ＋ 短いノイズ
+    slotTone(150, t, 0.09, 'sine', 0.34);
+    slotTone(88, t, 0.13, 'sine', 0.30);
+    slotNoise(t, 0.06, 0.13, 1400);
   } else if (kind === 'tempai') {
-    beep(620, 0.18, 'sawtooth', 0.16);
-    setTimeout(() => beep(720, 0.18, 'sawtooth', 0.16), 180);
-    setTimeout(() => beep(620, 0.18, 'sawtooth', 0.16), 360);
+    // テンパイ煽り：上昇する連打
+    [660, 740, 830, 900].forEach((f, i) => slotTone(f, t + i * 0.12, 0.18, 'sawtooth', 0.14));
   } else if (kind === 'small') {
-    beep(1040, 0.12, 'square', 0.16);
-    setTimeout(() => beep(1320, 0.12, 'square', 0.14), 90);
-  } else if (kind === 'big') {
-    beep(880, 0.18, 'square', 0.2);
-    setTimeout(() => beep(1175, 0.18, 'square', 0.2), 120);
-    setTimeout(() => beep(1568, 0.3, 'square', 0.22), 240);
+    // 小役：明るいコイン/ベル系ジングル（音楽）
+    [784, 988, 1175, 1568].forEach((f, i) => {
+      slotTone(f, t + i * 0.075, 0.16, 'square', 0.16);
+      slotTone(f * 2, t + i * 0.075, 0.10, 'sine', 0.05);
+    });
   } else if (kind === 'replay') {
-    beep(640, 0.12, 'sine', 0.16);
-    setTimeout(() => beep(800, 0.18, 'sine', 0.16), 100);
+    slotTone(659, t, 0.12, 'sine', 0.16);
+    slotTone(880, t + 0.1, 0.2, 'sine', 0.16);
+  } else if (kind === 'big') {
+    // ボーナス確定の強いヒット
+    slotTone(523, t, 0.16, 'square', 0.2);
+    slotTone(784, t + 0.06, 0.18, 'square', 0.2);
+    slotTone(1047, t + 0.12, 0.32, 'square', 0.22);
+    slotNoise(t, 0.18, 0.05, 3000);
   } else if (kind === 'fanfare-big') {
-    const seq = [880, 1175, 1568, 1175, 1568, 1976];
-    seq.forEach((f, i) => setTimeout(() => beep(f, 0.22, 'square', 0.22), i * 130));
+    playWinFanfare(true);
   } else if (kind === 'fanfare-reg') {
-    const seq = [620, 880, 1175];
-    seq.forEach((f, i) => setTimeout(() => beep(f, 0.2, 'triangle', 0.2), i * 130));
+    playWinFanfare(false);
   }
 }
 

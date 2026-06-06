@@ -52,9 +52,8 @@ function pickRandSymbol(symbolIds, excludeSet) {
 // スロット既定値（管理画面 未設定でも動くようフォールバック）
 // ============================================================
 const DEFAULT_SLOT_SYMBOLS = [
-  { id: 'seven', icon: '7️⃣' }, { id: 'mushroom', icon: '🍄' }, { id: 'bar', icon: '🅱️' },
-  { id: 'watermelon', icon: '🍉' }, { id: 'bell', icon: '🔔' }, { id: 'cherry', icon: '🍒' },
-  { id: 'replay', icon: '🔄' }, { id: 'blank', icon: '🍬' },
+  { id: 'seven', icon: '7️⃣' }, { id: 'watermelon', icon: '🍉' }, { id: 'cherry', icon: '🍒' },
+  { id: 'bell', icon: '🔔' }, { id: 'replay', icon: '🔄' }, { id: 'mushroom', icon: '🍄' },
 ];
 // 役は固定（リプレイ / スイカ / チェリー / ベル / 単独BIG / 単独REG / はずれ）。
 // prob は確率(%)。はずれは 100 - その他合計 で自動算出。
@@ -83,7 +82,7 @@ const DEFAULT_SLOT_BONUS = {
 // slot 設定を既定値で補完して返す
 function getSlotConfig(slot) {
   const roles   = (Array.isArray(slot.roles)   && slot.roles.length)   ? slot.roles   : DEFAULT_SLOT_ROLES;
-  const symbols = (Array.isArray(slot.symbols) && slot.symbols.length) ? slot.symbols : DEFAULT_SLOT_SYMBOLS;
+  const symbols = DEFAULT_SLOT_SYMBOLS; // 図柄は固定（意味のある6種のみ）
   const overlap = (slot.overlap && typeof slot.overlap === 'object')   ? slot.overlap : DEFAULT_SLOT_OVERLAP;
   const bonus   = (slot.bonus && Array.isArray(slot.bonus.types) && slot.bonus.types.length)
     ? slot.bonus : DEFAULT_SLOT_BONUS;
@@ -186,7 +185,7 @@ function decideReels(role, slot) {
       if (a === b && b === c && all3SymbolSet.has(a)) continue;
       return [a, b, c];
     }
-    return ['blank', 'bell', 'bar'];
+    return ['cherry', 'bell', 'watermelon'];
   }
   // 想定外
   return [role.symbolId, role.symbolId, role.symbolId];
