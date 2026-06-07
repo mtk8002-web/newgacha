@@ -257,6 +257,16 @@ export default async function handler(req, res) {
               if (typeof old.slotReplayPending === 'boolean') {
                 u.slotReplayPending = old.slotReplayPending;
               }
+              if (old.slotBonusPending !== undefined) {
+                u.slotBonusPending = old.slotBonusPending;
+              }
+              // スロット専用ランキング：きのこpt / 専用景品コレクションも /api/slot が真実の源
+              if (typeof old.mushroomPt === 'number') {
+                u.mushroomPt = old.mushroomPt;
+              }
+              if (Array.isArray(old.slotPrizes)) {
+                u.slotPrizes = old.slotPrizes;
+              }
             }
             delete u.hasPassword;
           }

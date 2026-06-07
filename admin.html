@@ -1020,6 +1020,41 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
 .season-arc-top .rk { color: var(--gold-bright); font-weight: 700; }
 .season-empty { font-size: 0.82rem; color: rgba(255,255,255,0.45); }
 
+/* ============ スロット専用景品エディタ ============ */
+.slot-prizes-wrap { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 0.9rem; }
+.slot-prizes-head { font-weight: 800; color: var(--cream); margin-bottom: 0.7rem; }
+.slot-prize-list { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.7rem; }
+.slot-prize-empty { font-size: 0.8rem; color: rgba(255,255,255,0.45); padding: 0.4rem; }
+.slot-prize-row {
+  display: grid; grid-template-columns: 56px 1fr 28px; gap: 0.7rem; align-items: center;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 0.6rem;
+}
+.spp-thumb {
+  width: 56px; height: 56px; border-radius: 8px; overflow: hidden; cursor: pointer;
+  background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+}
+.spp-thumb:hover { border-color: var(--pink); }
+.spp-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.spp-emoji-thumb { font-size: 1.8rem; }
+.spp-fields { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+.spp-fields .spp-name { width: 100%; }
+.spp-nums { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.spp-nums label { display: flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; color: rgba(255,255,255,0.7); font-weight: 700; }
+.spp-nums label .input { width: 72px; padding: 0.4rem 0.5rem; text-align: center; }
+.spp-del {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: transparent; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.6);
+  cursor: pointer; font-size: 1rem; line-height: 1;
+}
+.spp-del:hover { color: var(--danger); border-color: var(--danger); }
+@media (max-width: 700px) {
+  .slot-prize-row { grid-template-columns: 48px 1fr 26px; }
+  .spp-thumb { width: 48px; height: 48px; }
+  .spp-nums label .input { width: 60px; }
+}
+
 /* ============ スロット設定（ダークテーマ） ============ */
 .slot-roles-title {
   font-weight: 700; font-size: 0.95rem; color: var(--white);
@@ -1513,19 +1548,21 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
           </div>
         </div>
 
-        <!-- ボーナス景品 -->
-        <div class="slot-roles-title">ボーナス景品（当たる中身）</div>
+        <!-- スロット専用景品（きのこpt） -->
+        <div class="slot-roles-title">スロット専用景品（BIG / REG で当たる景品）</div>
         <div class="form-hint" style="margin-bottom:0.8rem">
-          ※ BIG / REG 当選時に当たる景品を、ガチャの景品プールから選びます。<br>
-          ※ そのガチャの景品とWeight（重み）でそのまま抽選されます。ボーナス専用にしたい場合は、非表示のガチャタイプを作って指定してください。
+          ※ BIG / REG 当選時は、ガチャ景品ではなく<b>スロット専用景品</b>が当たります。<br>
+          ※ 各景品に画像・名前・<b>きのこpt</b>・Weight（重み）を設定。きのこptの合計で<b>スロット専用ランキング</b>が上がります。
         </div>
-        <div class="field-row">
-          <label class="label-text">BIG の景品プール</label>
-          <select class="input" id="setSlotBigSource"></select>
+        <div class="slot-prizes-wrap">
+          <div class="slot-prizes-head">🎰 BIG の景品プール</div>
+          <div class="slot-prize-list" id="slotBigPrizeList" data-bonus="big"></div>
+          <button type="button" class="btn btn-ghost btn-sm slot-prize-add" data-bonus="big"><span>＋ BIG景品を追加</span></button>
         </div>
-        <div class="field-row" style="margin-top:0.8rem">
-          <label class="label-text">REG の景品プール</label>
-          <select class="input" id="setSlotRegSource"></select>
+        <div class="slot-prizes-wrap" style="margin-top:1.2rem">
+          <div class="slot-prizes-head">🎰 REG の景品プール</div>
+          <div class="slot-prize-list" id="slotRegPrizeList" data-bonus="reg"></div>
+          <button type="button" class="btn btn-ghost btn-sm slot-prize-add" data-bonus="reg"><span>＋ REG景品を追加</span></button>
         </div>
 
         <div style="text-align:right;margin-top:1.2rem">
@@ -1819,8 +1856,14 @@ const DEFAULT_SLOT = {
   bonus: {
     enabled: true,
     types: [
-      { id: 'big', name: 'BIG BONUS', tellSymbolId: 'seven',    color: '#d4ad55', sourceGachaTypeId: '' },
-      { id: 'reg', name: 'REG BONUS', tellSymbolId: 'mushroom', color: '#5fa8c8', sourceGachaTypeId: '' },
+      { id: 'big', name: 'BIG BONUS', tellSymbolId: 'seven', color: '#d4ad55', prizes: [
+        { id: 'big-1', name: 'おおきのこ', icon: '🍄', iconType: 'emoji', mushroom: 10, weight: 50 },
+        { id: 'big-2', name: 'まんねんきのこ', icon: '🌟', iconType: 'emoji', mushroom: 30, weight: 10 },
+      ] },
+      { id: 'reg', name: 'REG BONUS', tellSymbolId: 'mushroom', color: '#5fa8c8', prizes: [
+        { id: 'reg-1', name: 'こきのこ', icon: '🍄', iconType: 'emoji', mushroom: 3, weight: 60 },
+        { id: 'reg-2', name: 'なかきのこ', icon: '🍄', iconType: 'emoji', mushroom: 8, weight: 20 },
+      ] },
     ],
   },
 };
@@ -1902,11 +1945,20 @@ function normalizeData(parsed) {
   if (!parsed.settings.slot.bonus || !Array.isArray(parsed.settings.slot.bonus.types) || parsed.settings.slot.bonus.types.length === 0) {
     parsed.settings.slot.bonus = JSON.parse(JSON.stringify(DEFAULT_SLOT.bonus));
   }
+  // 旧スキーマ（sourceGachaTypeId）のボーナスタイプに prizes が無ければ既定のスロット専用景品を補完
+  parsed.settings.slot.bonus.types.forEach(t => {
+    if (!Array.isArray(t.prizes)) {
+      const d = (DEFAULT_SLOT.bonus.types.find(x => x.id === t.id) || {});
+      t.prizes = JSON.parse(JSON.stringify(d.prizes || []));
+    }
+  });
   if (!Array.isArray(parsed.users)) parsed.users = [];
   for (const u of parsed.users) {
     // 旧フィールド gachaConsumed は無視。新フィールド spentSpoon を使う
     if (typeof u.spentSpoon !== 'number') u.spentSpoon = 0;
     if (!Array.isArray(u.gachaHistory)) u.gachaHistory = [];
+    if (typeof u.mushroomPt !== 'number') u.mushroomPt = 0;
+    if (!Array.isArray(u.slotPrizes)) u.slotPrizes = [];
   }
   return parsed;
 }
@@ -2904,12 +2956,23 @@ function setupSettings() {
       watermelon: { big: numId('setSlotOvWmBig'), reg: numId('setSlotOvWmReg') },
       cherry:     { big: numId('setSlotOvChBig'), reg: numId('setSlotOvChReg') },
     };
-    // ボーナス景品ソース（既存 bonus を保持しつつ source を更新）
-    const bonus = JSON.parse(JSON.stringify((data.settings.slot && data.settings.slot.bonus) || DEFAULT_SLOT.bonus));
-    if (!Array.isArray(bonus.types) || bonus.types.length === 0) bonus.types = JSON.parse(JSON.stringify(DEFAULT_SLOT.bonus.types));
-    bonus.enabled = true;
-    const bigType = bonus.types.find(t => t.id === 'big'); if (bigType) bigType.sourceGachaTypeId = document.getElementById('setSlotBigSource').value || '';
-    const regType = bonus.types.find(t => t.id === 'reg'); if (regType) regType.sourceGachaTypeId = document.getElementById('setSlotRegSource').value || '';
+    // スロット専用景品プール（big/reg）を draft から構築
+    const buildPrizes = (bonusId) => (slotPrizeDraft[bonusId] || []).map((p, i) => ({
+      id: p.id || `${bonusId}-${i + 1}`,
+      name: (p.name || '').trim() || '景品',
+      icon: p.icon || '🍄',
+      iconType: p.iconType === 'image' ? 'image' : 'emoji',
+      mushroom: Math.max(0, Math.floor(Number(p.mushroom) || 0)),
+      weight: Math.max(0, Math.floor(Number(p.weight) || 0)),
+    }));
+    const tpl = JSON.parse(JSON.stringify(DEFAULT_SLOT.bonus.types));
+    const bonus = {
+      enabled: true,
+      types: tpl.map(t => ({
+        id: t.id, name: t.name, tellSymbolId: t.tellSymbolId, color: t.color,
+        prizes: buildPrizes(t.id),
+      })),
+    };
 
     data.settings.slot = Object.assign({}, data.settings.slot || {}, { enabled, cost, roles, overlap, bonus });
     const sum = roles.filter(r => r.id !== 'lose').reduce((s, r) => s + (Number(r.prob) || 0), 0);
@@ -2921,6 +2984,8 @@ function setupSettings() {
   document.querySelectorAll('.slot-prob').forEach(el => {
     el.addEventListener('input', updateSlotLoseProb);
   });
+  // スロット専用景品プールの編集
+  setupSlotPrizeEditors();
 
   document.getElementById('saveEventBtn').addEventListener('click', () => {
     const name = document.getElementById('setEventName').value.trim();
@@ -3182,6 +3247,109 @@ function captureGachaTypesFromForm() {
 }
 
 // 役の確率合計と、自動算出される「はずれ%」を更新
+// ===== スロット専用景品プールの編集 =====
+let slotPrizeDraft = { big: [], reg: [] };
+
+function renderSlotPrizeRows() {
+  ['big', 'reg'].forEach(bonusId => {
+    const listEl = document.getElementById(bonusId === 'big' ? 'slotBigPrizeList' : 'slotRegPrizeList');
+    if (!listEl) return;
+    const arr = slotPrizeDraft[bonusId] || [];
+    if (arr.length === 0) {
+      listEl.innerHTML = `<div class="slot-prize-empty">景品がありません。「＋追加」で作成してください。</div>`;
+      return;
+    }
+    listEl.innerHTML = arr.map((p, i) => {
+      const thumb = (p.iconType === 'image' && p.icon && String(p.icon).startsWith('data:image'))
+        ? `<img src="${escapeHtml(p.icon)}" alt="">`
+        : `<span class="spp-emoji-thumb">${escapeHtml(p.icon || '🍄')}</span>`;
+      return `
+        <div class="slot-prize-row" data-bonus="${bonusId}" data-idx="${i}">
+          <label class="spp-thumb" title="クリックで画像を選択">
+            ${thumb}
+            <input type="file" accept="image/*" class="spp-file" style="display:none">
+          </label>
+          <div class="spp-fields">
+            <input type="text" class="input spp-name" data-field="name" maxlength="30" placeholder="景品名" value="${escapeHtml(p.name || '')}">
+            <div class="spp-nums">
+              <label>🍄pt <input type="number" class="input" data-field="mushroom" min="0" step="1" value="${Math.max(0, Math.floor(Number(p.mushroom) || 0))}"></label>
+              <label>重み <input type="number" class="input" data-field="weight" min="0" step="1" value="${Math.max(0, Math.floor(Number(p.weight) || 0))}"></label>
+              <label>絵文字 <input type="text" class="input" data-field="emoji" maxlength="4" placeholder="🍄" value="${p.iconType === 'image' ? '' : escapeHtml(p.icon || '')}"></label>
+            </div>
+          </div>
+          <button type="button" class="spp-del" title="削除">×</button>
+        </div>`;
+    }).join('');
+  });
+}
+
+function setupSlotPrizeEditors() {
+  document.querySelectorAll('.slot-prize-add').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const bonusId = btn.dataset.bonus;
+      slotPrizeDraft[bonusId] = slotPrizeDraft[bonusId] || [];
+      slotPrizeDraft[bonusId].push({ id: `${bonusId}-${Date.now().toString(36)}`, name: '', icon: '🍄', iconType: 'emoji', mushroom: 1, weight: 10 });
+      renderSlotPrizeRows();
+    });
+  });
+  ['slotBigPrizeList', 'slotRegPrizeList'].forEach(listId => {
+    const listEl = document.getElementById(listId);
+    if (!listEl) return;
+    listEl.addEventListener('input', (e) => {
+      const field = e.target.dataset.field;
+      if (!field) return;
+      const row = e.target.closest('.slot-prize-row');
+      if (!row) return;
+      const p = (slotPrizeDraft[row.dataset.bonus] || [])[parseInt(row.dataset.idx, 10)];
+      if (!p) return;
+      if (field === 'name') p.name = e.target.value;
+      else if (field === 'mushroom') p.mushroom = Math.max(0, Math.floor(Number(e.target.value) || 0));
+      else if (field === 'weight') p.weight = Math.max(0, Math.floor(Number(e.target.value) || 0));
+      else if (field === 'emoji') {
+        const v = (e.target.value || '').trim();
+        if (v) { p.icon = v; p.iconType = 'emoji'; }
+      }
+    });
+    listEl.addEventListener('click', (e) => {
+      const del = e.target.closest('.spp-del');
+      if (!del) return;
+      const row = del.closest('.slot-prize-row');
+      const arr = slotPrizeDraft[row.dataset.bonus];
+      if (arr) { arr.splice(parseInt(row.dataset.idx, 10), 1); renderSlotPrizeRows(); }
+    });
+    listEl.addEventListener('change', (e) => {
+      if (!e.target.classList.contains('spp-file')) return;
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const row = e.target.closest('.slot-prize-row');
+      handleSlotPrizeImage(file, row.dataset.bonus, parseInt(row.dataset.idx, 10));
+    });
+  });
+}
+
+// 画像 → 256正方形 → draft に格納
+function handleSlotPrizeImage(file, bonusId, idx) {
+  if (!file.type.startsWith('image/')) { showToast('画像ファイルを選択してください'); return; }
+  if (file.size > 3 * 1024 * 1024) { showToast('ファイルサイズは3MB以下にしてください'); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const size = 256;
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const minSide = Math.min(img.width, img.height);
+      ctx.drawImage(img, (img.width - minSide) / 2, (img.height - minSide) / 2, minSide, minSide, 0, 0, size, size);
+      const p = (slotPrizeDraft[bonusId] || [])[idx];
+      if (p) { p.icon = canvas.toDataURL('image/png'); p.iconType = 'image'; renderSlotPrizeRows(); }
+    };
+    img.onerror = () => showToast('画像の読み込みに失敗しました');
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function updateSlotLoseProb() {
   const probs = Array.from(document.querySelectorAll('.slot-prob'))
     .map(el => Math.max(0, Number(el.value) || 0));
@@ -3304,15 +3472,14 @@ function renderSettings() {
   document.getElementById('setSlotOvWmReg').value = Number((ov.watermelon || {}).reg) || 0;
   document.getElementById('setSlotOvChBig').value = Number((ov.cherry || {}).big) || 0;
   document.getElementById('setSlotOvChReg').value = Number((ov.cherry || {}).reg) || 0;
-  // ボーナス景品ソース（ガチャタイプ ドロップダウン）
+  // スロット専用景品プール（big/reg）を draft に読み込み → 描画
   const bonusTypes = (slot.bonus && Array.isArray(slot.bonus.types)) ? slot.bonus.types : DEFAULT_SLOT.bonus.types;
-  const bigSrc = (bonusTypes.find(t => t.id === 'big') || {}).sourceGachaTypeId || '';
-  const regSrc = (bonusTypes.find(t => t.id === 'reg') || {}).sourceGachaTypeId || '';
-  const srcOptions = (sel) => ['<option value="">（景品ありの先頭ガチャを自動使用）</option>']
-    .concat((data.settings.gachaTypes || []).map(t =>
-      `<option value="${escapeHtml(t.id)}"${t.id === sel ? ' selected' : ''}>${escapeHtml(t.name)}（${(t.prizes || []).length}景品）</option>`)).join('');
-  document.getElementById('setSlotBigSource').innerHTML = srcOptions(bigSrc);
-  document.getElementById('setSlotRegSource').innerHTML = srcOptions(regSrc);
+  const prizesOf = (id) => {
+    const t = bonusTypes.find(x => x.id === id);
+    return (t && Array.isArray(t.prizes)) ? JSON.parse(JSON.stringify(t.prizes)) : [];
+  };
+  slotPrizeDraft = { big: prizesOf('big'), reg: prizesOf('reg') };
+  renderSlotPrizeRows();
   // 合計・はずれ% を再計算
   updateSlotLoseProb();
 

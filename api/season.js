@@ -52,6 +52,21 @@ function buildStandings(users, gachaTypes) {
     }));
 }
 
+// スロット専用ランキング（きのこpt 順）のスナップショット
+function buildSlotStandings(users, gachaTypes) {
+  return (users || [])
+    .slice()
+    .sort((a, b) => (b.mushroomPt || 0) - (a.mushroomPt || 0))
+    .filter(u => (u.mushroomPt || 0) > 0)
+    .slice(0, STANDINGS_MAX)
+    .map((u, i) => ({
+      rank: i + 1,
+      name: u.name || '',
+      score: Math.max(0, Math.floor(Number(u.mushroomPt) || 0)),
+      icon: resolveIconEmoji(u, gachaTypes),
+    }));
+}
+
 async function processReset(name) {
   const data = await redis.get(KEY);
   if (!data || !Array.isArray(data.users)) {
@@ -66,13 +81,16 @@ async function processReset(name) {
 
   // 現シーズンの順位をアーカイブ
   if (!Array.isArray(data.settings.seasonArchive)) data.settings.seasonArchive = [];
-  const standings = buildStandings(data.users, (data.settings.gachaTypes || []));
+  const gachaTypes = (data.settings.gachaTypes || []);
+  const standings = buildStandings(data.users, gachaTypes);
+  const slotStandings = buildSlotStandings(data.users, gachaTypes);
   data.settings.seasonArchive.unshift({
     number: cur.number || 1,
     name: cur.name || `シーズン${cur.number || 1}`,
     startedAt: cur.startedAt || nowIso,
     endedAt: nowIso,
     standings,
+    slotStandings,
   });
   // 上限を超えた古いシーズンは破棄
   data.settings.seasonArchive = data.settings.seasonArchive.slice(0, ARCHIVE_MAX);
@@ -82,12 +100,15 @@ async function processReset(name) {
   const newName = (typeof name === 'string' && name.trim()) ? name.trim().slice(0, 40) : `シーズン${nextNumber}`;
   data.settings.season = { number: nextNumber, name: newName, startedAt: nowIso };
 
-  // 各ユーザーの pt をリセット（景品・名前・その他は維持）
-  // pt は一本化済みのため、旧「ガチャpt(gachaPoint)」も 0 に戻す。
+  // 各ユーザーの pt・きのこpt をリセット（ガチャ景品/名前/その他は維持）
+  // pt は一本化済みのため旧「ガチャpt(gachaPoint)」も 0 に。
+  // スロット専用ランキング（きのこpt）とスロットコレクションも一緒にリセット。
   for (const u of data.users) {
     u.totalSpoon = 0;
     u.spentSpoon = 0;
     u.gachaPoint = 0;
+    u.mushroomPt = 0;
+    u.slotPrizes = [];
   }
 
   await redis.set(KEY, data);

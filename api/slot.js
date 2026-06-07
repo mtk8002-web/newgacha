@@ -73,11 +73,18 @@ const DEFAULT_SLOT_OVERLAP = {
   watermelon: { big: 30, reg: 10 },
   cherry:     { big: 5,  reg: 20 },
 };
+// BIG/REG はスロット専用景品（管理者が画像・きのこpt・重みを設定）を払い出す。
 const DEFAULT_SLOT_BONUS = {
   enabled: true,
   types: [
-    { id: 'big', name: 'BIG BONUS', tellSymbolId: 'seven',    color: '#d4ad55', sourceGachaTypeId: '' },
-    { id: 'reg', name: 'REG BONUS', tellSymbolId: 'mushroom', color: '#5fa8c8', sourceGachaTypeId: '' },
+    { id: 'big', name: 'BIG BONUS', tellSymbolId: 'seven', color: '#d4ad55', prizes: [
+      { id: 'big-1', name: 'おおきのこ', icon: '🍄', iconType: 'emoji', mushroom: 10, weight: 50 },
+      { id: 'big-2', name: 'まんねんきのこ', icon: '🌟', iconType: 'emoji', mushroom: 30, weight: 10 },
+    ] },
+    { id: 'reg', name: 'REG BONUS', tellSymbolId: 'mushroom', color: '#5fa8c8', prizes: [
+      { id: 'reg-1', name: 'こきのこ', icon: '🍄', iconType: 'emoji', mushroom: 3, weight: 60 },
+      { id: 'reg-2', name: 'なかきのこ', icon: '🍄', iconType: 'emoji', mushroom: 8, weight: 20 },
+    ] },
   ],
 };
 
@@ -112,43 +119,40 @@ function gp(user) {
   return Math.max(0, Math.floor(Number(user.gachaPoint) || 0));
 }
 
-// ボーナス景品を払い出す（景品は指定ガチャタイプの景品プールから抽選）
-function awardBonusPrize(gachaTypes, cfg, type, user) {
+// ボーナス景品を払い出す（スロット専用景品プールから抽選 → きのこpt 加算＋コレクション追加）
+function awardBonusPrize(cfg, type, user) {
   const def = (cfg.bonus.types || []).find(t => t.id === type)
     || { id: type, name: type === 'big' ? 'BIG BONUS' : 'REG BONUS' };
-  // 指定ソース → 無ければ景品を持つ最初のガチャタイプにフォールバック
-  let gt = (gachaTypes || []).find(t => t.id === def.sourceGachaTypeId && (t.prizes || []).length);
-  if (!gt) gt = (gachaTypes || []).find(t => (t.prizes || []).length);
-  if (!gt) return null;
-  const pick = weightedPick(gt.prizes);
-  if (!pick) return null;
-  const resolved = resolvePrize(gachaTypes, gt.id, pick.id);
-  if (!resolved) return null;
+  // 旧データ（prizes 未設定）でも動くよう、空なら既定のスロット専用景品にフォールバック
+  const prizes = (Array.isArray(def.prizes) && def.prizes.length)
+    ? def.prizes
+    : ((DEFAULT_SLOT_BONUS.types.find(t => t.id === type) || {}).prizes || []);
+  const pick = weightedPick(prizes); // weight キーで抽選
   const now = Date.now();
-  const instance = {
-    instanceId: makeInstanceId(),
-    prizeId: pick.id, gachaTypeId: gt.id,
-    acquiredAt: now, isPity: false,
-    source: 'slot-bonus', bonusType: type,
-  };
-  user.inventory = user.inventory || [];
-  user.inventory.push(instance);
-  // ギャラリー・アクティビティに乗るよう gachaHistory にも記録
-  user.gachaHistory = user.gachaHistory || [];
-  user.gachaHistory.push({
-    gachaTypeId: gt.id, gachaTypeName: resolved.type.name,
-    cost: 0, prizeId: pick.id, prizeName: resolved.name, rarity: resolved.rarity,
-    prizeIcon: thinIcon(resolved.icon), prizeIconType: resolved.iconType,
-    isPity: false, paidWith: type === 'big' ? 'slot-big' : 'slot-reg', timestamp: now,
+  // 景品未設定でも演出は出す（きのこpt 0 のプレースホルダ）
+  const prize = pick || { id: 'none', name: def.name || 'ボーナス', icon: '🍄', iconType: 'emoji', mushroom: 0 };
+  const mushroom = Math.max(0, Math.floor(Number(prize.mushroom) || 0));
+
+  // きのこpt を加算（スロット専用ランキングのスコア）
+  user.mushroomPt = Math.max(0, Math.floor(Number(user.mushroomPt) || 0)) + mushroom;
+
+  // スロット専用コレクションに追加（アイコンは settings から解決するので id 参照で保持）
+  user.slotPrizes = Array.isArray(user.slotPrizes) ? user.slotPrizes : [];
+  const instanceId = makeInstanceId();
+  user.slotPrizes.push({
+    instanceId, bonusType: type, prizeId: prize.id,
+    name: prize.name, mushroom, timestamp: now,
   });
+
   return {
     typeId: type, typeName: def.name,
     color: def.color || (type === 'big' ? '#d4ad55' : '#5fa8c8'),
     prize: {
-      name: resolved.name, rarity: resolved.rarity,
-      icon: resolved.icon, iconType: resolved.iconType, description: resolved.description,
+      name: prize.name,
+      icon: prize.icon, iconType: prize.iconType || 'emoji',
+      mushroom, rarity: type === 'big' ? 'BIG' : 'REG', description: '',
     },
-    instanceId: instance.instanceId,
+    instanceId, mushroom,
   };
 }
 
@@ -210,6 +214,9 @@ function ensureSlotFields(user) {
   if (typeof user.slotReplayPending !== 'boolean') user.slotReplayPending = false;
   // 予約済みボーナス（ランプ点灯中）: null | 'big' | 'reg'
   if (user.slotBonusPending !== 'big' && user.slotBonusPending !== 'reg') user.slotBonusPending = null;
+  // スロット専用ランキング用：きのこpt と 専用景品コレクション
+  if (typeof user.mushroomPt !== 'number' || user.mushroomPt < 0) user.mushroomPt = Math.max(0, Math.floor(Number(user.mushroomPt) || 0));
+  if (!Array.isArray(user.slotPrizes)) user.slotPrizes = [];
 }
 
 // 既存ガチャタイプから景品定義を解決（pity 含む）
@@ -289,7 +296,7 @@ async function processSlot({ userId, free }) {
   if (pendingBonus) {
     user.slotBonusPending = null;
     const reels = decideTellReels(pendingBonus, slotFull);
-    const bonus = awardBonusPrize(gachaTypes, cfg, pendingBonus, user);
+    const bonus = awardBonusPrize(cfg, pendingBonus, user);
 
     user.slotHistory.unshift({
       timestamp: Date.now(),
@@ -301,7 +308,7 @@ async function processSlot({ userId, free }) {
       reels,
       bonus: bonus ? {
         typeId: bonus.typeId, typeName: bonus.typeName,
-        prizeName: bonus.prize.name, rarity: bonus.prize.rarity, instanceId: bonus.instanceId,
+        prizeName: bonus.prize.name, mushroom: bonus.mushroom, instanceId: bonus.instanceId,
       } : null,
     });
     user.slotHistory = user.slotHistory.slice(0, 100);
@@ -325,7 +332,7 @@ async function processSlot({ userId, free }) {
           wasFreeSpin: true,
           freeSpinNext: false,
         },
-        balances: { pt: availableSpoon(user), gachaPoint: gp(user) },
+        balances: { pt: availableSpoon(user), mushroomPt: user.mushroomPt || 0 },
       },
     };
   }
@@ -405,7 +412,7 @@ async function processSlot({ userId, free }) {
       },
       balances: {
         pt: availableSpoon(user),
-        gachaPoint: gp(user),
+        mushroomPt: user.mushroomPt || 0,
       },
     },
   };
