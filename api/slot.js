@@ -18,7 +18,9 @@ const KEY = 'mtk_app_data';
 const redis = Redis.fromEnv();
 
 function availableSpoon(user) {
-  return Math.max(0, (user.totalSpoon || 0) - (user.spentSpoon || 0));
+  // pt は一本化。旧「ガチャpt(gachaPoint)」も使える pt に合算する。
+  const g = Math.max(0, Math.floor(Number(user.gachaPoint) || 0));
+  return Math.max(0, (user.totalSpoon || 0) - (user.spentSpoon || 0) + g);
 }
 
 // 暗号論的乱数 0..1
@@ -44,7 +46,7 @@ function weightedPick(arr, weightKey = 'weight') {
 
 function pickRandSymbol(symbolIds, excludeSet) {
   const pool = symbolIds.filter(s => !excludeSet || !excludeSet.has(s));
-  if (pool.length === 0) return symbolIds[0] || 'blank';
+  if (pool.length === 0) return symbolIds[0] || 'bell';
   return pool[Math.floor(secureRandom() * pool.length)];
 }
 
@@ -185,7 +187,8 @@ function decideReels(role, slot) {
       if (a === b && b === c && all3SymbolSet.has(a)) continue;
       return [a, b, c];
     }
-    return ['cherry', 'bell', 'watermelon'];
+    // フォールバックは「揃わず・左チェリーでない」ハズレ出目にする
+    return ['bell', 'watermelon', 'mushroom'];
   }
   // 想定外
   return [role.symbolId, role.symbolId, role.symbolId];
@@ -268,7 +271,9 @@ async function processSlot({ userId, free }) {
   // 予約済みボーナス（前回ランプ点灯）があれば、このスピンは無料の「ボーナス確定演出」になる
   const pendingBonus = (user.slotBonusPending === 'big' || user.slotBonusPending === 'reg')
     ? user.slotBonusPending : null;
-  const isReplayFree = !!free && !!user.slotReplayPending && !pendingBonus;
+  // リプレイ成立は「サーバーのフラグ」を真実とする（クライアントの free 任せだと、
+  // 古いキャッシュで free=false が来たとき無料スピンを取りこぼして課金してしまうため）。
+  const isReplayFree = !!user.slotReplayPending && !pendingBonus;
   const isFreeSpin = !!pendingBonus || isReplayFree;
 
   if (!isFreeSpin) {

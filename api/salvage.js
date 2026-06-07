@@ -130,8 +130,8 @@ async function processSalvage(body, data) {
       totalPoint,
       breakdown,
       spentSpoon: user.spentSpoon,
-      // クライアントの古い参照向けの後方互換：使える pt 値を返す
-      availableSpoon: Math.max(0, (Number(user.totalSpoon) || 0) - user.spentSpoon),
+      // クライアントの古い参照向けの後方互換：使える pt 値を返す（gachaPoint も合算）
+      availableSpoon: Math.max(0, (Number(user.totalSpoon) || 0) - user.spentSpoon + Math.max(0, Math.floor(Number(user.gachaPoint) || 0))),
     },
     save: true,
   };

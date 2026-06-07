@@ -17,7 +17,9 @@ const KEY = 'mtk_app_data';
 const redis = Redis.fromEnv();
 
 function availableSpoon(user) {
-  return Math.max(0, (user.totalSpoon || 0) - (user.spentSpoon || 0));
+  // pt は一本化。旧「ガチャpt(gachaPoint)」も使える pt に合算する。
+  const gp = Math.max(0, Math.floor(Number(user.gachaPoint) || 0));
+  return Math.max(0, (user.totalSpoon || 0) - (user.spentSpoon || 0) + gp);
 }
 
 function rollPrize(prizes) {

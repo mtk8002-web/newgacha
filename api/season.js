@@ -2,8 +2,8 @@
 // シーズン管理（管理者のみ / Bearer ADMIN_TOKEN）。
 //   POST { action: 'reset', name? }
 //     現在のランキング（totalSpoon 順）をアーカイブに保存してから新シーズンを開始。
-//     各ユーザーの pt（totalSpoon / spentSpoon）を 0 にリセット。
-//     景品(inventory) / ガチャpt(gachaPoint) / 名前 / その他は残す。
+//     各ユーザーの pt（totalSpoon / spentSpoon / gachaPoint）を 0 にリセット。
+//     景品(inventory) / 名前 / その他は残す。
 //
 // pt のリセットは /api/data POST では保護されていて出来ないため、専用エンドポイントで
 // 分散ロック下に直接 GET-MODIFY-SET する。
@@ -82,10 +82,12 @@ async function processReset(name) {
   const newName = (typeof name === 'string' && name.trim()) ? name.trim().slice(0, 40) : `シーズン${nextNumber}`;
   data.settings.season = { number: nextNumber, name: newName, startedAt: nowIso };
 
-  // 各ユーザーの pt をリセット（景品・ガチャpt・名前・その他は維持）
+  // 各ユーザーの pt をリセット（景品・名前・その他は維持）
+  // pt は一本化済みのため、旧「ガチャpt(gachaPoint)」も 0 に戻す。
   for (const u of data.users) {
     u.totalSpoon = 0;
     u.spentSpoon = 0;
+    u.gachaPoint = 0;
   }
 
   await redis.set(KEY, data);

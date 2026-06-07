@@ -2093,6 +2093,7 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
   flex-shrink: 0;
 }
 .user-session.empty { display: none; }
+.user-session.guest { padding: 0.25rem; }
 .user-session .me {
   font-weight: 600; color: var(--text);
   letter-spacing: 0.05em;
@@ -2114,6 +2115,13 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
   transition: all 0.15s;
 }
 .user-session .logout:hover { background: var(--pink-bg); color: var(--pink-deep); }
+.user-session .session-login-btn {
+  font-weight: 700; font-size: 0.78rem; color: #fff;
+  padding: 0.45rem 1.1rem; border-radius: 999px;
+  background: var(--pink); border: none; cursor: pointer;
+  letter-spacing: 0.05em; transition: background 0.15s;
+}
+.user-session .session-login-btn:hover { background: var(--pink-deep); }
 @media (max-width: 800px) {
   .user-session { padding-left: 0.6rem; font-size: 0.7rem; }
   nav.top-nav { display: none; }
@@ -2789,6 +2797,76 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
   transition: all 0.15s;
 }
 .btn-close-gacha:hover { background: var(--pink-bg); border-color: var(--pink); color: var(--pink-deep); }
+
+/* ===== 来訪時ログインオーバーレイ ===== */
+.login-overlay {
+  position: fixed; inset: 0; z-index: 9998;
+  display: none;
+  align-items: center; justify-content: center;
+  background: rgba(31, 27, 22, 0.58);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 1rem;
+}
+.login-overlay.show { display: flex; animation: gachaFadeIn 0.25s; }
+.login-overlay-inner {
+  position: relative;
+  width: 100%; max-width: 420px;
+  max-height: 88vh; overflow-y: auto;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2.2rem 1.6rem 1.6rem;
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+}
+.login-overlay-close {
+  position: absolute; top: 0.7rem; right: 0.7rem;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text-muted); font-size: 1rem; cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+.login-overlay-close:hover { color: var(--pink); border-color: var(--pink); }
+.lo-logo {
+  font-family: var(--font-en); font-weight: 800; letter-spacing: 0.2em;
+  font-size: 1.5rem; color: var(--pink); margin-bottom: 0.6rem;
+}
+.lo-title { font-size: 1.15rem; font-weight: 800; color: var(--text); margin-bottom: 0.4rem; }
+.lo-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.1rem; }
+.lo-search {
+  width: 100%; padding: 0.85rem 1rem; font-size: 1rem;
+  border: 1.5px solid var(--border); border-radius: 12px;
+  background: var(--bg); color: var(--text); outline: none;
+  margin-bottom: 1rem; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.lo-search:focus { border-color: var(--pink); box-shadow: 0 0 0 3px var(--pink-bg); }
+.lo-name-list {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;
+  margin-bottom: 1.2rem;
+}
+.lo-name-chip {
+  font-size: 0.92rem; font-weight: 700;
+  padding: 0.6rem 1.1rem; border-radius: 999px;
+  background: var(--card); border: 1.5px solid var(--border);
+  color: var(--text); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  transition: all 0.18s;
+}
+.lo-name-chip:hover { color: var(--pink); border-color: var(--pink); background: var(--pink-bg); transform: translateY(-1px); }
+.lo-name-chip .lo-chip-icon {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--pink-bg); display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; overflow: hidden;
+}
+.lo-name-chip .lo-chip-icon img { width: 100%; height: 100%; object-fit: cover; }
+.lo-empty { font-size: 0.82rem; color: var(--text-soft); padding: 0.8rem; }
+.lo-guest {
+  font-size: 0.8rem; color: var(--text-muted);
+  background: transparent; border: none; cursor: pointer;
+  text-decoration: underline; padding: 0.4rem;
+}
+.lo-guest:hover { color: var(--pink); }
 
 /* ===== ユーザーログイン パスワードモーダル ===== */
 .pw-modal {
@@ -4056,6 +4134,19 @@ body.slot-shake { animation: screenShake 0.18s ease-in-out 4; }
   </div>
 </div>
 
+<!-- 来訪時のログインオーバーレイ（URLを開いた瞬間に表示） -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-overlay-inner">
+    <button class="login-overlay-close" id="loginOverlayClose" type="button" aria-label="閉じる">×</button>
+    <div class="lo-logo" id="loLogo">GACHA</div>
+    <h3 class="lo-title">ログインして遊ぶ</h3>
+    <p class="lo-desc">あなたの名前を選んでログインしてください。<br>※ 新規登録は管理者のみ可能です。</p>
+    <input class="lo-search" id="loSearch" type="text" placeholder="名前で検索・入力" autocomplete="off">
+    <div class="lo-name-list" id="loNameList"></div>
+    <button class="lo-guest" id="loGuestBtn" type="button">ログインせずに見る</button>
+  </div>
+</div>
+
 <!-- ユーザーログイン パスワードモーダル（4桁数字） -->
 <div class="pw-modal" id="pwModal">
   <div class="pw-modal-inner">
@@ -4346,7 +4437,9 @@ function loadData() {
 
 // 利用可能 pt = 累計 - 消費
 function availableSpoon(user) {
-  return Math.max(0, (user.totalSpoon || 0) - (user.spentSpoon || 0));
+  // pt は一本化。旧「ガチャpt(gachaPoint)」も使える pt に合算する。
+  const gp = Math.max(0, Math.floor(Number(user.gachaPoint) || 0));
+  return Math.max(0, (user.totalSpoon || 0) - (user.spentSpoon || 0) + gp);
 }
 // 各ガチャタイプの引ける回数
 function pullsAvailable(user, type) {
@@ -4472,11 +4565,14 @@ function renderUserSession(data) {
   if (!el) return;
   const me = getCurrentUser(data);
   if (!me) {
-    el.classList.add('empty');
-    el.innerHTML = '';
+    el.classList.remove('empty');
+    el.classList.add('guest');
+    el.innerHTML = `<button class="session-login-btn" type="button" id="sessionLoginBtn">ログイン</button>`;
+    const lb = document.getElementById('sessionLoginBtn');
+    if (lb) lb.addEventListener('click', openLoginOverlay);
     return;
   }
-  el.classList.remove('empty');
+  el.classList.remove('empty', 'guest');
   el.innerHTML = `
     <span class="me">
       <span class="user-icon">${renderUserIcon(me)}</span>${escapeHtml(me.name)}
@@ -4486,6 +4582,7 @@ function renderUserSession(data) {
   document.getElementById('logoutBtn').addEventListener('click', () => {
     setCurrentUserId(null);
     renderAll();
+    openLoginOverlay();  // ログアウト後はログイン画面を表示
   });
 }
 
@@ -4541,6 +4638,78 @@ function setupGachaLogin(data) {
       startLoginFlow(b.dataset.id);
     });
   });
+}
+
+// ============================================================
+// 来訪時ログインオーバーレイ（URLを開いた瞬間に表示）
+// ============================================================
+function renderLoginOverlayNames(filter) {
+  const listEl = document.getElementById('loNameList');
+  if (!listEl) return;
+  const data = loadData();
+  const f = (filter || '').trim().toLowerCase();
+  if ((data.users || []).length === 0) {
+    listEl.innerHTML = `<div class="lo-empty">まだユーザーが登録されていません</div>`;
+    return;
+  }
+  const names = (data.users || [])
+    .map(u => ({ id: u.id, name: u.name || '', user: u }))
+    .filter(n => !f || n.name.toLowerCase().includes(f))
+    .sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+  if (names.length === 0) {
+    listEl.innerHTML = `<div class="lo-empty">一致する名前がありません</div>`;
+    return;
+  }
+  listEl.innerHTML = names.map(n =>
+    `<button class="lo-name-chip" data-id="${escapeHtml(n.id)}">
+       <span class="lo-chip-icon">${renderUserIcon(n.user)}</span>${escapeHtml(n.name)}
+     </button>`).join('');
+  listEl.querySelectorAll('.lo-name-chip').forEach(b => {
+    b.addEventListener('click', () => startLoginFlow(b.dataset.id));
+  });
+}
+
+function openLoginOverlay() {
+  const ov = document.getElementById('loginOverlay');
+  if (!ov) return;
+  const data = loadData();
+  const logo = document.getElementById('loLogo');
+  if (logo) logo.textContent = (data.settings && data.settings.logoText) || 'GACHA';
+  const search = document.getElementById('loSearch');
+  if (search) search.value = '';
+  renderLoginOverlayNames('');
+  ov.classList.add('show');
+  setTimeout(() => { if (search) search.focus(); }, 80);
+}
+
+function closeLoginOverlay() {
+  const ov = document.getElementById('loginOverlay');
+  if (ov) ov.classList.remove('show');
+}
+
+function setupLoginOverlay() {
+  const ov = document.getElementById('loginOverlay');
+  if (!ov) return;
+  const search = document.getElementById('loSearch');
+  if (search) {
+    search.addEventListener('input', () => renderLoginOverlayNames(search.value));
+    search.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      const data = loadData();
+      const f = (search.value || '').trim().toLowerCase();
+      if (!f) return;
+      const exact = (data.users || []).find(u => (u.name || '').toLowerCase() === f);
+      const matches = (data.users || []).filter(u => (u.name || '').toLowerCase().includes(f));
+      if (exact) startLoginFlow(exact.id);
+      else if (matches.length === 1) startLoginFlow(matches[0].id);
+    });
+  }
+  const closeBtn = document.getElementById('loginOverlayClose');
+  if (closeBtn) closeBtn.addEventListener('click', closeLoginOverlay);
+  const guestBtn = document.getElementById('loGuestBtn');
+  if (guestBtn) guestBtn.addEventListener('click', closeLoginOverlay);
+  ov.addEventListener('click', (e) => { if (e.target === ov) closeLoginOverlay(); });
 }
 
 // ============================================================
@@ -4644,6 +4813,7 @@ async function submitPasswordModal() {
     // 成功：ログイン状態にする
     setCurrentUserId(userId);
     closePasswordModal();
+    closeLoginOverlay();
     await fetchRemoteData();
     renderAll();
   } catch (e) {
@@ -4687,7 +4857,6 @@ function setupPasswordModal() {
 
 function renderGachaDashboardHTML(data, me) {
   const avail = availableSpoon(me);
-  const gachaPoint = Math.max(0, parseInt(me.gachaPoint || 0, 10) || 0);
   // 公開ページでは hidden=true のガチャは表示しない
   const types = (data.settings.gachaTypes || []).filter(t => !t.hidden);
   const recent = (me.gachaHistory || []).slice().sort((a, b) => b.timestamp - a.timestamp).slice(0, 8);
@@ -4699,10 +4868,6 @@ function renderGachaDashboardHTML(data, me) {
     const multi = Math.max(0, parseInt(t.multiPullCount || 0, 10) || 0);
     const multiCost = (t.cost || 0) * multi;
     const canMulti = multi >= 2 && avail >= multiCost;
-    // ガチャpt 支払い可否
-    const cost = parseInt(t.cost || 0, 10) || 0;
-    const canPullGp = cost > 0 && gachaPoint >= cost;
-    const canMultiGp = multi >= 2 && gachaPoint >= multiCost;
     // 天井
     const pityCount = Math.max(0, parseInt(t.pityCount || 0, 10) || 0);
     const pityValid = pityCount > 0 && t.pityPrize && t.pityPrize.name;
@@ -4726,14 +4891,6 @@ function renderGachaDashboardHTML(data, me) {
             ${canMulti ? `🎲 ${multi}連で引く <span class="multi-cost">${fmt(multiCost)}pt</span>` : `${multi}連 ${fmt(multiCost)}pt 不足`}
           </button>
         ` : ''}
-        <button class="candy-pull-btn candy-pull-btn-gp" data-type-id="${escapeHtml(t.id)}" data-count="1" data-pay="gachaPoint"${canPullGp ? '' : ' disabled'}>
-          ${canPullGp ? `🎫 1回引く <span class="gp-unit">${fmt(cost)}ガチャpt</span>` : `ガチャpt不足 (${fmt(cost)})`}
-        </button>
-        ${multi >= 2 ? `
-          <button class="candy-pull-btn candy-pull-btn-gp candy-pull-btn-multi" data-type-id="${escapeHtml(t.id)}" data-count="${multi}" data-pay="gachaPoint"${canMultiGp ? '' : ' disabled'}>
-            ${canMultiGp ? `🎫 ${multi}連で引く <span class="gp-unit">${fmt(multiCost)}ガチャpt</span>` : `${multi}連 ${fmt(multiCost)}ガチャpt 不足`}
-          </button>
-        ` : ''}
       </div>
     `;
   }).join('');
@@ -4753,10 +4910,6 @@ function renderGachaDashboardHTML(data, me) {
         <div class="gacha-stat highlight">
           <div class="label">使える pt</div>
           <div class="value">${fmtCap(avail)}<span class="unit">PT</span></div>
-        </div>
-        <div class="gacha-stat gp-stat">
-          <div class="label">ガチャ pt</div>
-          <div class="value">${fmtCap(gachaPoint)}<span class="unit">GP</span></div>
         </div>
         <div class="gacha-stat">
           <div class="label">累計 pt</div>
@@ -5192,7 +5345,7 @@ function renderSlotDashboardHTML(data, me) {
           const ic = sym ? sym.icon : '🍬';
           return (typeof ic === 'string' && ic.startsWith('data:image')) ? '🎴' : ic;
         }).join(' ');
-        const payCur = h.payCurrency === 'gachaPoint' ? 'GP' : 'pt';
+        const payCur = 'pt';
         const tier = (h.bonus ? 'has-bonus' : '');
         const tierCls = h.bonus
           ? 'tier-big'
@@ -5373,7 +5526,6 @@ function startReelSpin() {
   });
   const cab = document.getElementById('slotCabinet');
   if (cab) cab.classList.remove('tempai');
-  startSlotHum();  // リール回転音を鳴らし始める
 }
 function stopReelSpinImmediately() {
   document.querySelectorAll('#slotReels .slot-reel').forEach(r => {
@@ -5963,18 +6115,22 @@ function renderRanking(data) {
   const season = settings.season || { number: 1, name: 'シーズン1' };
   const archive = Array.isArray(settings.seasonArchive) ? settings.seasonArchive : [];
 
-  // 選択が無効（アーカイブが入れ替わった等）なら現在に戻す
-  if (rankingSeasonSel !== 'current') {
-    const i = parseInt(String(rankingSeasonSel).replace('arc-', ''), 10);
-    if (!archive[i]) rankingSeasonSel = 'current';
+  // 選択は「シーズン番号」で保持（アーカイブが unshift されてもズレないように）
+  const findArc = (selVal) => {
+    const n = parseInt(String(selVal).replace('arc-', ''), 10);
+    return archive.find(a => Number(a.number) === n) || null;
+  };
+  // 選択が無効（該当シーズンが無い）なら現在に戻す
+  if (rankingSeasonSel !== 'current' && !findArc(rankingSeasonSel)) {
+    rankingSeasonSel = 'current';
   }
 
   // シーズン切替バー
   const bar = document.createElement('div');
   bar.className = 'ranking-season-bar';
   let opts = `<option value="current">${escapeHtml(season.name || `シーズン${season.number || 1}`)}（開催中）</option>`;
-  archive.forEach((a, i) => {
-    opts += `<option value="arc-${i}">${escapeHtml(a.name || `シーズン${a.number || ''}`)}（終了）</option>`;
+  archive.forEach((a) => {
+    opts += `<option value="arc-${a.number}">${escapeHtml(a.name || `シーズン${a.number || ''}`)}（終了）</option>`;
   });
   bar.innerHTML = `
     <span class="rsb-label">シーズン</span>
@@ -5990,8 +6146,7 @@ function renderRanking(data) {
   if (rankingSeasonSel === 'current') {
     renderLiveRanking(data, list);
   } else {
-    const idx = parseInt(rankingSeasonSel.replace('arc-', ''), 10);
-    renderArchivedRanking(archive[idx], list);
+    renderArchivedRanking(findArc(rankingSeasonSel), list);
   }
 }
 
@@ -6775,7 +6930,7 @@ function renderGallery(data) {
   const limitBreakMax = Math.max(1, parseInt((data.settings && data.settings.limitBreakMax) || 4, 10) || 4);
   const iconPrizeKey = (me.iconPrize && me.iconPrize.gachaTypeId && me.iconPrize.prizeId)
     ? `${me.iconPrize.gachaTypeId}::${me.iconPrize.prizeId}` : null;
-  const gachaPoint = Math.max(0, parseInt(me.gachaPoint || 0, 10) || 0);
+  const availPt = availableSpoon(me);
 
   // 出品中・オファー中の instance を除外集合
   const lockedIds = new Set();
@@ -6830,7 +6985,7 @@ function renderGallery(data) {
   if (totalItems === 0) {
     panel.innerHTML = `
       <div class="gallery-toolbar">
-        <span class="gp-badge">🎫 ガチャpt <span class="gp-num">${fmt(gachaPoint)}</span></span>
+        <span class="gp-badge">💎 使える pt <span class="gp-num">${fmt(availPt)}</span></span>
       </div>
       <div class="gallery-empty">まだ景品を持っていません。<br>ガチャを引いてコレクションを集めましょう！</div>`;
     salvageMode = false; salvageSelected.clear();
@@ -6842,7 +6997,7 @@ function renderGallery(data) {
     .map(r => `<span class="rarity-summary rarity-${r.toLowerCase()}"><span class="rt">${r}</span>×${rarityCounts[r]}</span>`)
     .join('');
 
-  // 選択中の合計ガチャpt見積もり（★max 到達景品はレアリティを昇格させてレートを引く）
+  // 選択中の合計pt見積もり（★max 到達景品はレアリティを昇格させてレートを引く）
   let selPoint = 0;
   let selCount = 0;
   for (const id of salvageSelected) {
@@ -6884,7 +7039,7 @@ function renderGallery(data) {
 
   panel.innerHTML = `
     <div class="gallery-toolbar">
-      <span class="gp-badge">🎫 ガチャpt <span class="gp-num">${fmt(gachaPoint)}</span></span>
+      <span class="gp-badge">💎 使える pt <span class="gp-num">${fmt(availPt)}</span></span>
       <button type="button" class="salvage-toggle${salvageMode ? ' active' : ''}" id="salvageToggleBtn">🛠 ${salvageMode ? '分解モード ON' : '分解モード'}</button>
     </div>
     ${salvageMode ? `
@@ -7384,6 +7539,7 @@ setupCursor();
 setupGachaModal();
 setupGachaMultiModal();
 setupPasswordModal();
+setupLoginOverlay();
 setupTradeModals();
 setupGalleryModal();
 setupSalvageConfirmModal();
@@ -7395,6 +7551,8 @@ fetchRemoteData().then(() => {
   // ヒーローをフェードイン（初期表示の文言ちらつきを防ぐ）
   const heroInner = document.querySelector('.hero-inner');
   if (heroInner) heroInner.classList.add('loaded');
+  // 未ログインで来訪したら、開いた瞬間にログイン画面を表示
+  if (!getCurrentUserId()) openLoginOverlay();
   setupSync();
 });
 </script>

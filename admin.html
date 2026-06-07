@@ -1294,7 +1294,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
         <div class="form-hint" style="margin-bottom:1rem">
           ※ ランキングはシーズンごとに集計されます。<br>
           ※「新シーズンを開始」すると、現在の順位を記録（公開ページで過去シーズンとして閲覧可）してから、<b>全員の pt を 0 にリセット</b>します。<br>
-          ※ 景品（コレクション）・ガチャpt・名前・アカウントは<b>残ります</b>。元に戻せません。
+          ※ 景品（コレクション）・名前・アカウントは<b>残ります</b>（pt はすべて 0 に）。元に戻せません。
         </div>
         <div class="season-current" id="seasonCurrent"></div>
         <div class="field-row" style="margin-top:1rem">
@@ -1925,7 +1925,9 @@ async function loadData() {
 
 // 残pt（ガチャ消費後に残っている分）
 function availableSpoon(user) {
-  return Math.max(0, (user.totalSpoon || 0) - (user.spentSpoon || 0));
+  // pt は一本化。旧「ガチャpt(gachaPoint)」も使える pt に合算する。
+  const gp = Math.max(0, Math.floor(Number(user.gachaPoint) || 0));
+  return Math.max(0, (user.totalSpoon || 0) - (user.spentSpoon || 0) + gp);
 }
 // 各ガチャを引ける回数
 function pullsAvailable(user, type) {
@@ -2838,7 +2840,7 @@ function setupSettings() {
   });
   // シーズン：新シーズンを開始（pt リセット）
   document.getElementById('startNewSeasonBtn').addEventListener('click', async () => {
-    const ok = confirm('現在のランキングを記録して、全員の pt を 0 にリセットします。\n景品・ガチャpt・名前は残ります。元に戻せません。よろしいですか？');
+    const ok = confirm('現在のランキングを記録して、全員の pt を 0 にリセットします。\n景品・名前は残ります（pt はすべて 0 に）。元に戻せません。よろしいですか？');
     if (!ok) return;
     const r = await callSeason('reset');
     if (r) {
