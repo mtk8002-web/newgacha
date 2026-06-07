@@ -1471,6 +1471,13 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
           <input type="number" class="input" id="setSlotCost" min="0" step="1" placeholder="100">
           <div class="form-hint">0 にすると無料で回せます。</div>
         </div>
+        <div class="field-row" style="align-items:start;margin-top:1rem">
+          <label class="label-text" style="margin-top:0.55rem">説明・ルール</label>
+          <div>
+            <textarea class="textarea" id="setSlotDescription" rows="5" maxlength="1000" placeholder="例：3つのSTOPボタンで目押し！スイカ・チェリーから重複でBIG/REG…"></textarea>
+            <div class="form-hint" style="margin-top:0.4rem">スロット画面の上部に表示されます。改行できます。空欄なら非表示。</div>
+          </div>
+        </div>
 
         <!-- 役と確率 -->
         <div class="slot-roles-title">役 と 確率（%）</div>
@@ -2978,7 +2985,8 @@ function setupSettings() {
       })),
     };
 
-    data.settings.slot = Object.assign({}, data.settings.slot || {}, { enabled, cost, roles, overlap, bonus });
+    const description = (document.getElementById('setSlotDescription').value || '').trim().slice(0, 1000);
+    data.settings.slot = Object.assign({}, data.settings.slot || {}, { enabled, cost, description, roles, overlap, bonus });
     const sum = roles.filter(r => r.id !== 'lose').reduce((s, r) => s + (Number(r.prob) || 0), 0);
     saveData();
     if (sum > 100) showToast('保存しました（注意：役の合計が100%を超えています。はずれが0%になります）');
@@ -3459,6 +3467,7 @@ function renderSettings() {
   const slot = data.settings.slot || {};
   document.getElementById('setSlotEnabled').checked = slot.enabled !== false;
   document.getElementById('setSlotCost').value = (typeof slot.cost === 'number' && slot.cost >= 0) ? Math.floor(slot.cost) : 100;
+  document.getElementById('setSlotDescription').value = slot.description || '';
   // 役・確率
   const slotRoles = (Array.isArray(slot.roles) && slot.roles.length) ? slot.roles : DEFAULT_SLOT.roles;
   const roleById = id => slotRoles.find(r => r.id === id) || {};

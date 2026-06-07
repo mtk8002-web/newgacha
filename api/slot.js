@@ -211,6 +211,11 @@ function ensureSlotFields(user) {
   if (!user.slotStats || typeof user.slotStats !== 'object') {
     user.slotStats = { spins: 0, totalBet: 0, totalPayout: 0, bonusBig: 0, bonusReg: 0, maxPayout: 0 };
   }
+  // ボーナス間の回転数（現在のハマり / 前回 / 最大）
+  const st = user.slotStats;
+  if (typeof st.gamesSinceBonus !== 'number') st.gamesSinceBonus = 0;
+  if (typeof st.lastBonusGames !== 'number') st.lastBonusGames = 0;
+  if (typeof st.maxGamesSinceBonus !== 'number') st.maxGamesSinceBonus = 0;
   if (typeof user.slotReplayPending !== 'boolean') user.slotReplayPending = false;
   // 予約済みボーナス（ランプ点灯中）: null | 'big' | 'reg'
   if (user.slotBonusPending !== 'big' && user.slotBonusPending !== 'reg') user.slotBonusPending = null;
@@ -313,6 +318,11 @@ async function processSlot({ userId, free }) {
     });
     user.slotHistory = user.slotHistory.slice(0, 100);
     user.slotStats.spins = (user.slotStats.spins || 0) + 1;
+    // この演出スピンも1ゲーム。ボーナス成立なので「ボーナス間の回転数」を確定して0にリセット。
+    const gsb = (Number(user.slotStats.gamesSinceBonus) || 0) + 1;
+    user.slotStats.lastBonusGames = gsb;
+    user.slotStats.maxGamesSinceBonus = Math.max(Number(user.slotStats.maxGamesSinceBonus) || 0, gsb);
+    user.slotStats.gamesSinceBonus = 0;
     if (pendingBonus === 'big') user.slotStats.bonusBig = (user.slotStats.bonusBig || 0) + 1;
     else                        user.slotStats.bonusReg = (user.slotStats.bonusReg || 0) + 1;
 
@@ -389,6 +399,9 @@ async function processSlot({ userId, free }) {
 
   // 統計
   user.slotStats.spins       = (user.slotStats.spins || 0) + 1;
+  // 通常スピンはボーナス間の回転数を加算（ボーナス確定演出スピンで0にリセットされる）
+  user.slotStats.gamesSinceBonus = (Number(user.slotStats.gamesSinceBonus) || 0) + 1;
+  user.slotStats.maxGamesSinceBonus = Math.max(Number(user.slotStats.maxGamesSinceBonus) || 0, user.slotStats.gamesSinceBonus);
   user.slotStats.totalBet    = (user.slotStats.totalBet || 0) + (isFreeSpin ? 0 : bet);
   user.slotStats.totalPayout = (user.slotStats.totalPayout || 0) + payout;
   user.slotStats.maxPayout   = Math.max(user.slotStats.maxPayout || 0, payout);
