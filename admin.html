@@ -1037,7 +1037,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
 }
 .spp-thumb:hover { border-color: var(--pink); }
 .spp-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.spp-emoji-thumb { font-size: 1.8rem; }
+.spp-noimg { font-size: 0.62rem; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 0.05em; }
 .spp-fields { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
 .spp-fields .spp-name { width: 100%; }
 .spp-nums { display: flex; gap: 0.5rem; flex-wrap: wrap; }
@@ -1857,12 +1857,12 @@ const DEFAULT_SLOT = {
     enabled: true,
     types: [
       { id: 'big', name: 'BIG BONUS', tellSymbolId: 'seven', color: '#d4ad55', prizes: [
-        { id: 'big-1', name: 'おおきのこ', icon: '🍄', iconType: 'emoji', mushroom: 10, weight: 50 },
-        { id: 'big-2', name: 'まんねんきのこ', icon: '🌟', iconType: 'emoji', mushroom: 30, weight: 10 },
+        { id: 'big-1', name: 'おおきのこ', icon: '', iconType: 'image', mushroom: 10, weight: 50 },
+        { id: 'big-2', name: 'まんねんきのこ', icon: '', iconType: 'image', mushroom: 30, weight: 10 },
       ] },
       { id: 'reg', name: 'REG BONUS', tellSymbolId: 'mushroom', color: '#5fa8c8', prizes: [
-        { id: 'reg-1', name: 'こきのこ', icon: '🍄', iconType: 'emoji', mushroom: 3, weight: 60 },
-        { id: 'reg-2', name: 'なかきのこ', icon: '🍄', iconType: 'emoji', mushroom: 8, weight: 20 },
+        { id: 'reg-1', name: 'こきのこ', icon: '', iconType: 'image', mushroom: 3, weight: 60 },
+        { id: 'reg-2', name: 'なかきのこ', icon: '', iconType: 'image', mushroom: 8, weight: 20 },
       ] },
     ],
   },
@@ -2957,14 +2957,18 @@ function setupSettings() {
       cherry:     { big: numId('setSlotOvChBig'), reg: numId('setSlotOvChReg') },
     };
     // スロット専用景品プール（big/reg）を draft から構築
-    const buildPrizes = (bonusId) => (slotPrizeDraft[bonusId] || []).map((p, i) => ({
-      id: p.id || `${bonusId}-${i + 1}`,
-      name: (p.name || '').trim() || '景品',
-      icon: p.icon || '🍄',
-      iconType: p.iconType === 'image' ? 'image' : 'emoji',
-      mushroom: Math.max(0, Math.floor(Number(p.mushroom) || 0)),
-      weight: Math.max(0, Math.floor(Number(p.weight) || 0)),
-    }));
+    // 景品プールは画像のみ（絵文字は持たない）
+    const buildPrizes = (bonusId) => (slotPrizeDraft[bonusId] || []).map((p, i) => {
+      const hasImg = (typeof p.icon === 'string' && p.icon.startsWith('data:image'));
+      return {
+        id: p.id || `${bonusId}-${i + 1}`,
+        name: (p.name || '').trim() || '景品',
+        icon: hasImg ? p.icon : '',
+        iconType: 'image',
+        mushroom: Math.max(0, Math.floor(Number(p.mushroom) || 0)),
+        weight: Math.max(0, Math.floor(Number(p.weight) || 0)),
+      };
+    });
     const tpl = JSON.parse(JSON.stringify(DEFAULT_SLOT.bonus.types));
     const bonus = {
       enabled: true,
@@ -3260,9 +3264,10 @@ function renderSlotPrizeRows() {
       return;
     }
     listEl.innerHTML = arr.map((p, i) => {
-      const thumb = (p.iconType === 'image' && p.icon && String(p.icon).startsWith('data:image'))
+      const hasImg = (p.iconType === 'image' && p.icon && String(p.icon).startsWith('data:image'));
+      const thumb = hasImg
         ? `<img src="${escapeHtml(p.icon)}" alt="">`
-        : `<span class="spp-emoji-thumb">${escapeHtml(p.icon || '🍄')}</span>`;
+        : `<span class="spp-noimg">＋画像</span>`;
       return `
         <div class="slot-prize-row" data-bonus="${bonusId}" data-idx="${i}">
           <label class="spp-thumb" title="クリックで画像を選択">
@@ -3274,7 +3279,6 @@ function renderSlotPrizeRows() {
             <div class="spp-nums">
               <label>🍄pt <input type="number" class="input" data-field="mushroom" min="0" step="1" value="${Math.max(0, Math.floor(Number(p.mushroom) || 0))}"></label>
               <label>重み <input type="number" class="input" data-field="weight" min="0" step="1" value="${Math.max(0, Math.floor(Number(p.weight) || 0))}"></label>
-              <label>絵文字 <input type="text" class="input" data-field="emoji" maxlength="4" placeholder="🍄" value="${p.iconType === 'image' ? '' : escapeHtml(p.icon || '')}"></label>
             </div>
           </div>
           <button type="button" class="spp-del" title="削除">×</button>
