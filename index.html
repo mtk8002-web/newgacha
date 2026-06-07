@@ -2813,6 +2813,50 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
 .btn-close-gacha:hover { background: var(--pink-bg); border-color: var(--pink); color: var(--pink-deep); }
 
 /* ===== 来訪時ログインオーバーレイ ===== */
+/* ===== アイコン設定モーダル ===== */
+.icon-modal {
+  position: fixed; inset: 0; z-index: 9999;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(31,27,22,0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  padding: 1rem;
+}
+.icon-modal.show { display: flex; animation: gachaFadeIn 0.25s; }
+.icon-modal-inner {
+  position: relative; width: 100%; max-width: 360px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+  padding: 2rem 1.6rem 1.6rem; box-shadow: var(--shadow-soft); text-align: center;
+}
+.icon-modal-close {
+  position: absolute; top: 0.7rem; right: 0.7rem; width: 32px; height: 32px; border-radius: 50%;
+  background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+  font-size: 1rem; cursor: pointer; transition: all 0.2s;
+}
+.icon-modal-close:hover { color: var(--pink); border-color: var(--pink); }
+.im-title { font-size: 1.1rem; font-weight: 800; color: var(--text); margin-bottom: 1rem; }
+.im-preview {
+  width: 96px; height: 96px; border-radius: 50%; margin: 0 auto 1rem;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  font-size: 2.6rem; background: var(--pink-bg); border: 3px solid var(--pink);
+}
+.im-preview img { width: 100%; height: 100%; object-fit: cover; }
+.im-upload {
+  border: 2px dashed var(--border); border-radius: 12px; padding: 1.2rem 1rem; cursor: pointer;
+  transition: all 0.2s; background: var(--bg-warm);
+}
+.im-upload:hover, .im-upload.drag { border-color: var(--pink); background: var(--pink-bg); }
+.im-upload-text { font-weight: 700; font-size: 0.88rem; color: var(--text); }
+.im-upload-hint { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.3rem; }
+.im-error { color: var(--danger); font-size: 0.78rem; min-height: 1rem; margin-top: 0.6rem; }
+.im-reset {
+  margin-top: 0.6rem; font-size: 0.8rem; color: var(--text-muted);
+  background: transparent; border: none; cursor: pointer; text-decoration: underline; padding: 0.4rem;
+}
+.im-reset:hover { color: var(--pink); }
+/* ヘッダーのアイコンを押せる見た目に */
+.user-session .me .user-icon { cursor: pointer; transition: filter 0.15s, box-shadow 0.15s; }
+.user-session .me .user-icon:hover { filter: brightness(1.05); box-shadow: 0 0 0 2px var(--pink); }
+
+/* ===== 来訪時ログインオーバーレイ ===== */
 .login-overlay {
   position: fixed; inset: 0; z-index: 9998;
   display: none;
@@ -3886,6 +3930,58 @@ footer {
   font-family: var(--font-en); font-weight: 800; font-size: 0.75rem;
   background: var(--pink); color: #fff; border-radius: 999px; padding: 0.1rem 0.5rem;
 }
+.scc-icon .no-img, .sti-pool-icon .no-img {
+  font-family: var(--font-en); font-size: 0.5rem; font-weight: 700; letter-spacing: 0.05em;
+  color: var(--text-soft);
+}
+
+/* スロット 確率・景品プールの情報パネル */
+.slot-info {
+  margin-top: 1.6rem; padding-top: 1.2rem; border-top: 1px solid var(--border);
+}
+.slot-info-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.slot-info-block {
+  background: var(--bg-warm); border: 1px solid var(--border);
+  border-radius: 10px; padding: 0.9rem 1rem;
+}
+.sti-title {
+  font-family: var(--font-en); font-size: 0.62rem; letter-spacing: 0.25em;
+  text-transform: uppercase; color: var(--text-muted); font-weight: 800;
+  margin-bottom: 0.6rem;
+}
+.sti-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.35rem 0; border-bottom: 1px dashed var(--border-soft); font-size: 0.82rem;
+}
+.sti-row:last-child { border-bottom: none; }
+.sti-row .sti-k { color: var(--text); font-weight: 600; }
+.sti-row .sti-pay { color: var(--pink-deep); font-size: 0.72rem; font-weight: 700; margin-left: 0.3rem; }
+.sti-row .sti-v { font-family: var(--font-en); font-weight: 800; color: var(--gold-deep); }
+.sti-row.is-lose .sti-v { color: var(--text-muted); }
+.sti-pool-block {
+  margin-top: 0.7rem; background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 0.8rem;
+}
+.sti-pool-block.is-big { border-color: var(--gold-bright); }
+.sti-pool-block.is-reg { border-color: #8fcfe8; }
+.sti-pool-head { font-weight: 800; font-size: 0.88rem; color: var(--text); margin-bottom: 0.6rem; }
+.sti-pool-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 0.6rem;
+}
+.sti-pool-empty { color: var(--text-muted); font-size: 0.8rem; padding: 0.4rem; }
+.sti-pool-card { text-align: center; }
+.sti-pool-icon {
+  width: 100%; aspect-ratio: 1; margin: 0 auto 0.35rem;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-warm); border: 1px solid var(--border); border-radius: 8px;
+  overflow: hidden;
+}
+.sti-pool-icon img { width: 100%; height: 100%; object-fit: cover; }
+.sti-pool-name { font-size: 0.76rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+.sti-pool-meta { font-size: 0.7rem; color: var(--gold-deep); font-weight: 700; margin-top: 0.15rem; }
+@media (max-width: 600px) {
+  .slot-info-cols { grid-template-columns: 1fr; }
+}
 .slot-sound-btn {
   width: 40px; height: 40px; border-radius: 50%;
   border: 1.5px solid var(--border); background: var(--bg-warm);
@@ -4248,6 +4344,22 @@ body.slot-shake { animation: screenShake 0.18s ease-in-out 4; }
 </div>
 
 <!-- 来訪時のログインオーバーレイ（URLを開いた瞬間に表示） -->
+<!-- アイコン設定モーダル（自分のアイコンを画像アップロード） -->
+<div class="icon-modal" id="iconModal">
+  <div class="icon-modal-inner">
+    <button class="icon-modal-close" id="iconModalClose" type="button" aria-label="閉じる">×</button>
+    <h3 class="im-title">アイコンを設定</h3>
+    <div class="im-preview" id="iconModalPreview">👤</div>
+    <div class="im-upload" id="iconUploadArea">
+      <div class="im-upload-text">クリック / ドロップで画像を選択</div>
+      <div class="im-upload-hint">JPG / PNG / WebP・最大3MB・正方形にトリミング</div>
+    </div>
+    <input type="file" id="iconFileInput" accept="image/*" style="display:none">
+    <div class="im-error" id="iconModalError"></div>
+    <button class="im-reset" id="iconResetBtn" type="button">既定のアイコンに戻す</button>
+  </div>
+</div>
+
 <div class="login-overlay" id="loginOverlay">
   <div class="login-overlay-inner">
     <button class="login-overlay-close" id="loginOverlayClose" type="button" aria-label="閉じる">×</button>
@@ -4608,6 +4720,10 @@ function escapeHtml(s) {
 }
 
 function renderUserIcon(user, size) {
+  // ユーザー自身がアップロードした画像アイコンが最優先
+  if (user && typeof user.iconImage === 'string' && user.iconImage.startsWith('data:image')) {
+    return `<img src="${escapeHtml(user.iconImage)}" alt="">`;
+  }
   // iconPrize が設定されていて景品が現存していれば、それをアイコンとして使う
   if (user && user.iconPrize && user.iconPrize.gachaTypeId && user.iconPrize.prizeId) {
     const data = (typeof loadData === 'function') ? loadData() : null;
@@ -4696,10 +4812,12 @@ function renderUserSession(data) {
   el.classList.remove('empty', 'guest');
   el.innerHTML = `
     <span class="me">
-      <span class="user-icon">${renderUserIcon(me)}</span>${escapeHtml(me.name)}
+      <span class="user-icon" id="userSessionIcon" title="アイコンを設定">${renderUserIcon(me)}</span>${escapeHtml(me.name)}
     </span>
     <button class="logout" type="button" id="logoutBtn">LOG OUT</button>
   `;
+  const iconEl = document.getElementById('userSessionIcon');
+  if (iconEl) iconEl.addEventListener('click', openIconModal);
   document.getElementById('logoutBtn').addEventListener('click', () => {
     setCurrentUserId(null);
     renderAll();
@@ -4831,6 +4949,105 @@ function setupLoginOverlay() {
   const guestBtn = document.getElementById('loGuestBtn');
   if (guestBtn) guestBtn.addEventListener('click', closeLoginOverlay);
   ov.addEventListener('click', (e) => { if (e.target === ov) closeLoginOverlay(); });
+}
+
+// ============================================================
+// アイコン設定（ユーザー自身が画像をアップロード）
+// ============================================================
+function openIconModal() {
+  const me = getCurrentUser(loadData());
+  if (!me) return;
+  const modal = document.getElementById('iconModal');
+  if (!modal) return;
+  const prev = document.getElementById('iconModalPreview');
+  if (prev) prev.innerHTML = renderUserIcon(me);
+  setIconError('');
+  modal.classList.add('show');
+}
+function closeIconModal() {
+  const modal = document.getElementById('iconModal');
+  if (modal) modal.classList.remove('show');
+}
+function setIconError(msg) {
+  const err = document.getElementById('iconModalError');
+  if (err) err.textContent = msg || '';
+}
+function setupIconModal() {
+  const modal = document.getElementById('iconModal');
+  if (!modal) return;
+  document.getElementById('iconModalClose').addEventListener('click', closeIconModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeIconModal(); });
+  const area = document.getElementById('iconUploadArea');
+  const fileInput = document.getElementById('iconFileInput');
+  area.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => {
+    const f = fileInput.files && fileInput.files[0];
+    if (f) handleUserIconUpload(f);
+    fileInput.value = '';
+  });
+  ['dragover', 'dragenter'].forEach(ev => area.addEventListener(ev, (e) => { e.preventDefault(); area.classList.add('drag'); }));
+  ['dragleave', 'dragend'].forEach(ev => area.addEventListener(ev, () => area.classList.remove('drag')));
+  area.addEventListener('drop', (e) => {
+    e.preventDefault(); area.classList.remove('drag');
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) handleUserIconUpload(f);
+  });
+  document.getElementById('iconResetBtn').addEventListener('click', resetUserIcon);
+}
+async function handleUserIconUpload(file) {
+  const me = getCurrentUser(loadData());
+  if (!me) return;
+  if (!file.type.startsWith('image/')) { setIconError('画像ファイルを選択してください'); return; }
+  if (file.size > 3 * 1024 * 1024) { setIconError('ファイルサイズは3MB以下にしてください'); return; }
+  setIconError('処理中…');
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = async () => {
+      // 256x256 中央クロップ → JPEG（容量を抑える）
+      const size = 256;
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const minSide = Math.min(img.width, img.height);
+      ctx.drawImage(img, (img.width - minSide) / 2, (img.height - minSide) / 2, minSide, minSide, 0, 0, size, size);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+      try {
+        const res = await fetch('/api/user-prefs', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: me.id, action: 'setIconImage', image: dataUrl }),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok || !json.ok) {
+          setIconError(json.error === 'image too large' ? '画像が大きすぎます。別の画像でお試しください' : ('保存に失敗: ' + (json.error || res.status)));
+          return;
+        }
+        await fetchRemoteData();
+        renderAll();
+        setIconError('');
+        closeIconModal();
+      } catch (e) { setIconError('通信エラー: ' + (e.message || e)); }
+    };
+    img.onerror = () => setIconError('画像の読み込みに失敗しました');
+    img.src = reader.result;
+  };
+  reader.onerror = () => setIconError('ファイルの読み込みに失敗しました');
+  reader.readAsDataURL(file);
+}
+async function resetUserIcon() {
+  const me = getCurrentUser(loadData());
+  if (!me) return;
+  try {
+    const res = await fetch('/api/user-prefs', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: me.id, action: 'clearIcon' }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json.ok) { setIconError('失敗: ' + (json.error || res.status)); return; }
+    await fetchRemoteData();
+    renderAll();
+    closeIconModal();
+  } catch (e) { setIconError('通信エラー: ' + (e.message || e)); }
 }
 
 // ============================================================
@@ -5350,6 +5567,90 @@ function getSlotSettings(data) {
   };
 }
 
+// スロットの確率表示用の既定（api/slot.js の既定と揃える）
+const SLOT_INFO_DEFAULT_ROLES = [
+  { id: 'replay', name: 'リプレイ', prob: 8, payout: 0 },
+  { id: 'watermelon', name: 'スイカ', prob: 4, payout: 100 },
+  { id: 'cherry', name: 'チェリー', prob: 10, payout: 30 },
+  { id: 'bell', name: 'ベル', prob: 12, payout: 20 },
+  { id: 'big', name: '単独BIG', prob: 0.4, payout: 0 },
+  { id: 'reg', name: '単独REG', prob: 0.8, payout: 0 },
+];
+const SLOT_INFO_DEFAULT_OVERLAP = { watermelon: { big: 30, reg: 10 }, cherry: { big: 5, reg: 20 } };
+
+// スロットの「役の確率・ボーナス確率・景品プール」表示
+function renderSlotInfoHTML(data) {
+  const s = (data.settings && data.settings.slot) || {};
+  const roles = (Array.isArray(s.roles) && s.roles.length) ? s.roles : SLOT_INFO_DEFAULT_ROLES;
+  const overlap = (s.overlap && typeof s.overlap === 'object') ? s.overlap : SLOT_INFO_DEFAULT_OVERLAP;
+  const bonusTypes = (s.bonus && Array.isArray(s.bonus.types)) ? s.bonus.types : [];
+
+  const fmtPct = (v) => (Math.round((Number(v) || 0) * 100) / 100);
+  // 役の確率（はずれは 100 - その他合計）
+  const others = roles.filter(r => r.id !== 'lose');
+  const sumOthers = others.reduce((acc, r) => acc + Math.max(0, Number(r.prob) || 0), 0);
+  const loseProb = Math.max(0, 100 - sumOthers);
+  const roleRows = others.map(r => {
+    const pay = Math.max(0, Math.floor(Number(r.payout) || 0));
+    const payHtml = pay > 0 ? `<span class="sti-pay">+${fmt(pay)}pt</span>` : '';
+    return `<div class="sti-row"><span class="sti-k">${escapeHtml(r.name || r.id)} ${payHtml}</span><span class="sti-v">${fmtPct(r.prob)}%</span></div>`;
+  }).join('') +
+    `<div class="sti-row is-lose"><span class="sti-k">はずれ</span><span class="sti-v">${fmtPct(loseProb)}%</span></div>`;
+
+  // ボーナス確率
+  const roleProb = (id) => { const r = roles.find(x => x.id === id); return r ? fmtPct(r.prob) : 0; };
+  const ov = (sym, t) => fmtPct(((overlap[sym] || {})[t]) || 0);
+  const bonusRows = `
+    <div class="sti-row"><span class="sti-k">単独BIG</span><span class="sti-v">${roleProb('big')}%</span></div>
+    <div class="sti-row"><span class="sti-k">単独REG</span><span class="sti-v">${roleProb('reg')}%</span></div>
+    <div class="sti-row"><span class="sti-k">🍉スイカ重複 → BIG</span><span class="sti-v">${ov('watermelon','big')}%</span></div>
+    <div class="sti-row"><span class="sti-k">🍉スイカ重複 → REG</span><span class="sti-v">${ov('watermelon','reg')}%</span></div>
+    <div class="sti-row"><span class="sti-k">🍒チェリー重複 → BIG</span><span class="sti-v">${ov('cherry','big')}%</span></div>
+    <div class="sti-row"><span class="sti-k">🍒チェリー重複 → REG</span><span class="sti-v">${ov('cherry','reg')}%</span></div>`;
+
+  // 景品プール（BIG / REG）
+  const poolHtml = (typeId, label) => {
+    const t = bonusTypes.find(x => x.id === typeId);
+    const prizes = (t && Array.isArray(t.prizes)) ? t.prizes : [];
+    const totalW = prizes.reduce((acc, p) => acc + Math.max(0, Number(p.weight) || 0), 0);
+    const cards = prizes.length === 0
+      ? `<div class="sti-pool-empty">景品が未設定です</div>`
+      : prizes.map(p => {
+          const w = Math.max(0, Number(p.weight) || 0);
+          const rate = totalW > 0 ? Math.round((w / totalW) * 1000) / 10 : 0;
+          return `
+            <div class="sti-pool-card">
+              <div class="sti-pool-icon">${renderSlotPrizeIconHtml(p)}</div>
+              <div class="sti-pool-name">${escapeHtml(p.name || '景品')}</div>
+              <div class="sti-pool-meta">🍄 ${fmt(Math.max(0, Math.floor(Number(p.mushroom) || 0)))} ・ ${rate}%</div>
+            </div>`;
+        }).join('');
+    return `
+      <div class="sti-pool-block ${typeId === 'big' ? 'is-big' : 'is-reg'}">
+        <div class="sti-pool-head">${label}</div>
+        <div class="sti-pool-grid">${cards}</div>
+      </div>`;
+  };
+
+  return `
+    <div class="slot-info">
+      <div class="slot-info-cols">
+        <div class="slot-info-block">
+          <div class="sti-title">役の確率</div>
+          ${roleRows}
+        </div>
+        <div class="slot-info-block">
+          <div class="sti-title">ボーナス確率</div>
+          ${bonusRows}
+        </div>
+      </div>
+      <div class="sti-title" style="margin-top:1.2rem">当たる景品（景品プール）</div>
+      ${poolHtml('big', '🎰 BIG の景品')}
+      ${poolHtml('reg', '🎰 REG の景品')}
+    </div>
+  `;
+}
+
 // 図柄 id → 表示HTML
 function renderSlotSymbolHtml(symbolId, slotSettings) {
   const sym = (slotSettings.symbols || []).find(s => s.id === symbolId);
@@ -5569,6 +5870,8 @@ function renderSlotDashboardHTML(data, me) {
 
       <div class="slot-history-title">スロットコレクション（🍄 計 ${fmt(mushroomPt)}）</div>
       <div class="slot-coll-grid">${collHtml}</div>
+
+      ${renderSlotInfoHTML(data)}
     </div>
   `;
 }
@@ -5580,12 +5883,12 @@ function resolveSlotPrize(data, bonusType, prizeId) {
   if (!t || !Array.isArray(t.prizes)) return null;
   return t.prizes.find(x => x.id === prizeId) || null;
 }
-// スロット景品アイコン HTML（画像 or 絵文字）
+// スロット景品アイコン HTML（画像のみ。未設定はプレースホルダ）
 function renderSlotPrizeIconHtml(p) {
-  if (p && p.iconType === 'image' && typeof p.icon === 'string' && p.icon.startsWith('data:image')) {
+  if (p && typeof p.icon === 'string' && p.icon.startsWith('data:image')) {
     return `<img src="${escapeHtml(p.icon)}" alt="">`;
   }
-  return escapeHtml((p && p.icon) || '🍄');
+  return `<span class="no-img">NO IMAGE</span>`;
 }
 
 function setupSlotDashboard(data, me) {
@@ -6364,7 +6667,7 @@ function renderRanking(data) {
   typeBar.className = 'ranking-type-tabs';
   typeBar.innerHTML = `
     <button type="button" class="rtt-btn${rankingType === 'pt' ? ' active' : ''}" data-rtype="pt">💎 pt ランキング</button>
-    <button type="button" class="rtt-btn${rankingType === 'mushroom' ? ' active' : ''}" data-rtype="mushroom">🍄 スロット（きのこ）</button>`;
+    <button type="button" class="rtt-btn${rankingType === 'mushroom' ? ' active' : ''}" data-rtype="mushroom">🍄 きのこランキング</button>`;
   list.appendChild(typeBar);
   typeBar.querySelectorAll('.rtt-btn').forEach(b => b.addEventListener('click', () => {
     rankingType = b.dataset.rtype;
@@ -7809,6 +8112,7 @@ setupGachaModal();
 setupGachaMultiModal();
 setupPasswordModal();
 setupLoginOverlay();
+setupIconModal();
 setupTradeModals();
 setupGalleryModal();
 setupSalvageConfirmModal();

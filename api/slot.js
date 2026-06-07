@@ -78,12 +78,12 @@ const DEFAULT_SLOT_BONUS = {
   enabled: true,
   types: [
     { id: 'big', name: 'BIG BONUS', tellSymbolId: 'seven', color: '#d4ad55', prizes: [
-      { id: 'big-1', name: 'おおきのこ', icon: '🍄', iconType: 'emoji', mushroom: 10, weight: 50 },
-      { id: 'big-2', name: 'まんねんきのこ', icon: '🌟', iconType: 'emoji', mushroom: 30, weight: 10 },
+      { id: 'big-1', name: 'おおきのこ', icon: '', iconType: 'image', mushroom: 10, weight: 50 },
+      { id: 'big-2', name: 'まんねんきのこ', icon: '', iconType: 'image', mushroom: 30, weight: 10 },
     ] },
     { id: 'reg', name: 'REG BONUS', tellSymbolId: 'mushroom', color: '#5fa8c8', prizes: [
-      { id: 'reg-1', name: 'こきのこ', icon: '🍄', iconType: 'emoji', mushroom: 3, weight: 60 },
-      { id: 'reg-2', name: 'なかきのこ', icon: '🍄', iconType: 'emoji', mushroom: 8, weight: 20 },
+      { id: 'reg-1', name: 'こきのこ', icon: '', iconType: 'image', mushroom: 3, weight: 60 },
+      { id: 'reg-2', name: 'なかきのこ', icon: '', iconType: 'image', mushroom: 8, weight: 20 },
     ] },
   ],
 };
@@ -129,8 +129,8 @@ function awardBonusPrize(cfg, type, user) {
     : ((DEFAULT_SLOT_BONUS.types.find(t => t.id === type) || {}).prizes || []);
   const pick = weightedPick(prizes); // weight キーで抽選
   const now = Date.now();
-  // 景品未設定でも演出は出す（きのこpt 0 のプレースホルダ）
-  const prize = pick || { id: 'none', name: def.name || 'ボーナス', icon: '🍄', iconType: 'emoji', mushroom: 0 };
+  // 景品未設定でも演出は出す（きのこpt 0 のプレースホルダ・画像なし）
+  const prize = pick || { id: 'none', name: def.name || 'ボーナス', icon: '', iconType: 'image', mushroom: 0 };
   const mushroom = Math.max(0, Math.floor(Number(prize.mushroom) || 0));
 
   // きのこpt を加算（スロット専用ランキングのスコア）

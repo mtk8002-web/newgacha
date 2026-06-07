@@ -27,12 +27,35 @@ async function processPrefs(body, data) {
     const owns = (user.inventory || []).some(it => it.gachaTypeId === gachaTypeId && it.prizeId === prizeId);
     if (!owns) return { status: 400, body: { ok: false, error: 'not owned' }, save: false };
     user.iconPrize = { gachaTypeId, prizeId };
+    user.iconImage = null; // 排他：アップロード画像アイコンは解除
     return { status: 200, body: { ok: true, iconPrize: user.iconPrize }, save: true };
   }
 
   if (action === 'clearIconPrize') {
     user.iconPrize = null;
     return { status: 200, body: { ok: true, iconPrize: null }, save: true };
+  }
+
+  // ユーザー自身がアップロードした画像をアイコンに設定
+  if (action === 'setIconImage') {
+    const { image } = body;
+    if (typeof image !== 'string' || !image.startsWith('data:image')) {
+      return { status: 400, body: { ok: false, error: 'invalid image' }, save: false };
+    }
+    // 過大画像を弾く（クライアントで256pxにリサイズ済みの想定。base64で ~700KB 上限）
+    if (image.length > 700000) {
+      return { status: 400, body: { ok: false, error: 'image too large' }, save: false };
+    }
+    user.iconImage = image;
+    user.iconPrize = null; // 排他：景品アイコンは解除
+    return { status: 200, body: { ok: true }, save: true };
+  }
+
+  // アイコンを既定（admin設定 or 👤）に戻す
+  if (action === 'clearIcon') {
+    user.iconImage = null;
+    user.iconPrize = null;
+    return { status: 200, body: { ok: true }, save: true };
   }
 
   return { status: 400, body: { ok: false, error: 'invalid action' }, save: false };
