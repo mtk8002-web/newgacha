@@ -1479,6 +1479,24 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
           </div>
         </div>
 
+        <!-- フリーズ（プレミアム） -->
+        <div class="slot-roles-title">❄ フリーズ（プレミアム演出）</div>
+        <div class="form-hint" style="margin-bottom:0.8rem">
+          ※ レア抽選で発生。当選するとリールが暗転し、約10秒の豪華演出 → <b>BIG景品</b>を獲得します。<br>
+          ※ 確率は1スピンあたりの発生率(%)。低め（例：0.1%）推奨。
+        </div>
+        <div class="field-row">
+          <label class="visibility-toggle">
+            <input type="checkbox" id="setSlotFreezeEnabled">
+            <span class="visibility-toggle-track"></span>
+            <span class="visibility-toggle-label">フリーズを有効にする</span>
+          </label>
+        </div>
+        <div class="field-row" style="margin-top:0.8rem">
+          <label class="label-text">フリーズ確率 %</label>
+          <input type="number" class="input" id="setSlotFreezeProb" min="0" max="100" step="0.01" placeholder="0.1">
+        </div>
+
         <!-- 役と確率 -->
         <div class="slot-roles-title">役 と 確率（%）</div>
         <div class="form-hint" style="margin-bottom:0.8rem">
@@ -1873,6 +1891,8 @@ const DEFAULT_SLOT = {
       ] },
     ],
   },
+  // フリーズ（プレミアム）：低確率で発生 → 暗転＋豪華演出 → BIG景品
+  freeze: { enabled: true, prob: 0.1 },
 };
 
 function getDefaultData() {
@@ -1951,6 +1971,9 @@ function normalizeData(parsed) {
   }
   if (!parsed.settings.slot.bonus || !Array.isArray(parsed.settings.slot.bonus.types) || parsed.settings.slot.bonus.types.length === 0) {
     parsed.settings.slot.bonus = JSON.parse(JSON.stringify(DEFAULT_SLOT.bonus));
+  }
+  if (!parsed.settings.slot.freeze || typeof parsed.settings.slot.freeze !== 'object') {
+    parsed.settings.slot.freeze = JSON.parse(JSON.stringify(DEFAULT_SLOT.freeze));
   }
   // 旧スキーマ（sourceGachaTypeId）のボーナスタイプに prizes が無ければ既定のスロット専用景品を補完
   parsed.settings.slot.bonus.types.forEach(t => {
@@ -2986,7 +3009,11 @@ function setupSettings() {
     };
 
     const description = (document.getElementById('setSlotDescription').value || '').trim().slice(0, 1000);
-    data.settings.slot = Object.assign({}, data.settings.slot || {}, { enabled, cost, description, roles, overlap, bonus });
+    const freeze = {
+      enabled: document.getElementById('setSlotFreezeEnabled').checked,
+      prob: Math.max(0, Math.min(100, Number(document.getElementById('setSlotFreezeProb').value) || 0)),
+    };
+    data.settings.slot = Object.assign({}, data.settings.slot || {}, { enabled, cost, description, roles, overlap, bonus, freeze });
     const sum = roles.filter(r => r.id !== 'lose').reduce((s, r) => s + (Number(r.prob) || 0), 0);
     saveData();
     if (sum > 100) showToast('保存しました（注意：役の合計が100%を超えています。はずれが0%になります）');
@@ -3468,6 +3495,9 @@ function renderSettings() {
   document.getElementById('setSlotEnabled').checked = slot.enabled !== false;
   document.getElementById('setSlotCost').value = (typeof slot.cost === 'number' && slot.cost >= 0) ? Math.floor(slot.cost) : 100;
   document.getElementById('setSlotDescription').value = slot.description || '';
+  const fz = (slot.freeze && typeof slot.freeze === 'object') ? slot.freeze : { enabled: true, prob: 0.1 };
+  document.getElementById('setSlotFreezeEnabled').checked = fz.enabled !== false;
+  document.getElementById('setSlotFreezeProb').value = (typeof fz.prob === 'number') ? fz.prob : 0.1;
   // 役・確率
   const slotRoles = (Array.isArray(slot.roles) && slot.roles.length) ? slot.roles : DEFAULT_SLOT.roles;
   const roleById = id => slotRoles.find(r => r.id === id) || {};

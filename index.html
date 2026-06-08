@@ -2163,7 +2163,12 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
 }
 
 /* ===== ガチャセクション ===== */
-.gacha-section { background: linear-gradient(180deg, var(--bg-warm) 0%, var(--bg-pink) 100%); }
+.gacha-section {
+  background:
+    radial-gradient(60% 40% at 80% 0%, rgba(212,173,85,0.10), transparent 60%),
+    radial-gradient(50% 40% at 10% 20%, rgba(214,85,122,0.08), transparent 60%),
+    linear-gradient(180deg, var(--bg-warm) 0%, var(--bg-pink) 100%);
+}
 
 .gacha-login {
   background: var(--card);
@@ -2220,11 +2225,13 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
 .gacha-name-chip:hover { color: var(--pink); border-color: var(--pink); background: var(--pink-bg); }
 
 .gacha-dashboard {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  position: relative;
+  background:
+    linear-gradient(180deg, #ffffff 0%, var(--bg-gold) 100%);
+  border: 1px solid var(--gold-bright);
+  border-radius: 18px;
   padding: 2rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-gold), inset 0 1px 0 rgba(255,255,255,0.8);
 }
 .gacha-stat-grid {
   display: grid;
@@ -2264,35 +2271,65 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
 }
 .candy-card {
   position: relative;
-  background: var(--card);
-  border: 2px solid var(--border);
-  border-radius: 14px;
-  padding: 1.4rem 1rem 1.2rem;
+  background: linear-gradient(180deg, #ffffff 0%, color-mix(in srgb, var(--accent) 6%, #ffffff) 100%);
+  border: 1.5px solid color-mix(in srgb, var(--accent) 32%, var(--border));
+  border-radius: 18px;
+  padding: 1.6rem 1rem 1.2rem;
   text-align: center;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  overflow: hidden;
+  transition: transform 0.22s cubic-bezier(0.16,1,0.3,1), box-shadow 0.22s, border-color 0.22s;
+  box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.85);
 }
-.candy-card:not(.disabled):hover {
-  transform: translateY(-3px);
-  border-color: var(--accent);
-  box-shadow: 0 10px 28px color-mix(in srgb, var(--accent) 30%, transparent);
-}
-.candy-card.disabled { opacity: 0.55; }
+/* 上部のメタリックなアクセントバー（流れる光） */
 .candy-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
-  background: var(--accent);
-  border-radius: 12px 12px 0 0;
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; z-index: 2;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--accent) 55%, #fff),
+    var(--accent),
+    color-mix(in srgb, var(--accent) 55%, #fff));
+  background-size: 200% 100%;
+  animation: candyBarShine 5s linear infinite;
 }
+@keyframes candyBarShine { 0% { background-position: 0% 0; } 100% { background-position: 200% 0; } }
+/* 背面のやわらかいオーラ（ホバーで強調） */
+.candy-card::after {
+  content: ''; position: absolute; left: -30%; right: -30%; top: -30%; height: 70%; z-index: 0;
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%);
+  opacity: 0.45; pointer-events: none; transition: opacity 0.25s;
+}
+.candy-card > * { position: relative; z-index: 1; }
+.candy-card:not(.disabled):hover {
+  transform: translateY(-5px);
+  border-color: var(--accent);
+  box-shadow: 0 16px 38px color-mix(in srgb, var(--accent) 34%, transparent), inset 0 1px 0 rgba(255,255,255,0.85);
+}
+.candy-card:not(.disabled):hover::after { opacity: 1; }
+.candy-card.disabled { opacity: 0.55; }
 .candy-card .candy-icon {
-  width: 80px; height: 80px;
-  margin: 0 auto 0.6rem;
+  position: relative;
+  width: 94px; height: 94px;
+  margin: 0 auto 0.75rem;
   display: flex; align-items: center; justify-content: center;
-  font-size: 3rem; line-height: 1;
-  background: color-mix(in srgb, var(--accent) 12%, white);
+  font-size: 3.3rem; line-height: 1;
   border-radius: 50%;
-  border: 2px solid var(--accent);
+  border: 3px solid transparent;
+  background:
+    radial-gradient(circle at 50% 35%, #ffffff, color-mix(in srgb, var(--accent) 16%, #ffffff)) padding-box,
+    conic-gradient(from 210deg, var(--accent), color-mix(in srgb, var(--accent) 45%, #fff) 25%, var(--accent) 50%, color-mix(in srgb, var(--accent) 45%, #fff) 75%, var(--accent)) border-box;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 30%, transparent), 0 0 0 5px color-mix(in srgb, var(--accent) 9%, transparent);
   overflow: hidden;
 }
-.candy-card .candy-icon img { width: 100%; height: 100%; object-fit: cover; }
+/* アイコンのガラス光沢 */
+.candy-card .candy-icon::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  background: linear-gradient(130deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.12) 30%, transparent 55%);
+}
+.candy-card .candy-icon img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.candy-card:not(.disabled):hover .candy-icon { animation: candyIconPop 0.5s ease; }
+@keyframes candyIconPop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.09); } }
+@media (prefers-reduced-motion: reduce) {
+  .candy-card::before, .candy-card:hover .candy-icon { animation: none !important; }
+}
 .candy-card .candy-name {
   font-size: 1.05rem; font-weight: 700; color: var(--text);
   letter-spacing: 0.05em; margin-bottom: 0.4rem;
@@ -3378,8 +3415,10 @@ footer {
   .podium-medal { font-size: 1.5rem; margin-bottom: 0.25rem; }
   .podium-card.gold .podium-medal { font-size: 1.85rem; }
 
-  .podium-icon { width: 46px; height: 46px; font-size: 1.45rem; margin-bottom: 0.45rem; border-width: 1.5px; }
-  .podium-card.gold .podium-icon { width: 58px; height: 58px; font-size: 1.85rem; border-width: 2px; box-shadow: 0 0 14px rgba(184,146,63,0.35); }
+  /* アイコンは必ず 金 > 銀 > 銅 の順。横並びでも1位を強調 */
+  .podium-icon { width: 58px; height: 58px; font-size: 1.8rem; margin-bottom: 0.45rem; border-width: 2px; border-radius: 12px; }
+  .podium-card.silver .podium-icon { width: 70px; height: 70px; font-size: 2.1rem; }
+  .podium-card.gold .podium-icon { width: 90px; height: 90px; font-size: 2.7rem; border-width: 2.5px; border-radius: 14px; box-shadow: 0 6px 18px rgba(184,146,63,0.45), 0 0 18px rgba(212,173,85,0.45); }
 
   .podium-name {
     font-size: 0.72rem; margin-bottom: 0.3rem; letter-spacing: 0.02em;
@@ -3417,8 +3456,9 @@ footer {
   .podium-card.gold { padding: 0.95rem 0.25rem 0.75rem; }
   .podium-medal { font-size: 1.25rem; }
   .podium-card.gold .podium-medal { font-size: 1.5rem; }
-  .podium-icon { width: 40px; height: 40px; font-size: 1.3rem; margin-bottom: 0.35rem; }
-  .podium-card.gold .podium-icon { width: 50px; height: 50px; font-size: 1.6rem; }
+  .podium-icon { width: 50px; height: 50px; font-size: 1.55rem; margin-bottom: 0.35rem; }
+  .podium-card.silver .podium-icon { width: 60px; height: 60px; font-size: 1.85rem; }
+  .podium-card.gold .podium-icon { width: 78px; height: 78px; font-size: 2.25rem; }
   .podium-name { font-size: 0.66rem; margin-bottom: 0.2rem; }
   .podium-card.gold .podium-name { font-size: 0.74rem; }
   .podium-rank { font-size: 0.7rem; }
@@ -3722,6 +3762,92 @@ footer {
   animation: slot-tempai-pulse 0.28s ease-in-out infinite alternate;
 }
 
+/* ===== フリーズ（プレミアム）演出 ===== */
+/* リール暗転 */
+.slot-reels.blackout .slot-reel { background: #000 !important; border-color: #111 !important; }
+.slot-reels.blackout .slot-reel-strip { opacity: 0; transition: opacity 0.25s; }
+.slot-reels.blackout::after { opacity: 0; }
+.slot-cabinet.frozen { box-shadow: 0 0 0 3px rgba(120,200,255,0.5), 0 0 50px rgba(90,170,255,0.5), var(--shadow-gold-heavy); }
+
+.slot-freeze {
+  position: fixed; inset: 0; z-index: 9996;
+  display: none; align-items: center; justify-content: center; overflow: hidden;
+  pointer-events: none;
+}
+.slot-freeze.show { display: flex; }
+.slot-freeze .sf-black {
+  position: absolute; inset: 0; background: #02040a;
+  animation: sfBlackIn 0.6s ease-out forwards;
+}
+@keyframes sfBlackIn { from { opacity: 0; } to { opacity: 1; } }
+/* 氷の輝き（前半：青） → 後半：金/虹に変化 */
+.slot-freeze .sf-ice {
+  position: absolute; inset: 0; opacity: 0;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(150,225,255,0.55), rgba(40,90,180,0.35) 35%, rgba(5,10,30,0.9) 70%);
+  animation: sfIce 9.5s ease-in-out forwards;
+}
+@keyframes sfIce {
+  0% { opacity: 0; }
+  10% { opacity: 1; filter: hue-rotate(0deg) brightness(1); }
+  55% { opacity: 1; filter: hue-rotate(0deg) brightness(1.1); }
+  62% { opacity: 1; filter: hue-rotate(-120deg) brightness(1.8); }   /* 青→金へ転調 */
+  85% { opacity: 1; filter: hue-rotate(-150deg) brightness(1.5); }
+  100% { opacity: 0; }
+}
+/* 集中線（回転）：後半に金色で強く */
+.slot-freeze .sf-rays {
+  position: absolute; inset: -30%;
+  background: repeating-conic-gradient(from 0deg at 50% 50%,
+    rgba(255,255,255,0) 0deg, rgba(255,255,255,0) 5deg,
+    rgba(180,225,255,0.5) 6deg, rgba(180,225,255,0) 7deg);
+  opacity: 0;
+  animation: sfRaysSpin 9.5s linear forwards, sfRaysFade 9.5s ease-in-out forwards;
+}
+@keyframes sfRaysSpin { from { transform: rotate(0); } to { transform: rotate(120deg); } }
+@keyframes sfRaysFade {
+  0% { opacity: 0; } 25% { opacity: 0.5; } 60% { opacity: 0.7; } 65% { opacity: 1; filter: hue-rotate(-120deg) brightness(1.6); }
+  90% { opacity: 0.9; } 100% { opacity: 0; }
+}
+.slot-freeze .sf-particles { position: absolute; inset: 0; pointer-events: none; }
+.slot-freeze .sf-particles span {
+  position: absolute; top: -8%; font-size: 1.6rem;
+  animation: sfFall linear forwards;
+}
+@keyframes sfFall {
+  0% { transform: translateY(0) rotate(0); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(115vh) rotate(360deg); opacity: 0; }
+}
+.slot-freeze .sf-content { position: relative; z-index: 1; text-align: center; }
+.slot-freeze .sf-title {
+  font-family: var(--font-en), sans-serif; font-weight: 900;
+  font-size: clamp(2.8rem, 13vw, 7rem); letter-spacing: 0.08em;
+  color: #eaf7ff;
+  text-shadow: 0 0 24px rgba(140,210,255,0.9), 0 0 60px rgba(80,150,255,0.7);
+  animation: sfTitleIn 1.2s 0.6s cubic-bezier(0.2,1.3,0.3,1) both, sfTitlePulse 1.6s 1.8s ease-in-out infinite;
+}
+@keyframes sfTitleIn { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes sfTitlePulse { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
+/* バースト（後半：金虹のテキスト） */
+.slot-freeze .sf-title.burst {
+  background: linear-gradient(90deg, #fff3c0, #ffd24d, #ff7a1e, #ff4da6, #7fd0ff, #ffd24d);
+  background-size: 300% 100%;
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 0 22px rgba(255,180,60,0.95));
+  animation: sfBurst 0.6s ease-out both, sfBurstShine 1.2s linear infinite;
+}
+@keyframes sfBurst { 0% { transform: scale(0.6) rotate(-4deg); } 60% { transform: scale(1.2) rotate(2deg); } 100% { transform: scale(1) rotate(0); } }
+@keyframes sfBurstShine { from { background-position: 0% 0; } to { background-position: 300% 0; } }
+.slot-freeze .sf-sub {
+  margin-top: 0.6rem;
+  font-family: var(--font-en), sans-serif; font-weight: 800; letter-spacing: 0.4em;
+  font-size: 1rem; color: #bfe8ff; text-transform: uppercase;
+  text-shadow: 0 0 14px rgba(120,200,255,0.9);
+  animation: sfTitleIn 1s 1s both;
+}
+
 /* 激熱カットイン（フルスクリーン） */
 .slot-gekiatsu {
   position: fixed; inset: 0; z-index: 9997;
@@ -3979,6 +4105,8 @@ footer {
 .sti-row .sti-pay { color: var(--pink-deep); font-size: 0.72rem; font-weight: 700; margin-left: 0.3rem; }
 .sti-row .sti-v { font-family: var(--font-en); font-weight: 800; color: var(--gold-deep); }
 .sti-row.is-lose .sti-v { color: var(--text-muted); }
+.sti-row.sti-freeze .sti-k { color: #2f88c8; font-weight: 800; }
+.sti-row.sti-freeze .sti-v { color: #2f88c8; }
 .sti-pool-block {
   margin-top: 0.7rem; background: var(--card); border: 1px solid var(--border);
   border-radius: 10px; padding: 0.8rem;
@@ -4290,6 +4418,7 @@ body.slot-shake { animation: screenShake 0.18s ease-in-out 4; }
   .slot-lamp.on, .slot-lamp.just-lit, .slot-spin-btn.bonus,
   .slot-spin-btn::after,
   .slot-gekiatsu .sg-flash, .slot-gekiatsu .sg-streaks, .slot-gekiatsu .sg-text, .slot-gekiatsu .sg-sub,
+  .slot-freeze .sf-ice, .slot-freeze .sf-rays, .slot-freeze .sf-title, .slot-freeze .sf-sub, .slot-freeze .sf-particles span,
   .slot-cabinet::before, .slot-reels::after {
     animation: none !important;
   }
@@ -4507,6 +4636,18 @@ body.slot-shake { animation: screenShake 0.18s ease-in-out 4; }
   <div class="sg-streaks"></div>
   <div class="sg-text" id="slotGekiatsuText">激アツ</div>
   <div class="sg-sub" id="slotGekiatsuSub">CHANCE</div>
+</div>
+
+<!-- フリーズ（プレミアム）演出：暗転 → 約10秒の豪華演出 -->
+<div class="slot-freeze" id="slotFreeze">
+  <div class="sf-black"></div>
+  <div class="sf-ice"></div>
+  <div class="sf-rays"></div>
+  <div class="sf-particles" id="slotFreezeParticles"></div>
+  <div class="sf-content">
+    <div class="sf-title" id="slotFreezeTitle">FREEZE</div>
+    <div class="sf-sub" id="slotFreezeSub">❄ PREMIUM ❄</div>
+  </div>
 </div>
 
 <!-- ===== ギャラリー（所持景品） ===== -->
@@ -5663,13 +5804,18 @@ function renderSlotInfoHTML(data) {
   // ボーナス確率
   const roleProb = (id) => { const r = roles.find(x => x.id === id); return r ? fmtPct(r.prob) : 0; };
   const ov = (sym, t) => fmtPct(((overlap[sym] || {})[t]) || 0);
+  const freeze = (s.freeze && typeof s.freeze === 'object') ? s.freeze : { enabled: true, prob: 0.1 };
+  const freezeRow = (freeze.enabled !== false)
+    ? `<div class="sti-row sti-freeze"><span class="sti-k">❄ フリーズ（プレミアム）</span><span class="sti-v">${fmtPct(freeze.prob)}%</span></div>`
+    : '';
   const bonusRows = `
     <div class="sti-row"><span class="sti-k">単独BIG</span><span class="sti-v">${roleProb('big')}%</span></div>
     <div class="sti-row"><span class="sti-k">単独REG</span><span class="sti-v">${roleProb('reg')}%</span></div>
     <div class="sti-row"><span class="sti-k">🍉スイカ重複 → BIG</span><span class="sti-v">${ov('watermelon','big')}%</span></div>
     <div class="sti-row"><span class="sti-k">🍉スイカ重複 → REG</span><span class="sti-v">${ov('watermelon','reg')}%</span></div>
     <div class="sti-row"><span class="sti-k">🍒チェリー重複 → BIG</span><span class="sti-v">${ov('cherry','big')}%</span></div>
-    <div class="sti-row"><span class="sti-k">🍒チェリー重複 → REG</span><span class="sti-v">${ov('cherry','reg')}%</span></div>`;
+    <div class="sti-row"><span class="sti-k">🍒チェリー重複 → REG</span><span class="sti-v">${ov('cherry','reg')}%</span></div>
+    ${freezeRow}`;
 
   // 景品プール（BIG / REG）
   const poolHtml = (typeId, label) => {
@@ -6071,11 +6217,20 @@ async function doSlotSpin(userId, opts) {
       // 残高更新の通信(fetchRemoteData)は反応を最優先するため停止後に回す。
       const result = json.result || {};
       animationStarted = true;
-      beginManualStop(result, async () => {
+      const onComplete = async () => {
         await fetchRemoteData();
         slotSpinInFlight = false;
         renderAll();
-      });
+      };
+      if (result.freeze) {
+        // フリーズ：目押しせず、リール暗転 → 約10秒の豪華演出 → 景品
+        const stopRow = document.getElementById('slotStopRow');
+        if (stopRow) stopRow.hidden = true;
+        stopReelSpinImmediately();
+        playFreeze(result, onComplete);
+      } else {
+        beginManualStop(result, onComplete);
+      }
       return;
     }
   } catch (e) {
@@ -6283,6 +6438,68 @@ function playTenpaiGekiatsu(type) {
       playGekiatsuCutin(type).then(resolve);  // 煽りの末に激熱カットイン
     }, 1000);
   });
+}
+
+// フリーズ（プレミアム）演出：リール暗転 → 約10秒の豪華演出 → 景品
+function playFreeze(result, onDone) {
+  const ov = document.getElementById('slotFreeze');
+  const reels = document.getElementById('slotReels');
+  const cab = document.getElementById('slotCabinet');
+  // リールを暗転（ロックアップ）
+  if (reels) reels.classList.add('blackout');
+  if (cab) cab.classList.add('frozen');
+  slotSE('freezeLock');
+
+  // 少し置いてフルスクリーン演出スタート
+  setTimeout(() => {
+    const title = document.getElementById('slotFreezeTitle');
+    const sub = document.getElementById('slotFreezeSub');
+    if (title) { title.textContent = 'FREEZE'; title.classList.remove('burst'); }
+    if (sub) sub.textContent = '❄ PREMIUM ❄';
+    if (ov) { ov.classList.remove('show'); void ov.offsetWidth; ov.classList.add('show'); }
+    slotSE('freeze');
+    document.body.classList.add('slot-shake');
+    setTimeout(() => document.body.classList.remove('slot-shake'), 1200);
+
+    // 中盤：雪の結晶パーティクル
+    setTimeout(() => { spawnFreezeParticles(50, false); slotSE('big'); }, 2800);
+    // クライマックス：金虹バーストへ転調
+    setTimeout(() => {
+      if (title) { title.textContent = '大量獲得！'; title.classList.add('burst'); }
+      if (sub) sub.textContent = '★ FREEZE BONUS ★';
+      spawnFreezeParticles(90, true);
+      slotSE('fanfare-big');
+      document.body.classList.add('slot-shake');
+      setTimeout(() => document.body.classList.remove('slot-shake'), 1000);
+    }, 5500);
+
+    // 終了 → 直接 景品モーダルを表示（10秒演出の直後に景品獲得）
+    setTimeout(() => {
+      if (ov) ov.classList.remove('show');
+      if (reels) reels.classList.remove('blackout');
+      if (cab) cab.classList.remove('frozen');
+      if (title) title.classList.remove('burst');
+      if (result && result.bonus && result.bonus.prize) revealGachaModal(result.bonus.prize);
+      onDone && onDone();
+    }, 9500);
+  }, 700);
+}
+
+// フリーズ用パーティクル（雪・宝石・コイン）
+function spawnFreezeParticles(count, gold) {
+  const wrap = document.getElementById('slotFreezeParticles');
+  if (!wrap) return;
+  const icons = gold ? ['🪙', '💎', '✨', '🌟', '👑'] : ['❄️', '💎', '✨', '🔷', '❄️'];
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement('span');
+    s.textContent = icons[Math.floor(Math.random() * icons.length)];
+    s.style.left = (Math.random() * 100) + '%';
+    s.style.animationDuration = (2.2 + Math.random() * 2.2) + 's';
+    s.style.animationDelay = (Math.random() * 0.6) + 's';
+    s.style.fontSize = (1 + Math.random() * 1.6) + 'rem';
+    wrap.appendChild(s);
+  }
+  setTimeout(() => { wrap.innerHTML = ''; }, 5000);
 }
 
 // 告知ランプを点灯（単独/重複の成立時）
@@ -6522,6 +6739,29 @@ function slotSE(kind) {
     g.gain.exponentialRampToValueAtTime(0.0008, t + 0.8);
     o.connect(g).connect(slotMasterGain); o.start(t + 0.05); o.stop(t + 0.85);
     [523, 659, 784].forEach((f, i) => slotTone(f, t + 0.55 + i * 0.06, 0.3, 'square', 0.16));
+  } else if (kind === 'freezeLock') {
+    // フリーズ：リールが凍りつくロックアップ音（重い停止＋下降）
+    slotNoise(t, 0.12, 0.16, 700);
+    slotTone(160, t, 0.14, 'sine', 0.34);
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(420, t);
+    o.frequency.exponentialRampToValueAtTime(70, t + 0.5);
+    g.gain.setValueAtTime(0.0008, t);
+    g.gain.linearRampToValueAtTime(0.2, t + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0008, t + 0.55);
+    o.connect(g).connect(slotMasterGain); o.start(t); o.stop(t + 0.6);
+  } else if (kind === 'freeze') {
+    // 氷の煌めき：高音のキラキラ＋ゆっくり上昇
+    [1568, 2093, 2637].forEach((f, i) => slotTone(f, t + i * 0.12, 0.5, 'sine', 0.1));
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(220, t + 0.2);
+    o.frequency.exponentialRampToValueAtTime(880, t + 2.2);
+    g.gain.setValueAtTime(0.0008, t + 0.2);
+    g.gain.linearRampToValueAtTime(0.1, t + 0.6);
+    g.gain.exponentialRampToValueAtTime(0.0008, t + 2.4);
+    o.connect(g).connect(slotMasterGain); o.start(t + 0.2); o.stop(t + 2.5);
   }
 }
 

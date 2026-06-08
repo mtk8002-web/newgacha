@@ -48,6 +48,8 @@ function getDefaultData() {
         enabled: true,
         cost: 100,            // 1スピンの消費pt
         payoutCurrency: 'pt',
+        // フリーズ（プレミアム）：低確率で発生 → 暗転＋豪華演出 → BIG景品
+        freeze: { enabled: true, prob: 0.1 },
         // 図柄は意味のある6種（api/slot.js と同期）
         symbols: [
           { id: 'seven', icon: '7️⃣' }, { id: 'watermelon', icon: '🍉' }, { id: 'cherry', icon: '🍒' },
