@@ -88,8 +88,13 @@ const DEFAULT_SLOT_BONUS = {
   ],
 };
 
-// フリーズ（プレミアム）既定：低確率で発生し、BIG景品＋豪華演出
-const DEFAULT_SLOT_FREEZE = { enabled: true, prob: 0.1 };
+// フリーズ（プレミアム）既定：低確率で発生 → 豪華演出 → フリーズ専用景品
+const DEFAULT_SLOT_FREEZE = {
+  enabled: true, prob: 0.1,
+  prizes: [
+    { id: 'fz-1', name: 'でかきのこ', icon: '', iconType: 'image', mushroom: 100, weight: 1 },
+  ],
+};
 
 // slot 設定を既定値で補完して返す
 function getSlotConfig(slot) {
@@ -126,18 +131,35 @@ function gp(user) {
   return Math.max(0, Math.floor(Number(user.gachaPoint) || 0));
 }
 
-// ボーナス景品を払い出す（スロット専用景品プールから抽選 → きのこpt 加算＋コレクション追加）
+// ボーナス/フリーズ景品を払い出す（スロット専用景品プールから抽選 → きのこpt 加算＋コレクション追加）
+// type: 'big' | 'reg' | 'freeze'
 function awardBonusPrize(cfg, type, user) {
-  const def = (cfg.bonus.types || []).find(t => t.id === type)
-    || { id: type, name: type === 'big' ? 'BIG BONUS' : 'REG BONUS' };
-  // 旧データ（prizes 未設定）でも動くよう、空なら既定のスロット専用景品にフォールバック
-  const prizes = (Array.isArray(def.prizes) && def.prizes.length)
-    ? def.prizes
-    : ((DEFAULT_SLOT_BONUS.types.find(t => t.id === type) || {}).prizes || []);
+  let prizes, typeName, color, rarity;
+  if (type === 'freeze') {
+    prizes = (cfg.freeze && Array.isArray(cfg.freeze.prizes) && cfg.freeze.prizes.length)
+      ? cfg.freeze.prizes
+      : (DEFAULT_SLOT_FREEZE.prizes || []);
+    // フリーズ景品が未設定なら BIG プールにフォールバック
+    if (!prizes.length) {
+      prizes = ((cfg.bonus.types || []).find(t => t.id === 'big') || {}).prizes
+        || (DEFAULT_SLOT_BONUS.types.find(t => t.id === 'big') || {}).prizes || [];
+    }
+    typeName = 'FREEZE'; color = '#7fd0ff'; rarity = 'FREEZE';
+  } else {
+    const def = (cfg.bonus.types || []).find(t => t.id === type)
+      || { id: type, name: type === 'big' ? 'BIG BONUS' : 'REG BONUS' };
+    prizes = (Array.isArray(def.prizes) && def.prizes.length)
+      ? def.prizes
+      : ((DEFAULT_SLOT_BONUS.types.find(t => t.id === type) || {}).prizes || []);
+    typeName = def.name;
+    color = def.color || (type === 'big' ? '#d4ad55' : '#5fa8c8');
+    rarity = type === 'big' ? 'BIG' : 'REG';
+  }
+
   const pick = weightedPick(prizes); // weight キーで抽選
   const now = Date.now();
   // 景品未設定でも演出は出す（きのこpt 0 のプレースホルダ・画像なし）
-  const prize = pick || { id: 'none', name: def.name || 'ボーナス', icon: '', iconType: 'image', mushroom: 0 };
+  const prize = pick || { id: 'none', name: typeName || 'ボーナス', icon: '', iconType: 'image', mushroom: 0 };
   const mushroom = Math.max(0, Math.floor(Number(prize.mushroom) || 0));
 
   // きのこpt を加算（スロット専用ランキングのスコア）
@@ -152,12 +174,11 @@ function awardBonusPrize(cfg, type, user) {
   });
 
   return {
-    typeId: type, typeName: def.name,
-    color: def.color || (type === 'big' ? '#d4ad55' : '#5fa8c8'),
+    typeId: type, typeName, color,
     prize: {
       name: prize.name,
       icon: prize.icon, iconType: prize.iconType || 'emoji',
-      mushroom, rarity: type === 'big' ? 'BIG' : 'REG', description: '',
+      mushroom, rarity, description: '',
     },
     instanceId, mushroom,
   };
@@ -363,10 +384,10 @@ async function processSlot({ userId, free }) {
   const freezeProb = (cfg.freeze && cfg.freeze.enabled !== false) ? Math.max(0, Number(cfg.freeze.prob) || 0) : 0;
   const role = pickRoleByProb(cfg.roles, freezeProb);
 
-  // --- フリーズ（プレミアム）当選 → リール暗転＋豪華演出 → BIG景品 ---
+  // --- フリーズ（プレミアム）当選 → リール暗転＋豪華演出 → フリーズ専用景品 ---
   if (role.id === '__freeze__') {
     const reels = decideTellReels('big', slotFull);
-    const bonus = awardBonusPrize(cfg, 'big', user);
+    const bonus = awardBonusPrize(cfg, 'freeze', user);
     user.slotStats.spins = (user.slotStats.spins || 0) + 1;
     const gsb = (Number(user.slotStats.gamesSinceBonus) || 0) + 1;
     user.slotStats.lastBonusGames = gsb;

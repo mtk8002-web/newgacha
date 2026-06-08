@@ -1496,6 +1496,12 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
           <label class="label-text">フリーズ確率 %</label>
           <input type="number" class="input" id="setSlotFreezeProb" min="0" max="100" step="0.01" placeholder="0.1">
         </div>
+        <div class="slot-prizes-wrap" style="margin-top:0.9rem">
+          <div class="slot-prizes-head">❄ フリーズの景品プール</div>
+          <div class="form-hint" style="margin-bottom:0.6rem">※ フリーズ当選時に当たる景品（画像・きのこpt・重み）。未設定ならBIG景品が使われます。</div>
+          <div class="slot-prize-list" id="slotFreezePrizeList" data-bonus="freeze"></div>
+          <button type="button" class="btn btn-ghost btn-sm slot-prize-add" data-bonus="freeze"><span>＋ フリーズ景品を追加</span></button>
+        </div>
 
         <!-- 役と確率 -->
         <div class="slot-roles-title">役 と 確率（%）</div>
@@ -1891,8 +1897,10 @@ const DEFAULT_SLOT = {
       ] },
     ],
   },
-  // フリーズ（プレミアム）：低確率で発生 → 暗転＋豪華演出 → BIG景品
-  freeze: { enabled: true, prob: 0.1 },
+  // フリーズ（プレミアム）：低確率で発生 → 暗転＋豪華演出 → フリーズ専用景品
+  freeze: { enabled: true, prob: 0.1, prizes: [
+    { id: 'fz-1', name: 'でかきのこ', icon: '', iconType: 'image', mushroom: 100, weight: 1 },
+  ] },
 };
 
 function getDefaultData() {
@@ -1974,6 +1982,9 @@ function normalizeData(parsed) {
   }
   if (!parsed.settings.slot.freeze || typeof parsed.settings.slot.freeze !== 'object') {
     parsed.settings.slot.freeze = JSON.parse(JSON.stringify(DEFAULT_SLOT.freeze));
+  }
+  if (!Array.isArray(parsed.settings.slot.freeze.prizes)) {
+    parsed.settings.slot.freeze.prizes = JSON.parse(JSON.stringify(DEFAULT_SLOT.freeze.prizes || []));
   }
   // 旧スキーマ（sourceGachaTypeId）のボーナスタイプに prizes が無ければ既定のスロット専用景品を補完
   parsed.settings.slot.bonus.types.forEach(t => {
@@ -3012,6 +3023,7 @@ function setupSettings() {
     const freeze = {
       enabled: document.getElementById('setSlotFreezeEnabled').checked,
       prob: Math.max(0, Math.min(100, Number(document.getElementById('setSlotFreezeProb').value) || 0)),
+      prizes: buildPrizes('freeze'),
     };
     data.settings.slot = Object.assign({}, data.settings.slot || {}, { enabled, cost, description, roles, overlap, bonus, freeze });
     const sum = roles.filter(r => r.id !== 'lose').reduce((s, r) => s + (Number(r.prob) || 0), 0);
@@ -3291,11 +3303,12 @@ function captureGachaTypesFromForm() {
 
 // 役の確率合計と、自動算出される「はずれ%」を更新
 // ===== スロット専用景品プールの編集 =====
-let slotPrizeDraft = { big: [], reg: [] };
+let slotPrizeDraft = { big: [], reg: [], freeze: [] };
+const SLOT_PRIZE_LISTS = { big: 'slotBigPrizeList', reg: 'slotRegPrizeList', freeze: 'slotFreezePrizeList' };
 
 function renderSlotPrizeRows() {
-  ['big', 'reg'].forEach(bonusId => {
-    const listEl = document.getElementById(bonusId === 'big' ? 'slotBigPrizeList' : 'slotRegPrizeList');
+  Object.keys(SLOT_PRIZE_LISTS).forEach(bonusId => {
+    const listEl = document.getElementById(SLOT_PRIZE_LISTS[bonusId]);
     if (!listEl) return;
     const arr = slotPrizeDraft[bonusId] || [];
     if (arr.length === 0) {
@@ -3331,11 +3344,11 @@ function setupSlotPrizeEditors() {
     btn.addEventListener('click', () => {
       const bonusId = btn.dataset.bonus;
       slotPrizeDraft[bonusId] = slotPrizeDraft[bonusId] || [];
-      slotPrizeDraft[bonusId].push({ id: `${bonusId}-${Date.now().toString(36)}`, name: '', icon: '🍄', iconType: 'emoji', mushroom: 1, weight: 10 });
+      slotPrizeDraft[bonusId].push({ id: `${bonusId}-${Date.now().toString(36)}`, name: '', icon: '', iconType: 'image', mushroom: 1, weight: 10 });
       renderSlotPrizeRows();
     });
   });
-  ['slotBigPrizeList', 'slotRegPrizeList'].forEach(listId => {
+  Object.values(SLOT_PRIZE_LISTS).forEach(listId => {
     const listEl = document.getElementById(listId);
     if (!listEl) return;
     listEl.addEventListener('input', (e) => {
@@ -3529,7 +3542,9 @@ function renderSettings() {
     const t = bonusTypes.find(x => x.id === id);
     return (t && Array.isArray(t.prizes)) ? JSON.parse(JSON.stringify(t.prizes)) : [];
   };
-  slotPrizeDraft = { big: prizesOf('big'), reg: prizesOf('reg') };
+  const freezePrizes = (slot.freeze && Array.isArray(slot.freeze.prizes))
+    ? JSON.parse(JSON.stringify(slot.freeze.prizes)) : [];
+  slotPrizeDraft = { big: prizesOf('big'), reg: prizesOf('reg'), freeze: freezePrizes };
   renderSlotPrizeRows();
   // 合計・はずれ% を再計算
   updateSlotLoseProb();

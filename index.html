@@ -4064,6 +4064,7 @@ footer {
 }
 .slot-coll-card.is-big { border-color: var(--gold-bright); box-shadow: 0 2px 12px rgba(212,173,85,0.25); }
 .slot-coll-card.is-reg { border-color: #8fcfe8; box-shadow: 0 2px 12px rgba(95,168,200,0.22); }
+.slot-coll-card.is-freeze { border-color: #7fd0ff; box-shadow: 0 2px 14px rgba(120,200,255,0.4); background: linear-gradient(180deg, #fff, #eef8ff); }
 .slot-coll-card .scc-icon {
   width: 64px; height: 64px; margin: 0 auto 0.5rem;
   display: flex; align-items: center; justify-content: center;
@@ -4113,6 +4114,7 @@ footer {
 }
 .sti-pool-block.is-big { border-color: var(--gold-bright); }
 .sti-pool-block.is-reg { border-color: #8fcfe8; }
+.sti-pool-block.is-freeze { border-color: #7fd0ff; background: linear-gradient(180deg, var(--card), #eef8ff); }
 .sti-pool-head { font-weight: 800; font-size: 0.88rem; color: var(--text); margin-bottom: 0.6rem; }
 .sti-pool-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 0.6rem;
@@ -5819,10 +5821,9 @@ function renderSlotInfoHTML(data) {
     <div class="sti-row"><span class="sti-k">🍒チェリー重複 → REG</span><span class="sti-v">${ov('cherry','reg')}%</span></div>
     ${freezeRow}`;
 
-  // 景品プール（BIG / REG）
-  const poolHtml = (typeId, label) => {
-    const t = bonusTypes.find(x => x.id === typeId);
-    const prizes = (t && Array.isArray(t.prizes)) ? t.prizes : [];
+  // 景品プール（BIG / REG / フリーズ）
+  const poolHtml = (prizes, label, cls) => {
+    prizes = Array.isArray(prizes) ? prizes : [];
     const totalW = prizes.reduce((acc, p) => acc + Math.max(0, Number(p.weight) || 0), 0);
     const cards = prizes.length === 0
       ? `<div class="sti-pool-empty">景品が未設定です</div>`
@@ -5837,11 +5838,13 @@ function renderSlotInfoHTML(data) {
             </div>`;
         }).join('');
     return `
-      <div class="sti-pool-block ${typeId === 'big' ? 'is-big' : 'is-reg'}">
+      <div class="sti-pool-block ${cls}">
         <div class="sti-pool-head">${label}</div>
         <div class="sti-pool-grid">${cards}</div>
       </div>`;
   };
+  const prizesOfType = (id) => { const t = bonusTypes.find(x => x.id === id); return (t && Array.isArray(t.prizes)) ? t.prizes : []; };
+  const freezePrizes = (s.freeze && Array.isArray(s.freeze.prizes)) ? s.freeze.prizes : [];
 
   return `
     <div class="slot-info">
@@ -5856,8 +5859,9 @@ function renderSlotInfoHTML(data) {
         </div>
       </div>
       <div class="sti-title" style="margin-top:1.2rem">当たる景品（景品プール）</div>
-      ${poolHtml('big', '🎰 BIG の景品')}
-      ${poolHtml('reg', '🎰 REG の景品')}
+      ${poolHtml(prizesOfType('big'), '🎰 BIG の景品', 'is-big')}
+      ${poolHtml(prizesOfType('reg'), '🎰 REG の景品', 'is-reg')}
+      ${freezeProb > 0 ? poolHtml(freezePrizes, '❄ フリーズの景品', 'is-freeze') : ''}
     </div>
   `;
 }
@@ -6032,7 +6036,7 @@ function renderSlotDashboardHTML(data, me) {
   const collHtml = collGroups.length === 0
     ? `<div class="slot-coll-empty">まだスロット景品を持っていません。BIG / REG を当てて🍄を集めよう！</div>`
     : collGroups.map(g => `
-        <div class="slot-coll-card ${g.bonusType === 'big' ? 'is-big' : 'is-reg'}">
+        <div class="slot-coll-card ${g.bonusType === 'freeze' ? 'is-freeze' : (g.bonusType === 'big' ? 'is-big' : 'is-reg')}">
           ${g.count > 1 ? `<span class="scc-count">×${g.count}</span>` : ''}
           <div class="scc-icon">${renderSlotPrizeIconHtml(g)}</div>
           <div class="scc-name">${escapeHtml(g.name)}</div>
@@ -6115,7 +6119,13 @@ function renderSlotDashboardHTML(data, me) {
 
 // スロット専用景品を settings から解決
 function resolveSlotPrize(data, bonusType, prizeId) {
-  const types = (data && data.settings && data.settings.slot && data.settings.slot.bonus && data.settings.slot.bonus.types) || [];
+  const slot = (data && data.settings && data.settings.slot) || {};
+  // フリーズ景品は slot.freeze.prizes から解決
+  if (bonusType === 'freeze') {
+    const fp = (slot.freeze && Array.isArray(slot.freeze.prizes)) ? slot.freeze.prizes : [];
+    return fp.find(x => x.id === prizeId) || null;
+  }
+  const types = (slot.bonus && Array.isArray(slot.bonus.types)) ? slot.bonus.types : [];
   const t = types.find(x => x.id === bonusType);
   if (!t || !Array.isArray(t.prizes)) return null;
   return t.prizes.find(x => x.id === prizeId) || null;
