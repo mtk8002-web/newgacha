@@ -102,14 +102,17 @@ function getSlotConfig(slot) {
   return { roles, symbols, overlap, bonus, freeze };
 }
 
-// 確率(%)で役を1つ選ぶ。はずれは「100 - その他合計」を自動付与。
-function pickRoleByProb(roles) {
+// 確率(%)で役を1つ選ぶ。フリーズ確率も合算に含め、はずれは「100 - その他合計」を自動付与。
+// freezeProb>0 のとき、id '__freeze__' の擬似役が当たり得る（呼び出し側でフリーズ分岐）。
+function pickRoleByProb(roles, freezeProb = 0) {
   const others = roles.filter(r => r.id !== 'lose');
-  const sumOthers = others.reduce((s, r) => s + Math.max(0, Number(r.prob) || 0), 0);
+  const fz = Math.max(0, Number(freezeProb) || 0);
+  const sumOthers = others.reduce((s, r) => s + Math.max(0, Number(r.prob) || 0), 0) + fz;
   const loseRole = roles.find(r => r.id === 'lose')
     || { id: 'lose', name: 'はずれ', match: 'none', tier: 'lose' };
   const loseProb = Math.max(0, 100 - sumOthers);
   const pool = others.map(r => ({ r, w: Math.max(0, Number(r.prob) || 0) }));
+  if (fz > 0) pool.push({ r: { id: '__freeze__' }, w: fz });
   pool.push({ r: loseRole, w: loseProb });
   const total = pool.reduce((s, x) => s + x.w, 0);
   if (total <= 0) return loseRole;
@@ -352,59 +355,48 @@ async function processSlot({ userId, free }) {
   }
 
   // ============================================================
-  // (B-0) フリーズ抽選（プレミアム・最優先）
-  //   レア抽選で発生 → リール暗転＋豪華演出 → その場で BIG 景品を獲得
-  // ============================================================
-  if (cfg.freeze && cfg.freeze.enabled !== false) {
-    const fp = Math.max(0, Number(cfg.freeze.prob) || 0);
-    if (fp > 0 && secureRandom() * 100 < fp) {
-      user.slotReplayPending = false;
-      const reels = decideTellReels('big', slotFull);
-      const bonus = awardBonusPrize(cfg, 'big', user); // フリーズは BIG 景品
-      // 統計：1ゲーム消化・ボーナス成立扱い
-      user.slotStats.spins = (user.slotStats.spins || 0) + 1;
-      const gsb = (Number(user.slotStats.gamesSinceBonus) || 0) + 1;
-      user.slotStats.lastBonusGames = gsb;
-      user.slotStats.maxGamesSinceBonus = Math.max(Number(user.slotStats.maxGamesSinceBonus) || 0, gsb);
-      user.slotStats.gamesSinceBonus = 0;
-      user.slotStats.bonusBig = (user.slotStats.bonusBig || 0) + 1;
-      user.slotStats.totalBet = (user.slotStats.totalBet || 0) + (isFreeSpin ? 0 : bet);
-      user.slotHistory.unshift({
-        timestamp: Date.now(),
-        roleId: 'freeze', roleName: '❄ FREEZE',
-        payout: 0, payCurrency: 'pt', isReplay: false, reels,
-        bonus: bonus ? { typeId: 'big', typeName: 'FREEZE', prizeName: bonus.prize.name, mushroom: bonus.mushroom, instanceId: bonus.instanceId } : null,
-        freeze: true,
-      });
-      user.slotHistory = user.slotHistory.slice(0, 100);
-      sanitizeAllTradeIcons(data);
-      await redis.set(KEY, data);
-      return {
-        status: 200,
-        body: {
-          ok: true,
-          result: {
-            reels,
-            role: { id: 'freeze', name: 'FREEZE', tier: 'big', payout: 0 },
-            bonus,
-            freeze: true,
-            bonusReserved: null,
-            isReplay: false,
-            freeSpinNext: false,
-            wasFreeSpin: isFreeSpin,
-          },
-          balances: { pt: availableSpoon(user), mushroomPt: user.mushroomPt || 0 },
-        },
-      };
-    }
-  }
-
-  // ============================================================
-  // (B) 通常スピン：役抽選（確率% / はずれ自動）
+  // (B) 通常スピン：役抽選（フリーズ確率も合算に含めて 1回で抽選）
+  //   合算 = 各役 + フリーズ + はずれ = 100%（はずれは自動算出）
   // ============================================================
   // フリースピンは消費するのでフラグをクリア。リプレイ成立すれば後段で再付与。
   user.slotReplayPending = false;
-  const role = pickRoleByProb(cfg.roles);
+  const freezeProb = (cfg.freeze && cfg.freeze.enabled !== false) ? Math.max(0, Number(cfg.freeze.prob) || 0) : 0;
+  const role = pickRoleByProb(cfg.roles, freezeProb);
+
+  // --- フリーズ（プレミアム）当選 → リール暗転＋豪華演出 → BIG景品 ---
+  if (role.id === '__freeze__') {
+    const reels = decideTellReels('big', slotFull);
+    const bonus = awardBonusPrize(cfg, 'big', user);
+    user.slotStats.spins = (user.slotStats.spins || 0) + 1;
+    const gsb = (Number(user.slotStats.gamesSinceBonus) || 0) + 1;
+    user.slotStats.lastBonusGames = gsb;
+    user.slotStats.maxGamesSinceBonus = Math.max(Number(user.slotStats.maxGamesSinceBonus) || 0, gsb);
+    user.slotStats.gamesSinceBonus = 0;
+    user.slotStats.bonusBig = (user.slotStats.bonusBig || 0) + 1;
+    user.slotStats.totalBet = (user.slotStats.totalBet || 0) + (isFreeSpin ? 0 : bet);
+    user.slotHistory.unshift({
+      timestamp: Date.now(),
+      roleId: 'freeze', roleName: '❄ FREEZE',
+      payout: 0, payCurrency: 'pt', isReplay: false, reels,
+      bonus: bonus ? { typeId: 'big', typeName: 'FREEZE', prizeName: bonus.prize.name, mushroom: bonus.mushroom, instanceId: bonus.instanceId } : null,
+      freeze: true,
+    });
+    user.slotHistory = user.slotHistory.slice(0, 100);
+    sanitizeAllTradeIcons(data);
+    await redis.set(KEY, data);
+    return {
+      status: 200,
+      body: {
+        ok: true,
+        result: {
+          reels,
+          role: { id: 'freeze', name: 'FREEZE', tier: 'big', payout: 0 },
+          bonus, freeze: true, bonusReserved: null, isReplay: false, freeSpinNext: false, wasFreeSpin: isFreeSpin,
+        },
+        balances: { pt: availableSpoon(user), mushroomPt: user.mushroomPt || 0 },
+      },
+    };
+  }
 
   const reels = decideReels(role, slotFull);
 

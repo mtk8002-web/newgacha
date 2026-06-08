@@ -5790,9 +5790,12 @@ function renderSlotInfoHTML(data) {
   const bonusTypes = (s.bonus && Array.isArray(s.bonus.types)) ? s.bonus.types : [];
 
   const fmtPct = (v) => (Math.round((Number(v) || 0) * 100) / 100);
-  // 役の確率（はずれは 100 - その他合計）
+  // フリーズ確率（合算に含める）
+  const freeze = (s.freeze && typeof s.freeze === 'object') ? s.freeze : { enabled: true, prob: 0.1 };
+  const freezeProb = (freeze.enabled !== false) ? Math.max(0, Number(freeze.prob) || 0) : 0;
+  // 役の確率（はずれは 100 - その他合計 - フリーズ）
   const others = roles.filter(r => r.id !== 'lose');
-  const sumOthers = others.reduce((acc, r) => acc + Math.max(0, Number(r.prob) || 0), 0);
+  const sumOthers = others.reduce((acc, r) => acc + Math.max(0, Number(r.prob) || 0), 0) + freezeProb;
   const loseProb = Math.max(0, 100 - sumOthers);
   const roleRows = others.map(r => {
     const pay = Math.max(0, Math.floor(Number(r.payout) || 0));
@@ -5804,9 +5807,8 @@ function renderSlotInfoHTML(data) {
   // ボーナス確率
   const roleProb = (id) => { const r = roles.find(x => x.id === id); return r ? fmtPct(r.prob) : 0; };
   const ov = (sym, t) => fmtPct(((overlap[sym] || {})[t]) || 0);
-  const freeze = (s.freeze && typeof s.freeze === 'object') ? s.freeze : { enabled: true, prob: 0.1 };
-  const freezeRow = (freeze.enabled !== false)
-    ? `<div class="sti-row sti-freeze"><span class="sti-k">❄ フリーズ（プレミアム）</span><span class="sti-v">${fmtPct(freeze.prob)}%</span></div>`
+  const freezeRow = (freezeProb > 0)
+    ? `<div class="sti-row sti-freeze"><span class="sti-k">❄ フリーズ（プレミアム）</span><span class="sti-v">${fmtPct(freezeProb)}%</span></div>`
     : '';
   const bonusRows = `
     <div class="sti-row"><span class="sti-k">単独BIG</span><span class="sti-v">${roleProb('big')}%</span></div>

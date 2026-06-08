@@ -3019,9 +3019,13 @@ function setupSettings() {
     if (sum > 100) showToast('保存しました（注意：役の合計が100%を超えています。はずれが0%になります）');
     else showToast('スロット設定を保存しました');
   });
-  // 確率入力に応じて「はずれ%」をライブ更新
+  // 確率入力に応じて「はずれ%」をライブ更新（フリーズ確率も合算に含める）
   document.querySelectorAll('.slot-prob').forEach(el => {
     el.addEventListener('input', updateSlotLoseProb);
+  });
+  ['setSlotFreezeProb', 'setSlotFreezeEnabled'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(id === 'setSlotFreezeEnabled' ? 'change' : 'input', updateSlotLoseProb);
   });
   // スロット専用景品プールの編集
   setupSlotPrizeEditors();
@@ -3392,7 +3396,11 @@ function handleSlotPrizeImage(file, bonusId, idx) {
 function updateSlotLoseProb() {
   const probs = Array.from(document.querySelectorAll('.slot-prob'))
     .map(el => Math.max(0, Number(el.value) || 0));
-  const sum = probs.reduce((s, v) => s + v, 0);
+  // フリーズも合算に含める（有効時のみ）
+  const fzEnabledEl = document.getElementById('setSlotFreezeEnabled');
+  const fzProbEl = document.getElementById('setSlotFreezeProb');
+  const freezeProb = (fzEnabledEl && fzEnabledEl.checked && fzProbEl) ? Math.max(0, Number(fzProbEl.value) || 0) : 0;
+  const sum = probs.reduce((s, v) => s + v, 0) + freezeProb;
   const lose = Math.max(0, 100 - sum);
   const sumEl = document.getElementById('slotRolesSum');
   const loseEl = document.getElementById('slotLoseProb');
