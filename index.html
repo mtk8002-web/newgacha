@@ -2163,7 +2163,12 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
 }
 
 /* ===== ガチャセクション ===== */
-.gacha-section { background: linear-gradient(180deg, var(--bg-warm) 0%, var(--bg-pink) 100%); }
+.gacha-section {
+  background:
+    radial-gradient(60% 40% at 80% 0%, rgba(212,173,85,0.10), transparent 60%),
+    radial-gradient(50% 40% at 10% 20%, rgba(214,85,122,0.08), transparent 60%),
+    linear-gradient(180deg, var(--bg-warm) 0%, var(--bg-pink) 100%);
+}
 
 .gacha-login {
   background: var(--card);
@@ -2220,11 +2225,13 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
 .gacha-name-chip:hover { color: var(--pink); border-color: var(--pink); background: var(--pink-bg); }
 
 .gacha-dashboard {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  position: relative;
+  background:
+    linear-gradient(180deg, #ffffff 0%, var(--bg-gold) 100%);
+  border: 1px solid var(--gold-bright);
+  border-radius: 18px;
   padding: 2rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-gold), inset 0 1px 0 rgba(255,255,255,0.8);
 }
 .gacha-stat-grid {
   display: grid;
@@ -2264,35 +2271,65 @@ section { padding: 8rem 0; position: relative; z-index: 2; }
 }
 .candy-card {
   position: relative;
-  background: var(--card);
-  border: 2px solid var(--border);
-  border-radius: 14px;
-  padding: 1.4rem 1rem 1.2rem;
+  background: linear-gradient(180deg, #ffffff 0%, color-mix(in srgb, var(--accent) 6%, #ffffff) 100%);
+  border: 1.5px solid color-mix(in srgb, var(--accent) 32%, var(--border));
+  border-radius: 18px;
+  padding: 1.6rem 1rem 1.2rem;
   text-align: center;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  overflow: hidden;
+  transition: transform 0.22s cubic-bezier(0.16,1,0.3,1), box-shadow 0.22s, border-color 0.22s;
+  box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.85);
 }
-.candy-card:not(.disabled):hover {
-  transform: translateY(-3px);
-  border-color: var(--accent);
-  box-shadow: 0 10px 28px color-mix(in srgb, var(--accent) 30%, transparent);
-}
-.candy-card.disabled { opacity: 0.55; }
+/* 上部のメタリックなアクセントバー（流れる光） */
 .candy-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
-  background: var(--accent);
-  border-radius: 12px 12px 0 0;
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; z-index: 2;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--accent) 55%, #fff),
+    var(--accent),
+    color-mix(in srgb, var(--accent) 55%, #fff));
+  background-size: 200% 100%;
+  animation: candyBarShine 5s linear infinite;
 }
+@keyframes candyBarShine { 0% { background-position: 0% 0; } 100% { background-position: 200% 0; } }
+/* 背面のやわらかいオーラ（ホバーで強調） */
+.candy-card::after {
+  content: ''; position: absolute; left: -30%; right: -30%; top: -30%; height: 70%; z-index: 0;
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%);
+  opacity: 0.45; pointer-events: none; transition: opacity 0.25s;
+}
+.candy-card > * { position: relative; z-index: 1; }
+.candy-card:not(.disabled):hover {
+  transform: translateY(-5px);
+  border-color: var(--accent);
+  box-shadow: 0 16px 38px color-mix(in srgb, var(--accent) 34%, transparent), inset 0 1px 0 rgba(255,255,255,0.85);
+}
+.candy-card:not(.disabled):hover::after { opacity: 1; }
+.candy-card.disabled { opacity: 0.55; }
 .candy-card .candy-icon {
-  width: 80px; height: 80px;
-  margin: 0 auto 0.6rem;
+  position: relative;
+  width: 94px; height: 94px;
+  margin: 0 auto 0.75rem;
   display: flex; align-items: center; justify-content: center;
-  font-size: 3rem; line-height: 1;
-  background: color-mix(in srgb, var(--accent) 12%, white);
+  font-size: 3.3rem; line-height: 1;
   border-radius: 50%;
-  border: 2px solid var(--accent);
+  border: 3px solid transparent;
+  background:
+    radial-gradient(circle at 50% 35%, #ffffff, color-mix(in srgb, var(--accent) 16%, #ffffff)) padding-box,
+    conic-gradient(from 210deg, var(--accent), color-mix(in srgb, var(--accent) 45%, #fff) 25%, var(--accent) 50%, color-mix(in srgb, var(--accent) 45%, #fff) 75%, var(--accent)) border-box;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 30%, transparent), 0 0 0 5px color-mix(in srgb, var(--accent) 9%, transparent);
   overflow: hidden;
 }
-.candy-card .candy-icon img { width: 100%; height: 100%; object-fit: cover; }
+/* アイコンのガラス光沢 */
+.candy-card .candy-icon::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  background: linear-gradient(130deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.12) 30%, transparent 55%);
+}
+.candy-card .candy-icon img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.candy-card:not(.disabled):hover .candy-icon { animation: candyIconPop 0.5s ease; }
+@keyframes candyIconPop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.09); } }
+@media (prefers-reduced-motion: reduce) {
+  .candy-card::before, .candy-card:hover .candy-icon { animation: none !important; }
+}
 .candy-card .candy-name {
   font-size: 1.05rem; font-weight: 700; color: var(--text);
   letter-spacing: 0.05em; margin-bottom: 0.4rem;
@@ -3378,8 +3415,10 @@ footer {
   .podium-medal { font-size: 1.5rem; margin-bottom: 0.25rem; }
   .podium-card.gold .podium-medal { font-size: 1.85rem; }
 
-  .podium-icon { width: 46px; height: 46px; font-size: 1.45rem; margin-bottom: 0.45rem; border-width: 1.5px; }
-  .podium-card.gold .podium-icon { width: 58px; height: 58px; font-size: 1.85rem; border-width: 2px; box-shadow: 0 0 14px rgba(184,146,63,0.35); }
+  /* アイコンは必ず 金 > 銀 > 銅 の順。横並びでも1位を強調 */
+  .podium-icon { width: 58px; height: 58px; font-size: 1.8rem; margin-bottom: 0.45rem; border-width: 2px; border-radius: 12px; }
+  .podium-card.silver .podium-icon { width: 70px; height: 70px; font-size: 2.1rem; }
+  .podium-card.gold .podium-icon { width: 90px; height: 90px; font-size: 2.7rem; border-width: 2.5px; border-radius: 14px; box-shadow: 0 6px 18px rgba(184,146,63,0.45), 0 0 18px rgba(212,173,85,0.45); }
 
   .podium-name {
     font-size: 0.72rem; margin-bottom: 0.3rem; letter-spacing: 0.02em;
@@ -3417,8 +3456,9 @@ footer {
   .podium-card.gold { padding: 0.95rem 0.25rem 0.75rem; }
   .podium-medal { font-size: 1.25rem; }
   .podium-card.gold .podium-medal { font-size: 1.5rem; }
-  .podium-icon { width: 40px; height: 40px; font-size: 1.3rem; margin-bottom: 0.35rem; }
-  .podium-card.gold .podium-icon { width: 50px; height: 50px; font-size: 1.6rem; }
+  .podium-icon { width: 50px; height: 50px; font-size: 1.55rem; margin-bottom: 0.35rem; }
+  .podium-card.silver .podium-icon { width: 60px; height: 60px; font-size: 1.85rem; }
+  .podium-card.gold .podium-icon { width: 78px; height: 78px; font-size: 2.25rem; }
   .podium-name { font-size: 0.66rem; margin-bottom: 0.2rem; }
   .podium-card.gold .podium-name { font-size: 0.74rem; }
   .podium-rank { font-size: 0.7rem; }
