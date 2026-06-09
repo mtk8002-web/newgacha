@@ -4141,6 +4141,21 @@ footer {
 }
 .slot-sound-btn.on { border-color: var(--pink); }
 .slot-sound-btn:hover { filter: brightness(1.05); }
+/* 自動回転トグル */
+.slot-auto-btn {
+  height: 40px; padding: 0 0.95rem; border-radius: 999px;
+  border: 1.5px solid var(--border); background: var(--bg-warm);
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em;
+  cursor: pointer; line-height: 1; color: var(--text);
+  transition: all 0.2s;
+}
+.slot-auto-btn.on {
+  border-color: var(--gold-bright);
+  background: var(--bg-gold);
+  color: var(--gold-deep);
+  box-shadow: 0 0 0 2px rgba(184,146,63,0.25);
+}
+.slot-auto-btn:hover { filter: brightness(1.05); }
 
 /* スロットの説明・ルール（管理者が設定） */
 .slot-desc {
@@ -5899,6 +5914,9 @@ function buildReelStripHtml(slotSettings, centerSymbolId, reelIndex) {
 
 let slotSpinInFlight = false;
 let slotSoundEnabled = true;
+// 自動回転（AUTO）の状態と次スピン予約タイマー
+let slotAutoSpin = false;
+let slotAutoSpinTimer = null;
 // 目押し（手動ストップ）用の状態
 let slotPendingResult = null;     // サーバから受け取った確定結果（停止待ち）
 let slotStopFlags = [false, false, false];     // 各リールが停止済みか
@@ -6062,6 +6080,7 @@ function renderSlotDashboardHTML(data, me) {
         <button type="button" class="slot-sound-btn${slotSoundEnabled ? ' on' : ''}" id="slotSoundToggle" aria-label="サウンド切替">
           ${slotSoundEnabled ? '🔊' : '🔇'}
         </button>
+        ${slot.autoSpinEnabled ? `<button type="button" class="slot-auto-btn${slotAutoSpin ? ' on' : ''}" id="slotAutoBtn" aria-label="自動回転切替">${slotAutoSpin ? 'AUTO ●' : 'AUTO'}</button>` : ''}
       </div>
 
       ${slot.description ? `<div class="slot-desc">${escapeHtml(slot.description)}</div>` : ''}
@@ -6162,6 +6181,58 @@ function setupSlotDashboard(data, me) {
       renderAll();
     });
   }
+  // 自動回転（AUTO）トグル
+  const autoBtn = document.getElementById('slotAutoBtn');
+  if (autoBtn) {
+    autoBtn.addEventListener('click', () => {
+      slotAutoSpin = !slotAutoSpin;
+      syncAutoBtn();
+      if (slotAutoSpin) maybeScheduleAutoSpin(data, me);
+      else clearAutoSpinTimer();
+    });
+  }
+  // 描画後：自動回転が有効なら次のスピンを予約する
+  maybeScheduleAutoSpin(data, me);
+}
+
+// AUTO ボタンの見た目を現在の状態に同期
+function syncAutoBtn() {
+  const b = document.getElementById('slotAutoBtn');
+  if (b) {
+    b.classList.toggle('on', slotAutoSpin);
+    b.textContent = slotAutoSpin ? 'AUTO ●' : 'AUTO';
+  }
+}
+
+function clearAutoSpinTimer() {
+  if (slotAutoSpinTimer) { clearTimeout(slotAutoSpinTimer); slotAutoSpinTimer = null; }
+}
+
+// 自動回転：回せる状態なら次のスピンを予約する（pt 不足・停止中・タブ離脱で自動オフ）
+function maybeScheduleAutoSpin(data, me) {
+  clearAutoSpinTimer();
+  if (!slotAutoSpin || slotSpinInFlight) return;
+  // スロットタブを表示していないときは回さない
+  if (typeof getPlayMode === 'function' && getPlayMode() !== 'slot') {
+    slotAutoSpin = false; syncAutoBtn(); return;
+  }
+  const slot = getSlotSettings(data);
+  if (!slot.enabled || !slot.autoSpinEnabled) { slotAutoSpin = false; syncAutoBtn(); return; }
+  // リプレイ・ボーナス確定中は無料スピン
+  const free = !!(me.slotReplayPending || me.slotBonusPending);
+  const avail = availableSpoon(me);
+  if (!free && avail < slot.cost) {
+    // pt 不足 → 自動回転を停止
+    slotAutoSpin = false; syncAutoBtn(); return;
+  }
+  slotAutoSpinTimer = setTimeout(() => {
+    slotAutoSpinTimer = null;
+    if (!slotAutoSpin || slotSpinInFlight) return;
+    if (typeof getPlayMode === 'function' && getPlayMode() !== 'slot') {
+      slotAutoSpin = false; syncAutoBtn(); return;
+    }
+    doSlotSpin(me.id, { free });
+  }, 650);
 }
 
 // /api/slot を呼んでアニメ → 結果反映
@@ -6292,6 +6363,13 @@ function beginManualStop(result, onDone) {
     if (slotStopFlags[i]) return;
     setTimeout(() => doStopReel(i), k * 140);
   });
+  // 自動回転中は目押し不要：残りのリールを左から時間差で自動停止する
+  if (slotAutoSpin) {
+    [0, 1, 2].forEach((i, k) => {
+      if (slotStopFlags[i] || slotStopRequested[i]) return;
+      setTimeout(() => stopReel(i), 380 + k * 300);
+    });
+  }
 }
 
 // STOP ボタン押下：押した瞬間にボタンを反応させ、結果があれば即停止／無ければ先取り記録
