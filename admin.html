@@ -2041,23 +2041,32 @@ function summarizeGachaHistory(user) {
 async function saveData() {
   const token = sessionStorage.getItem(SESSION_KEY) || '';
   try {
+    const payload = JSON.stringify(data);
     const res = await fetch('/api/data', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-      body: JSON.stringify(data),
+      body: payload,
     });
     if (res.status === 401) {
       showToast('セッションが無効です。再ログインしてください');
       logout();
-      return;
+      return false;
     }
-    if (!res.ok) throw new Error('save failed: ' + res.status);
+    if (!res.ok) {
+      if (res.status === 413) {
+        showToast('保存に失敗しました。データサイズが大きすぎます');
+        return false;
+      }
+      throw new Error('save failed: ' + res.status);
+    }
+    return true;
   } catch (e) {
     console.error('保存失敗:', e);
     showToast('保存に失敗しました（ネットワーク確認）');
+    return false;
   }
 }
 
@@ -2680,25 +2689,41 @@ function setupDonateModal() {
   });
 }
 
-function addDonation(userId, amount, note) {
+async function addDonation(userId, amount, note) {
   const u = data.users.find(x => x.id === userId);
   if (!u) return;
+  const prevTotalSpoon = u.totalSpoon || 0;
+  const prevHistory = Array.isArray(u.history) ? u.history.slice() : [];
   u.totalSpoon = (u.totalSpoon || 0) + amount;
   u.history = u.history || [];
   u.history.push({ amount, timestamp: Date.now(), note: note || undefined });
-  saveData();
+  const ok = await saveData();
+  if (!ok) {
+    u.totalSpoon = prevTotalSpoon;
+    u.history = prevHistory;
+    renderUserList();
+    return;
+  }
   lastDonateUserId = userId;
   hideModal('donateModal');
   renderUserList();
   showToast(`${u.name} さんに +${fmt(amount)} pt`);
 }
 
-function undoLastDonation(userId) {
+async function undoLastDonation(userId) {
   const u = data.users.find(x => x.id === userId);
   if (!u || !u.history || u.history.length === 0) { showToast('取り消せる加算がありません'); return; }
+  const prevTotalSpoon = u.totalSpoon || 0;
+  const prevHistory = u.history.slice();
   const last = u.history.pop();
   u.totalSpoon = Math.max(0, (u.totalSpoon || 0) - last.amount);
-  saveData();
+  const ok = await saveData();
+  if (!ok) {
+    u.totalSpoon = prevTotalSpoon;
+    u.history = prevHistory;
+    renderUserList();
+    return;
+  }
   hideModal('donateModal');
   renderUserList();
   showToast(`${u.name} さんへの直前の加算（${fmt(last.amount)}）を取り消しました`);
