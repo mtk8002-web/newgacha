@@ -2707,8 +2707,12 @@ async function postDonateApi(payload) {
     }
     const json = await res.json().catch(() => ({}));
     if (!res.ok || !json.ok) {
-      if (res.status === 503) showToast('保存が混み合っています。少し待って再試行してください');
-      else showToast('pt付与に失敗しました');
+      if (res.status === 404) showToast('/api/donate が未デプロイです。再デプロイしてください');
+      else if (res.status === 503) showToast('保存が混み合っています。少し待って再試行してください');
+      else if (res.status >= 500) showToast(`pt付与APIエラー (${res.status})`);
+      else if (json && json.error) showToast(`pt付与に失敗: ${json.error}`);
+      else showToast(`pt付与に失敗しました (${res.status})`);
+      console.error('pt付与API失敗レスポンス:', res.status, json);
       return null;
     }
     return json;
