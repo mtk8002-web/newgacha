@@ -2689,21 +2689,44 @@ function setupDonateModal() {
   });
 }
 
+async function postDonateApi(payload) {
+  const token = sessionStorage.getItem(SESSION_KEY) || '';
+  try {
+    const res = await fetch('/api/donate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    if (res.status === 401) {
+      showToast('セッションが無効です。再ログインしてください');
+      logout();
+      return null;
+    }
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || !json.ok) {
+      if (res.status === 503) showToast('保存が混み合っています。少し待って再試行してください');
+      else showToast('pt付与に失敗しました');
+      return null;
+    }
+    return json;
+  } catch (e) {
+    console.error('pt付与API失敗:', e);
+    showToast('pt付与に失敗しました（ネットワーク確認）');
+    return null;
+  }
+}
+
 async function addDonation(userId, amount, note) {
   const u = data.users.find(x => x.id === userId);
   if (!u) return;
-  const prevTotalSpoon = u.totalSpoon || 0;
-  const prevHistory = Array.isArray(u.history) ? u.history.slice() : [];
-  u.totalSpoon = (u.totalSpoon || 0) + amount;
+  const result = await postDonateApi({ action: 'add', userId, amount, note });
+  if (!result) return;
+  u.totalSpoon = Math.max(0, Math.floor(Number(result.totalSpoon) || 0));
   u.history = u.history || [];
-  u.history.push({ amount, timestamp: Date.now(), note: note || undefined });
-  const ok = await saveData();
-  if (!ok) {
-    u.totalSpoon = prevTotalSpoon;
-    u.history = prevHistory;
-    renderUserList();
-    return;
-  }
+  u.history.push({ amount: result.amount, timestamp: Date.now(), note: note || undefined });
   lastDonateUserId = userId;
   hideModal('donateModal');
   renderUserList();
@@ -2713,17 +2736,11 @@ async function addDonation(userId, amount, note) {
 async function undoLastDonation(userId) {
   const u = data.users.find(x => x.id === userId);
   if (!u || !u.history || u.history.length === 0) { showToast('取り消せる加算がありません'); return; }
-  const prevTotalSpoon = u.totalSpoon || 0;
-  const prevHistory = u.history.slice();
-  const last = u.history.pop();
-  u.totalSpoon = Math.max(0, (u.totalSpoon || 0) - last.amount);
-  const ok = await saveData();
-  if (!ok) {
-    u.totalSpoon = prevTotalSpoon;
-    u.history = prevHistory;
-    renderUserList();
-    return;
-  }
+  const last = u.history[u.history.length - 1];
+  const result = await postDonateApi({ action: 'undo', userId });
+  if (!result) return;
+  u.history.pop();
+  u.totalSpoon = Math.max(0, Math.floor(Number(result.totalSpoon) || 0));
   hideModal('donateModal');
   renderUserList();
   showToast(`${u.name} さんへの直前の加算（${fmt(last.amount)}）を取り消しました`);
