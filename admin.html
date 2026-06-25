@@ -1468,7 +1468,18 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
         </div>
         <div class="field-row" style="margin-top:1rem">
           <label class="label-text">1回の消費 pt</label>
-          <input type="number" class="input" id="setSlotCost" min="0" step="1" placeholder="100">
+          <div>
+            <div id="slotVariantTabs" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.8rem">
+              <button type="button" class="btn btn-ghost btn-sm slot-variant-tab" data-slot-variant-tab="slot1"><span>ベット1</span></button>
+              <button type="button" class="btn btn-ghost btn-sm slot-variant-tab" data-slot-variant-tab="slot2"><span>ベット2</span></button>
+            </div>
+            <label class="visibility-toggle" style="margin-bottom:0.8rem;display:flex">
+              <input type="checkbox" id="setSlotVariantEnabled">
+              <span class="visibility-toggle-track"></span>
+              <span class="visibility-toggle-label" id="setSlotVariantEnabledLabel">このベット枠を公開する</span>
+            </label>
+            <input type="number" class="input" id="setSlotVariantCost" min="0" step="1" placeholder="100">
+          </div>
           <div class="form-hint">0 にすると無料で回せます。</div>
         </div>
         <div class="field-row" style="align-items:start;margin-top:1rem">
@@ -1497,7 +1508,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
           <input type="number" class="input" id="setSlotFreezeProb" min="0" max="100" step="0.01" placeholder="0.1">
         </div>
         <div class="slot-prizes-wrap" style="margin-top:0.9rem">
-          <div class="slot-prizes-head">❄ フリーズの景品プール</div>
+          <div class="slot-prizes-head" id="slotFreezePrizeTitle">❄ フリーズの景品プール</div>
           <div class="form-hint" style="margin-bottom:0.6rem">※ フリーズ当選時に当たる景品（画像・きのこpt・重み）。未設定ならBIG景品が使われます。</div>
           <div class="slot-prize-list" id="slotFreezePrizeList" data-bonus="freeze"></div>
           <button type="button" class="btn btn-ghost btn-sm slot-prize-add" data-bonus="freeze"><span>＋ フリーズ景品を追加</span></button>
@@ -1586,12 +1597,12 @@ main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 6rem; }
           ※ 各景品に画像・名前・<b>きのこpt</b>・Weight（重み）を設定。きのこptの合計で<b>スロット専用ランキング</b>が上がります。
         </div>
         <div class="slot-prizes-wrap">
-          <div class="slot-prizes-head">🎰 BIG の景品プール</div>
+          <div class="slot-prizes-head" id="slotBigPrizeTitle">🎰 BIG の景品プール</div>
           <div class="slot-prize-list" id="slotBigPrizeList" data-bonus="big"></div>
           <button type="button" class="btn btn-ghost btn-sm slot-prize-add" data-bonus="big"><span>＋ BIG景品を追加</span></button>
         </div>
         <div class="slot-prizes-wrap" style="margin-top:1.2rem">
-          <div class="slot-prizes-head">🎰 REG の景品プール</div>
+          <div class="slot-prizes-head" id="slotRegPrizeTitle">🎰 REG の景品プール</div>
           <div class="slot-prize-list" id="slotRegPrizeList" data-bonus="reg"></div>
           <button type="button" class="btn btn-ghost btn-sm slot-prize-add" data-bonus="reg"><span>＋ REG景品を追加</span></button>
         </div>
@@ -1901,7 +1912,75 @@ const DEFAULT_SLOT = {
   freeze: { enabled: true, prob: 0.1, prizes: [
     { id: 'fz-1', name: 'でかきのこ', icon: '', iconType: 'image', mushroom: 100, weight: 1 },
   ] },
+  variants: [],
 };
+
+const SLOT_VARIANT_IDS = ['slot1', 'slot2'];
+const SLOT_VARIANT_META = {
+  slot1: { name: 'ベット1', defaultCost: 100 },
+  slot2: { name: 'ベット2', defaultCost: 300 },
+};
+
+function cloneJson(v) {
+  return JSON.parse(JSON.stringify(v));
+}
+
+function createDefaultSlotVariant(id) {
+  const meta = SLOT_VARIANT_META[id] || { name: id, defaultCost: 100 };
+  return {
+    id,
+    name: meta.name,
+    enabled: id === 'slot1',
+    cost: meta.defaultCost,
+    bonus: cloneJson(DEFAULT_SLOT.bonus),
+    freeze: cloneJson(DEFAULT_SLOT.freeze),
+  };
+}
+
+function normalizeSlotVariants(slot) {
+  const raw = (slot && Array.isArray(slot.variants) && slot.variants.length)
+    ? slot.variants
+    : [
+        {
+          id: 'slot1',
+          name: SLOT_VARIANT_META.slot1.name,
+          enabled: slot ? slot.enabled !== false : true,
+          cost: slot && typeof slot.cost === 'number' ? slot.cost : SLOT_VARIANT_META.slot1.defaultCost,
+          bonus: slot && slot.bonus,
+          freeze: slot && slot.freeze,
+        },
+        createDefaultSlotVariant('slot2'),
+      ];
+
+  return SLOT_VARIANT_IDS.map((id, idx) => {
+    const def = createDefaultSlotVariant(id);
+    const src = raw.find(v => v && v.id === id) || raw[idx] || {};
+    const variant = {
+      id,
+      name: (typeof src.name === 'string' && src.name.trim()) ? src.name.trim() : def.name,
+      enabled: src.enabled !== false,
+      cost: Math.max(0, Math.floor(Number(src.cost) || def.cost)),
+      bonus: (src.bonus && Array.isArray(src.bonus.types)) ? cloneJson(src.bonus) : cloneJson(def.bonus),
+      freeze: (src.freeze && typeof src.freeze === 'object') ? cloneJson(src.freeze) : cloneJson(def.freeze),
+    };
+    if (!variant.bonus || !Array.isArray(variant.bonus.types) || variant.bonus.types.length === 0) {
+      variant.bonus = cloneJson(def.bonus);
+    }
+    if (!variant.freeze || typeof variant.freeze !== 'object') {
+      variant.freeze = cloneJson(def.freeze);
+    }
+    if (!Array.isArray(variant.freeze.prizes)) {
+      variant.freeze.prizes = cloneJson(def.freeze.prizes || []);
+    }
+    variant.bonus.types.forEach(t => {
+      if (!Array.isArray(t.prizes)) {
+        const d = (def.bonus.types || []).find(x => x.id === t.id) || {};
+        t.prizes = cloneJson(d.prizes || []);
+      }
+    });
+    return variant;
+  });
+}
 
 function getDefaultData() {
   const now = new Date();
@@ -1971,6 +2050,7 @@ function normalizeData(parsed) {
   // スロット設定：旧データ（enabled/cost のみ等）でも役・重複・ボーナスを既定で補完
   const slot = (parsed.settings.slot && typeof parsed.settings.slot === 'object') ? parsed.settings.slot : {};
   parsed.settings.slot = Object.assign({}, JSON.parse(JSON.stringify(DEFAULT_SLOT)), slot);
+  parsed.settings.slot.variants = normalizeSlotVariants(parsed.settings.slot);
   if (!Array.isArray(parsed.settings.slot.roles) || parsed.settings.slot.roles.length === 0) {
     parsed.settings.slot.roles = JSON.parse(JSON.stringify(DEFAULT_SLOT.roles));
   }
@@ -1986,13 +2066,11 @@ function normalizeData(parsed) {
   if (!Array.isArray(parsed.settings.slot.freeze.prizes)) {
     parsed.settings.slot.freeze.prizes = JSON.parse(JSON.stringify(DEFAULT_SLOT.freeze.prizes || []));
   }
-  // 旧スキーマ（sourceGachaTypeId）のボーナスタイプに prizes が無ければ既定のスロット専用景品を補完
-  parsed.settings.slot.bonus.types.forEach(t => {
-    if (!Array.isArray(t.prizes)) {
-      const d = (DEFAULT_SLOT.bonus.types.find(x => x.id === t.id) || {});
-      t.prizes = JSON.parse(JSON.stringify(d.prizes || []));
-    }
-  });
+  // 互換用: 先頭ベット枠を従来の top-level slot.* にも反映
+  const primarySlotVariant = parsed.settings.slot.variants[0] || createDefaultSlotVariant('slot1');
+  parsed.settings.slot.cost = primarySlotVariant.cost;
+  parsed.settings.slot.bonus = cloneJson(primarySlotVariant.bonus);
+  parsed.settings.slot.freeze = cloneJson(primarySlotVariant.freeze);
   if (!Array.isArray(parsed.users)) parsed.users = [];
   for (const u of parsed.users) {
     // 旧フィールド gachaConsumed は無視。新フィールド spentSpoon を使う
@@ -3024,7 +3102,6 @@ function setupSettings() {
   // スロット設定（消費 pt・役の確率・払い出し・重複・ボーナス景品を管理者が決める）
   document.getElementById('saveSlotBtn').addEventListener('click', () => {
     const enabled = document.getElementById('setSlotEnabled').checked;
-    const cost = Math.max(0, parseInt(document.getElementById('setSlotCost').value || '0', 10) || 0);
     const numId = (id) => { const el = document.getElementById(id); return el ? Math.max(0, Number(el.value) || 0) : 0; };
     const probOf = (role) => {
       const el = document.querySelector(`.slot-prob[data-role="${role}"]`);
@@ -3065,13 +3142,35 @@ function setupSettings() {
       })),
     };
 
+    syncActiveSlotVariantFromInputs();
     const description = (document.getElementById('setSlotDescription').value || '').trim().slice(0, 1000);
     const freeze = {
       enabled: document.getElementById('setSlotFreezeEnabled').checked,
       prob: Math.max(0, Math.min(100, Number(document.getElementById('setSlotFreezeProb').value) || 0)),
       prizes: buildPrizes('freeze'),
     };
-    data.settings.slot = Object.assign({}, data.settings.slot || {}, { enabled, cost, description, roles, overlap, bonus, freeze });
+    const variants = SLOT_VARIANT_IDS.map(id => {
+      const src = slotVariantDrafts[id] || createDefaultSlotVariant(id);
+      return {
+        id,
+        name: src.name || getSlotVariantLabel(id),
+        enabled: src.enabled !== false,
+        cost: Math.max(0, Math.floor(Number(src.cost) || 0)),
+        bonus: cloneJson(src.bonus || createDefaultSlotVariant(id).bonus),
+        freeze: cloneJson(src.freeze || createDefaultSlotVariant(id).freeze),
+      };
+    });
+    const primary = variants.find(v => v.enabled !== false) || variants[0] || createDefaultSlotVariant('slot1');
+    data.settings.slot = Object.assign({}, data.settings.slot || {}, {
+      enabled,
+      description,
+      roles,
+      overlap,
+      variants,
+      cost: primary.cost,
+      bonus: cloneJson(primary.bonus),
+      freeze: cloneJson(primary.freeze),
+    });
     const sum = roles.filter(r => r.id !== 'lose').reduce((s, r) => s + (Number(r.prob) || 0), 0);
     saveData();
     if (sum > 100) showToast('保存しました（注意：役の合計が100%を超えています。はずれが0%になります）');
@@ -3087,6 +3186,7 @@ function setupSettings() {
   });
   // スロット専用景品プールの編集
   setupSlotPrizeEditors();
+  setupSlotVariantEditor();
 
   document.getElementById('saveEventBtn').addEventListener('click', () => {
     const name = document.getElementById('setEventName').value.trim();
@@ -3349,8 +3449,102 @@ function captureGachaTypesFromForm() {
 
 // 役の確率合計と、自動算出される「はずれ%」を更新
 // ===== スロット専用景品プールの編集 =====
+let activeSlotVariantId = 'slot1';
+let slotVariantDrafts = {
+  slot1: createDefaultSlotVariant('slot1'),
+  slot2: createDefaultSlotVariant('slot2'),
+};
 let slotPrizeDraft = { big: [], reg: [], freeze: [] };
 const SLOT_PRIZE_LISTS = { big: 'slotBigPrizeList', reg: 'slotRegPrizeList', freeze: 'slotFreezePrizeList' };
+
+function getSlotVariantLabel(id) {
+  return (SLOT_VARIANT_META[id] || {}).name || id;
+}
+
+function buildSlotVariantPrizesFromDraft() {
+  const buildPrizes = (bonusId) => (slotPrizeDraft[bonusId] || []).map((p, i) => {
+    const hasImg = (typeof p.icon === 'string' && p.icon.startsWith('data:image'));
+    return {
+      id: p.id || `${bonusId}-${i + 1}`,
+      name: (p.name || '').trim() || '景品',
+      icon: hasImg ? p.icon : '',
+      iconType: 'image',
+      mushroom: Math.max(0, Math.floor(Number(p.mushroom) || 0)),
+      weight: Math.max(0, Math.floor(Number(p.weight) || 0)),
+    };
+  });
+  const tpl = cloneJson(DEFAULT_SLOT.bonus.types);
+  return {
+    bonus: {
+      enabled: true,
+      types: tpl.map(t => ({
+        id: t.id, name: t.name, tellSymbolId: t.tellSymbolId, color: t.color,
+        prizes: buildPrizes(t.id),
+      })),
+    },
+    freeze: {
+      enabled: document.getElementById('setSlotFreezeEnabled').checked,
+      prob: Math.max(0, Math.min(100, Number(document.getElementById('setSlotFreezeProb').value) || 0)),
+      prizes: buildPrizes('freeze'),
+    },
+  };
+}
+
+function syncActiveSlotVariantFromInputs() {
+  const draft = slotVariantDrafts[activeSlotVariantId];
+  if (!draft) return;
+  draft.enabled = !!document.getElementById('setSlotVariantEnabled').checked;
+  draft.cost = Math.max(0, parseInt(document.getElementById('setSlotVariantCost').value || '0', 10) || 0);
+  const built = buildSlotVariantPrizesFromDraft();
+  draft.bonus = built.bonus;
+  draft.freeze = built.freeze;
+}
+
+function loadActiveSlotVariantEditor() {
+  const draft = slotVariantDrafts[activeSlotVariantId] || createDefaultSlotVariant(activeSlotVariantId);
+  document.querySelectorAll('.slot-variant-tab').forEach(btn => {
+    btn.classList.toggle('btn-primary', btn.dataset.slotVariantTab === activeSlotVariantId);
+    btn.classList.toggle('btn-ghost', btn.dataset.slotVariantTab !== activeSlotVariantId);
+  });
+  document.getElementById('setSlotVariantEnabled').checked = draft.enabled !== false;
+  document.getElementById('setSlotVariantEnabledLabel').textContent = `${getSlotVariantLabel(activeSlotVariantId)} を公開する`;
+  document.getElementById('setSlotVariantCost').value = Math.max(0, Math.floor(Number(draft.cost) || 0));
+  document.getElementById('setSlotFreezeEnabled').checked = !draft.freeze || draft.freeze.enabled !== false;
+  document.getElementById('setSlotFreezeProb').value = (draft.freeze && typeof draft.freeze.prob === 'number') ? draft.freeze.prob : 0.1;
+
+  const prizesOf = (id) => {
+    const t = ((draft.bonus && Array.isArray(draft.bonus.types)) ? draft.bonus.types : []).find(x => x.id === id);
+    return (t && Array.isArray(t.prizes)) ? cloneJson(t.prizes) : [];
+  };
+  const freezePrizes = (draft.freeze && Array.isArray(draft.freeze.prizes)) ? cloneJson(draft.freeze.prizes) : [];
+  slotPrizeDraft = { big: prizesOf('big'), reg: prizesOf('reg'), freeze: freezePrizes };
+
+  const prefix = getSlotVariantLabel(activeSlotVariantId);
+  const freezeTitle = document.getElementById('slotFreezePrizeTitle');
+  const bigTitle = document.getElementById('slotBigPrizeTitle');
+  const regTitle = document.getElementById('slotRegPrizeTitle');
+  if (freezeTitle) freezeTitle.textContent = `${prefix} / ❄ フリーズの景品プール`;
+  if (bigTitle) bigTitle.textContent = `${prefix} / 🎰 BIG の景品プール`;
+  if (regTitle) regTitle.textContent = `${prefix} / 🎰 REG の景品プール`;
+
+  renderSlotPrizeRows();
+  updateSlotLoseProb();
+}
+
+function setupSlotVariantEditor() {
+  document.querySelectorAll('.slot-variant-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const nextId = btn.dataset.slotVariantTab;
+      if (!nextId || nextId === activeSlotVariantId) return;
+      syncActiveSlotVariantFromInputs();
+      activeSlotVariantId = nextId;
+      if (!slotVariantDrafts[activeSlotVariantId]) {
+        slotVariantDrafts[activeSlotVariantId] = createDefaultSlotVariant(activeSlotVariantId);
+      }
+      loadActiveSlotVariantEditor();
+    });
+  });
+}
 
 function renderSlotPrizeRows() {
   Object.keys(SLOT_PRIZE_LISTS).forEach(bonusId => {
@@ -3560,11 +3754,9 @@ function renderSettings() {
   // スロット設定
   const slot = data.settings.slot || {};
   document.getElementById('setSlotEnabled').checked = slot.enabled !== false;
-  document.getElementById('setSlotCost').value = (typeof slot.cost === 'number' && slot.cost >= 0) ? Math.floor(slot.cost) : 100;
   document.getElementById('setSlotDescription').value = slot.description || '';
-  const fz = (slot.freeze && typeof slot.freeze === 'object') ? slot.freeze : { enabled: true, prob: 0.1 };
-  document.getElementById('setSlotFreezeEnabled').checked = fz.enabled !== false;
-  document.getElementById('setSlotFreezeProb').value = (typeof fz.prob === 'number') ? fz.prob : 0.1;
+  slotVariantDrafts = Object.fromEntries(normalizeSlotVariants(slot).map(v => [v.id, cloneJson(v)]));
+  if (!slotVariantDrafts[activeSlotVariantId]) activeSlotVariantId = SLOT_VARIANT_IDS[0];
   // 役・確率
   const slotRoles = (Array.isArray(slot.roles) && slot.roles.length) ? slot.roles : DEFAULT_SLOT.roles;
   const roleById = id => slotRoles.find(r => r.id === id) || {};
@@ -3583,15 +3775,7 @@ function renderSettings() {
   document.getElementById('setSlotOvChBig').value = Number((ov.cherry || {}).big) || 0;
   document.getElementById('setSlotOvChReg').value = Number((ov.cherry || {}).reg) || 0;
   // スロット専用景品プール（big/reg）を draft に読み込み → 描画
-  const bonusTypes = (slot.bonus && Array.isArray(slot.bonus.types)) ? slot.bonus.types : DEFAULT_SLOT.bonus.types;
-  const prizesOf = (id) => {
-    const t = bonusTypes.find(x => x.id === id);
-    return (t && Array.isArray(t.prizes)) ? JSON.parse(JSON.stringify(t.prizes)) : [];
-  };
-  const freezePrizes = (slot.freeze && Array.isArray(slot.freeze.prizes))
-    ? JSON.parse(JSON.stringify(slot.freeze.prizes)) : [];
-  slotPrizeDraft = { big: prizesOf('big'), reg: prizesOf('reg'), freeze: freezePrizes };
-  renderSlotPrizeRows();
+  loadActiveSlotVariantEditor();
   // 合計・はずれ% を再計算
   updateSlotLoseProb();
 

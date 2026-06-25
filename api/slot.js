@@ -97,14 +97,56 @@ const DEFAULT_SLOT_FREEZE = {
 };
 
 // slot 設定を既定値で補完して返す
-function getSlotConfig(slot) {
+function cloneJson(v) {
+  return JSON.parse(JSON.stringify(v));
+}
+
+function createDefaultSlotVariant(id) {
+  return {
+    id,
+    name: id === 'slot1' ? 'ベット1' : 'ベット2',
+    enabled: id === 'slot1',
+    cost: id === 'slot1' ? 100 : 300,
+    bonus: cloneJson(DEFAULT_SLOT_BONUS),
+    freeze: cloneJson(DEFAULT_SLOT_FREEZE),
+  };
+}
+
+function normalizeSlotVariants(slot) {
+  const raw = (slot && Array.isArray(slot.variants) && slot.variants.length)
+    ? slot.variants
+    : [
+        { id: 'slot1', name: 'ベット1', enabled: slot ? slot.enabled !== false : true, cost: slot && slot.cost, bonus: slot && slot.bonus, freeze: slot && slot.freeze },
+        createDefaultSlotVariant('slot2'),
+      ];
+  return ['slot1', 'slot2'].map((id, idx) => {
+    const def = createDefaultSlotVariant(id);
+    const src = raw.find(v => v && v.id === id) || raw[idx] || {};
+    return {
+      id,
+      name: (typeof src.name === 'string' && src.name.trim()) ? src.name.trim() : def.name,
+      enabled: src.enabled !== false,
+      cost: Math.max(0, Math.floor(Number(src.cost) || def.cost)),
+      bonus: (src && src.bonus && Array.isArray(src.bonus.types)) ? cloneJson(src.bonus) : cloneJson(def.bonus),
+      freeze: (src && src.freeze && typeof src.freeze === 'object') ? cloneJson(src.freeze) : cloneJson(def.freeze),
+    };
+  });
+}
+
+function getSlotConfig(slot, requestedVariantId, lockedVariantId) {
   const roles   = (Array.isArray(slot.roles)   && slot.roles.length)   ? slot.roles   : DEFAULT_SLOT_ROLES;
   const symbols = DEFAULT_SLOT_SYMBOLS; // 図柄は固定（意味のある6種のみ）
   const overlap = (slot.overlap && typeof slot.overlap === 'object')   ? slot.overlap : DEFAULT_SLOT_OVERLAP;
   const bonus   = (slot.bonus && Array.isArray(slot.bonus.types) && slot.bonus.types.length)
     ? slot.bonus : DEFAULT_SLOT_BONUS;
   const freeze  = (slot.freeze && typeof slot.freeze === 'object') ? slot.freeze : DEFAULT_SLOT_FREEZE;
-  return { roles, symbols, overlap, bonus, freeze };
+  const variants = normalizeSlotVariants(slot);
+  const variant = variants.find(v => v.id === lockedVariantId && v.enabled !== false)
+    || variants.find(v => v.id === requestedVariantId && v.enabled !== false)
+    || variants.find(v => v.enabled !== false)
+    || variants[0]
+    || createDefaultSlotVariant('slot1');
+  return { roles, symbols, overlap, bonus: variant.bonus, freeze: variant.freeze, variants, variant };
 }
 
 // 確率(%)で役を1つ選ぶ。フリーズ確率も合算に含め、はずれは「100 - その他合計」を自動付与。
@@ -169,6 +211,7 @@ function awardBonusPrize(cfg, type, user) {
   user.slotPrizes = Array.isArray(user.slotPrizes) ? user.slotPrizes : [];
   const instanceId = makeInstanceId();
   user.slotPrizes.push({
+    variantId: (cfg.variant && cfg.variant.id) || null,
     instanceId, bonusType: type, prizeId: prize.id,
     name: prize.name, mushroom, timestamp: now,
   });
@@ -245,6 +288,7 @@ function ensureSlotFields(user) {
   if (typeof st.lastBonusGames !== 'number') st.lastBonusGames = 0;
   if (typeof st.maxGamesSinceBonus !== 'number') st.maxGamesSinceBonus = 0;
   if (typeof user.slotReplayPending !== 'boolean') user.slotReplayPending = false;
+  if (typeof user.slotPendingVariantId !== 'string') user.slotPendingVariantId = null;
   // 予約済みボーナス（ランプ点灯中）: null | 'big' | 'reg'
   if (user.slotBonusPending !== 'big' && user.slotBonusPending !== 'reg') user.slotBonusPending = null;
   // スロット専用ランキング用：きのこpt と 専用景品コレクション
@@ -287,7 +331,7 @@ function thinIcon(icon) {
   return (typeof icon === 'string' && icon.startsWith('data:image')) ? '' : (icon || '');
 }
 
-async function processSlot({ userId, free }) {
+async function processSlot({ userId, free, variantId }) {
   const data = await redis.get(KEY);
   if (!data || !Array.isArray(data.users)) {
     return { status: 404, body: { ok: false, error: 'no data' } };
@@ -303,10 +347,11 @@ async function processSlot({ userId, free }) {
   ensureUserInventory(user);
   ensureSlotFields(user);
 
-  const cfg = getSlotConfig(slot);
+  const lockedVariantId = (user.slotReplayPending || user.slotBonusPending) ? user.slotPendingVariantId : null;
+  const cfg = getSlotConfig(slot, variantId, lockedVariantId);
   const slotFull = { ...slot, symbols: cfg.symbols, roles: cfg.roles, overlap: cfg.overlap, bonus: cfg.bonus };
   const gachaTypes = (data.settings.gachaTypes || []);
-  const bet = Math.max(0, Math.floor(Number(slot.cost) || 0));
+  const bet = Math.max(0, Math.floor(Number((cfg.variant && cfg.variant.cost) || slot.cost) || 0));
 
   // 予約済みボーナス（前回ランプ点灯）があれば、このスピンは無料の「ボーナス確定演出」になる
   const pendingBonus = (user.slotBonusPending === 'big' || user.slotBonusPending === 'reg')
@@ -328,6 +373,7 @@ async function processSlot({ userId, free }) {
   // ============================================================
   if (pendingBonus) {
     user.slotBonusPending = null;
+    user.slotPendingVariantId = null;
     const reels = decideTellReels(pendingBonus, slotFull);
     const bonus = awardBonusPrize(cfg, pendingBonus, user);
 
@@ -381,6 +427,7 @@ async function processSlot({ userId, free }) {
   // ============================================================
   // フリースピンは消費するのでフラグをクリア。リプレイ成立すれば後段で再付与。
   user.slotReplayPending = false;
+  user.slotPendingVariantId = null;
   const freezeProb = (cfg.freeze && cfg.freeze.enabled !== false) ? Math.max(0, Number(cfg.freeze.prob) || 0) : 0;
   const role = pickRoleByProb(cfg.roles, freezeProb);
 
@@ -427,7 +474,10 @@ async function processSlot({ userId, free }) {
   if (payout > 0) {
     user.spentSpoon = Math.max(0, (user.spentSpoon || 0) - payout);
   }
-  if (role.replay) user.slotReplayPending = true;
+  if (role.replay) {
+    user.slotReplayPending = true;
+    user.slotPendingVariantId = (cfg.variant && cfg.variant.id) || null;
+  }
 
   // --- ボーナス予約（単独 or スイカ/チェリー重複） ---
   let reserved = null;
@@ -446,6 +496,7 @@ async function processSlot({ userId, free }) {
   if (reserved) {
     // ランプ点灯 → 次の無料スピンで確定
     user.slotBonusPending = reserved;
+    user.slotPendingVariantId = (cfg.variant && cfg.variant.id) || null;
   }
 
   // 履歴
@@ -502,10 +553,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: 'method not allowed' });
   }
   try {
-    const { userId, free } = req.body || {};
+    const { userId, free, variantId } = req.body || {};
     if (!userId) return res.status(400).json({ ok: false, error: 'userId required' });
 
-    const lockResult = await withDataLock(redis, () => processSlot({ userId, free: !!free }));
+    const lockResult = await withDataLock(redis, () => processSlot({ userId, free: !!free, variantId }));
     if (lockResult.busy) {
       return res.status(503).json({ ok: false, error: 'busy, retry' });
     }
